@@ -6,6 +6,10 @@ HIDUP MALAYSIA is a mobile-first, choice-based life simulator that runs entirely
 
 It needs no backend, no account, no API keys and no database. Saves live in your browser's LocalStorage.
 
+**Play it:** https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/
+
+On a phone, open the link, then use **Add to Home Screen** (Safari share menu, or the Chrome menu) to install it like an app.
+
 ## Quick start
 
 ```bash
@@ -27,6 +31,14 @@ npm run mcp        # start the hidup-sim MCP server on stdio
 Requires Node 20 or newer (developed on Node 24).
 
 ## How to play
+
+Everything for a normal day is on the **Home** screen:
+
+- **The big button** does the most sensible thing right now: go to work, attend class, eat, go to an interview, apply for the best job, or sleep.
+- **Six tiles** change with the time of day and your situation (meals, gym, mamak, study, side hustle, nap).
+- **Next / End day / Week** let time pass on your routine. They stop whenever an event needs your decision.
+
+The other tabs (Act, Money, Life, Feed) are for deeper decisions: moving house, buying a car, the job board, payslips, dating, side hustles.
 
 1. **Create a life.** Pick a name, a mode (Realistic or Chaotic), a life stage, a background, your home state, and your university, course or job.
 2. **Act.** Every action takes game time: eating takes 20 minutes, a workday about 9 hours plus your commute, sleep several hours. The clock only moves when you act or wait.
@@ -63,6 +75,10 @@ Requires Node 20 or newer (developed on Node 24).
 - **Calories are rough estimates.** The game is not a medical or nutrition tool.
 - **Holiday dates use a simulated calendar.** Lunar and Islamic festivals are pinned to fixed dates.
 - **Politics are fictional.** The parties and the town of Seri Harapan are made up. Real people are never the target of jokes.
+
+## Deployment
+
+Every push to `main` runs `.github/workflows/deploy.yml`, which installs, typechecks, tests and builds the game, then publishes `dist/` to the `gh-pages` branch. GitHub Pages serves that branch at the URL above. The build uses a relative base path, so it works under the repository sub-path.
 
 ## Architecture
 

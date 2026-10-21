@@ -5,12 +5,17 @@ description: Use when HIDUP MALAYSIA work is finished and verified and the next 
 
 # Completion Checkpoint
 
-This is Gate 6.5 of `playbook.md`. It decides what happens to verified changes, and it is the
+This is Gate 6 of `playbook.md`. It decides what happens to verified changes, and it is the
 only completion menu to use. Do not show a generic "merge locally / create PR / keep / discard" menu.
 
 <HARD-GATE>
 Do not commit, push, or open a pull request until the developer has picked an option below.
 </HARD-GATE>
+
+The plan-then-implement flow removes the wait for plan approval, not this one: commit and push
+still happen only when the developer asked for them or approved them. If the developer already
+asked for a specific option earlier in the task (for example "commit and open a PR when done"),
+that request is their pick; confirm it in one line and carry it out instead of showing the menu.
 
 ## Before the menu
 
@@ -43,4 +48,4 @@ Never commit `node_modules/`, `dist/`, `.env` files, `*.tsbuildinfo`, `.worktree
 ignored or generated files. If a git command fails inside an agent sandbox, retry once outside
 it; do not delete lock files.
 
-Finish with `handoff-summary`.
+Finish with `handoff-summary` (Gate 7).

@@ -1,6 +1,6 @@
 interface:
   display_name: "Implementation Gate"
-  short_description: "Use when HIDUP MALAYSIA code edits are imminent, and also at Gate 1.5 to set up the workspace"
+  short_description: "Use when HIDUP MALAYSIA code edits are imminent, right after the plan is written (Gate 3)"
   default_prompt: "Use $implementation-gate to handle this HIDUP MALAYSIA task."
 
 policy:

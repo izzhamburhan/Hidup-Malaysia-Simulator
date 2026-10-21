@@ -8,6 +8,12 @@ import { isWorkday } from './career';
 import { CLASS_DAYS, isClassDay, semesterDay } from './education';
 import { monthlyCommitmentTotal } from './economy';
 import { formatRM } from './core';
+import { foodById } from '../data/foods';
+import { jobById } from '../data/jobs';
+import { jobEligibility } from './career';
+import { currentHome } from './living';
+import { actionById, type ActionView } from './actions';
+import { describeAction } from './simulationEngine';
 import type { GameState } from './types';
 
 export interface Objective {
@@ -89,4 +95,131 @@ export function suggestedActions(s: GameState): { id: string; param?: string }[]
   out.push({ id: 'chill' });
   const seen = new Set<string>();
   return out.filter((a) => (seen.has(a.id) ? false : (seen.add(a.id), true))).slice(0, 4);
+}
+
+// ---------------- One-tap play ----------------
+
+function view(s: GameState, id: string, param?: string): ActionView | null {
+  const def = actionById(id);
+  if (!def || (def.visible && !def.visible(s))) return null;
+  const v = describeAction(s, def, param);
+  // Meals show the dish's own emoji instead of the generic plate.
+  const food = id === 'eat' ? foodById(param?.split(':')[0]) : undefined;
+  return food ? { ...v, icon: food.icon } : v;
+}
+
+/** A sensible meal for the time of day (first one that is available). */
+export function mealFor(s: GameState): ActionView | null {
+  const hour = s.clock.minute / 60;
+  const home = currentHome(s);
+  const options = [
+    ...(home.familyHome ? ['mak-cooking'] : []),
+    ...(hour < 11 ? ['nasi-lemak', 'roti-canai'] : hour < 16 ? ['nasi-campur', 'chicken-rice'] : ['nasi-campur', 'mee-goreng', 'chicken-rice']),
+    ...(home.kitchen ? ['home-cooked'] : []),
+    'maggi',
+  ];
+  let fallback: ActionView | null = null;
+  for (const id of options) {
+    const v = view(s, 'eat', id);
+    if (v?.available) return v;
+    fallback ??= v;
+  }
+  return fallback;
+}
+
+/** The best open job listing the player can apply for (highest match). */
+export function bestListing(s: GameState): ActionView | null {
+  const ranked = [...s.career.listings]
+    .map((l) => ({ l, match: jobEligibility(s, jobById(l.jobId)!).match }))
+    .sort((a, b) => b.match - a.match);
+  for (const { l } of ranked) {
+    const v = view(s, 'apply-job', l.id);
+    if (v?.available) return v;
+  }
+  return null;
+}
+
+const usable = (v: ActionView | null | undefined): v is ActionView => !!v && v.available;
+
+/** The single most sensible action right now, for the big play button. */
+export function primaryAction(s: GameState): ActionView | null {
+  if (s.events.pending.length || s.ending) return null;
+  const hour = s.clock.minute / 60;
+  const pick = (...vs: (ActionView | null | undefined)[]) => vs.find(usable) ?? null;
+  if (s.stats.energy < 15) {
+    const rest = pick(view(s, 'sleep', '8'), view(s, 'nap'));
+    if (rest) return rest;
+  }
+  if (s.stats.satiety < 25) {
+    const meal = mealFor(s);
+    if (usable(meal)) return meal;
+  }
+  const interview = s.career.applications.find((a) => a.status === 'interview' && a.interviewDay === s.clock.day);
+  if (interview) {
+    const v = view(s, 'attend-interview', interview.id);
+    if (usable(v)) return v;
+  }
+  const offer = s.career.applications.find((a) => a.status === 'offer');
+  if (offer) {
+    const v = view(s, 'accept-offer', offer.id);
+    if (usable(v)) return v;
+  }
+  const work = pick(view(s, 'work-shift'), view(s, 'attend-class'));
+  if (work) return work;
+  if (hour >= 22 || hour < 5) {
+    const bed = pick(view(s, 'sleep', '8'), view(s, 'sleep', '7'));
+    if (bed) return bed;
+  }
+  if (s.stats.satiety < 50) {
+    const meal = mealFor(s);
+    if (usable(meal)) return meal;
+  }
+  const studying = s.education.status === 'studying';
+  if (studying) {
+    const study = pick(view(s, 'assignment'), view(s, 'fyp'));
+    if (study) return study;
+  }
+  if (!s.career.job && !studying && s.character.lifeStage !== 'retired') {
+    if (s.hustles.length) {
+      const h = view(s, 'work-hustle', s.hustles[0].id);
+      if (usable(h)) return h;
+    }
+    const pending = s.career.applications.filter((a) => a.status === 'pending' || a.status === 'interview').length;
+    if (pending < 3) {
+      const apply = bestListing(s);
+      if (apply) return apply;
+    }
+  }
+  return null;
+}
+
+/** Up to six one-tap tiles for the play screen, available ones first. */
+export function quickActions(s: GameState): ActionView[] {
+  const hour = s.clock.minute / 60;
+  const studying = s.education.status === 'studying';
+  const candidates: (ActionView | null)[] = [
+    mealFor(s),
+    s.career.job ? view(s, 'work-shift') : null,
+    studying ? view(s, 'attend-class') : null,
+    studying ? view(s, 'study', '2') : null,
+    !s.career.job && !studying ? bestListing(s) ?? view(s, 'update-cv') : null,
+    s.hustles.length ? view(s, 'work-hustle', s.hustles[0].id) : null,
+    s.career.workedToday && s.career.job?.schedule === 'fulltime' ? view(s, 'overtime', '2') : null,
+    s.fitness.gymMember ? view(s, 'gym') : view(s, 'run'),
+    s.relationships.partner ? view(s, 'chat-partner') : hour >= 17 ? view(s, 'mamak') : view(s, 'call-friend'),
+    hour >= 20 || hour < 6 ? view(s, 'sleep', '8') : view(s, 'nap'),
+    view(s, 'water'),
+    view(s, 'chill'),
+    view(s, 'call-parents'),
+    view(s, 'mobile-gaming'),
+  ];
+  const seen = new Set<string>();
+  const unique = candidates.filter((v): v is ActionView => {
+    if (!v) return false;
+    const key = `${v.id}:${v.param ?? ''}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return [...unique.filter((v) => v.available), ...unique.filter((v) => !v.available)].slice(0, 6);
 }

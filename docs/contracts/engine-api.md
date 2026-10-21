@@ -93,3 +93,15 @@ is already pending or the chapter has ended. Used by tests and `sim_autopilot` f
 `ActionFeedback` (`types.ts`): `ok`, `title`, `lines` (player-facing text), `deltas`
 (`{ label, value, unit? }` with unit `RM`, `min`, `pt` or `kcal`), and `error` when `ok` is false.
 The UI shows it as is; it never computes its own deltas.
+
+## One-tap play helpers
+
+Added for the Home play screen (plan: `docs/plans/one-tap-play-and-pages.md`).
+
+| Function | Module | Contract |
+| --- | --- | --- |
+| `chooseRoutineStep(state)` | `simulationEngine.ts` | Pure. Returns the routine's next move: `{ kind: 'action', id, param?, once? }`, `{ kind: 'sleep' }` (sleep until about 7 AM, at least 6 h), `{ kind: 'wake' }` (before 6 AM: sleep until 7 AM) or `{ kind: 'wait' }` (one hour). Only returns actions whose `describeAction` view is available. |
+| `runRoutineStep(state)` | `simulationEngine.ts` | The "Next" button. Same result shape and guarantees as `performAction` (input not mutated, deterministic, events roll, achievements update). Fails with the engine's reason when an event is pending or the chapter has ended. `runAutopilot` is built from the same chooser. |
+| `primaryAction(state)` | `insights.ts` | Pure. The single most sensible available `ActionView` right now (rest when exhausted, eat when starving, interview, offer, work or class, sleep at night, assignment, side hustle, best job application), or `null` when the routine step is the best move. |
+| `quickActions(state)` | `insights.ts` | Pure. At most six unique `ActionView`s for the play tiles, available ones first. Meal tiles carry the dish's emoji. |
+| `mealFor(state)`, `bestListing(state)` | `insights.ts` | Pure helpers: a time-appropriate meal; the highest-match job listing the player can apply for now. |

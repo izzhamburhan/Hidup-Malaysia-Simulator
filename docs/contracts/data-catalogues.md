@@ -38,7 +38,7 @@ When a file is added, renamed, or changes its main type, update this table (`doc
 
 - Ids are unique within each catalogue (and across event ids).
 - Cross-references resolve: job `industries` exist in `companies.ts`; university `fields` match `courses.ts` fields; holiday `eventId`s and event `followUp`s point at scheduled events; background and life-stage ids used by `newGame` exist.
-- Numbers are in range: prices and salaries are positive; `salaryRange[0] <= salaryRange[1]`; calories positive; stat nudges small enough to keep a single item from swinging a stat by more than the spec allows.
+- Numbers are in range: prices and salaries are positive; `salaryRange[0] <= salaryRange[1]`; calories positive; stat nudges small enough to keep a single item from swinging a stat by more than the plan for that change allows.
 - Every event has at least one always-available choice.
 - Every catalogue file keeps its honesty header.
 

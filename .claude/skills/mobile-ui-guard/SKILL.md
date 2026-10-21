@@ -31,7 +31,7 @@ The facts live in `CLAUDE.md` (Engine rules) and `docs/contracts/engine-api.md`.
 ## Major decisions
 
 - Actions whose `ActionView.confirm` is set (quit job, buy vehicle or home, take a loan, drop out, move out, end a relationship) open a confirmation showing that text, including the financial consequence, with a clear cancel.
-- Respect the `confirmMajor` setting only where the spec says it may be skipped.
+- Respect the `confirmMajor` setting only where the plan says it may be skipped.
 
 ## Accessibility
 

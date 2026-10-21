@@ -5,13 +5,14 @@ description: Use when HIDUP MALAYSIA implementation or a test-only slice is comp
 
 # Verification and Review
 
-Produce fresh evidence that the change matches the approved artifacts and adds no contract,
+This is Gate 5 of `playbook.md`. Produce fresh evidence that the change matches the plan and
+adds no contract,
 determinism, save, content, or mobile regressions. Evidence from earlier in the session does not
 count; run the commands again after the last edit.
 
 ## Required checks
 
-1. Compare the diff with the approved spec and plan. Note any difference.
+1. Compare the diff with the plan in `docs/plans/<slug>.md` (and the spec, if the developer asked for one). Note any difference, and update the plan where it no longer describes what was built.
 2. Run, from the workspace root, and read the output:
    ```bash
    npm run typecheck

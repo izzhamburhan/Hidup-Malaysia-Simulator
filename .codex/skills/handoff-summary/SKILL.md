@@ -10,6 +10,7 @@ Every AI-assisted task ends with a concise, honest summary. Use this shape.
 ## Cover
 
 - **Summary.** The player-visible change in plain language, then the technical change.
+- **Plan.** The path to `docs/plans/<slug>.md` (and `docs/specs/<slug>.md` if the developer asked for a spec), and where the result differs from the plan, so the developer can review both together.
 - **Files changed.** Path and reason for each.
 - **Tests.** Added or updated tests, the commands run, and pass, fail, or blocked for each. Include counts from the fresh run.
 - **Verification evidence.** Typecheck, tests, build, skill parity, and the extra evidence for this kind of change (migration test, 360px check, data validation, autopilot numbers, stdio smoke call): which ran, which were skipped, and why.

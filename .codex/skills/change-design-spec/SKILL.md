@@ -1,11 +1,17 @@
 ---
 name: change-design-spec
-description: Use when HIDUP MALAYSIA discovery is done and requirements, acceptance criteria, the engine or data contract, save impact, content honesty, or UI behaviour need to be decided and approved before planning.
+description: Use when the developer explicitly asks for a design spec on a HIDUP MALAYSIA change. Optional and on request only; writes docs/specs/<slug>.md (requirements, acceptance criteria, contract, save, content, UI) before the plan.
 ---
 
 # Requirements and Design Spec
 
-Turn discovery into one reviewable spec. Do not edit production code while writing it.
+A design spec is **optional**. It is not one of the gates in `playbook.md` §3, and it is never
+written unprompted. Use this skill only when the developer explicitly asks for a spec on a
+change, for example because the change is large or risky and they want to read the design on its
+own. Otherwise the decisions below go straight into the plan (`tdd-plan`).
+
+When a spec is requested, write it after discovery and before the plan, and turn the discovery
+into one reviewable document. Do not edit production code while writing it.
 
 ## Required inputs
 
@@ -30,13 +36,15 @@ Write `docs/specs/<slug>.md` (see `docs/specs/README.md`):
 ## Review
 
 For risky specs (save format, the public engine API, payroll), ask `hm-reviewer` for an
-independent read of the spec before showing it to the developer.
+independent read of the spec before you continue.
 
 ## Exit condition
 
-Self-review for placeholders, contradictions, and untestable criteria. Show the spec to the
-developer, get explicit approval, and only then continue with `tdd-plan`. Commit the spec only
-when the developer approves committing.
+Self-review for placeholders, contradictions, and untestable criteria. Tell the developer where
+the spec is, then continue with `tdd-plan`, which builds the plan from the spec. Wait for the
+developer's approval of the spec only if they asked to approve it; asking for a spec is not, on
+its own, a request to wait. Like the code, the spec is committed only when the developer asks
+for or approves a commit.
 
 ## Common mistakes
 

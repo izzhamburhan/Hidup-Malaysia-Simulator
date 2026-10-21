@@ -23,20 +23,28 @@ command output. No claim of "done" without evidence from this session.
 
 ## 3. The gates
 
-Every non-trivial change passes these gates in order. Each gate has a skill.
+Every non-trivial change passes these gates in order. Each gate has a skill, except
+Implementation, which runs under the guard skills. The flow is
+**plan, then implement**: the agent writes the plan and carries straight on to implementation.
+It does not stop to wait for the developer to approve the plan; the developer reviews the plan
+and the result asynchronously.
 
 | Gate | What happens | Skill |
 | --- | --- | --- |
-| 0. Route | Classify the task, pick guards | `hidup-workflow` |
-| 1. Discovery | Read-only: owning module, current behaviour, contracts, risks | `change-intake-discovery` |
-| 1.5. Workspace | Branch (default) or worktree under `.worktrees/` | `implementation-gate` (setup part) |
-| 2. Design spec | Requirements, acceptance criteria, contract, save and content impact. Developer approves | `change-design-spec` |
-| 3. TDD plan | Test-first slices with exact failing tests and commands. Developer approves | `tdd-plan` |
-| 4. Implementation gate | Workspace clean, baseline green, edit boundary declared | `implementation-gate` |
-| 5. Implementation | Red, green, refactor, one slice at a time | guards below |
-| 6. Verification | Fresh typecheck, tests, build, skill parity, plus extra evidence | `verification-review` |
-| 6.5. Completion | Developer picks: commit, push, PR, or leave | `completion-checkpoint` |
+| 0. Route | Classify the task and pick the guards | `hidup-workflow` |
+| 1. Discovery | Read-only and kept light: owning module, current behaviour, contracts, risks | `change-intake-discovery` |
+| 2. Plan | Write `docs/plans/<slug>.md`: acceptance criteria, impact, and test-first slices with exact commands. No approval wait | `tdd-plan` |
+| 3. Implementation gate | Set up the workspace, confirm a green baseline, and declare the edit boundary, compared with the plan | `implementation-gate` |
+| 4. Implementation | Red, green, refactor, one slice at a time | guards below |
+| 5. Verification | Fresh typecheck, tests, build, skill parity, plus extra evidence | `verification-review` |
+| 6. Completion | Commit, push, PR, or leave; commit and push only when the developer asked or approved | `completion-checkpoint` |
 | 7. Handoff | Honest end-of-task summary | `handoff-summary` |
+
+A design spec is not a gate. The agent writes one (`docs/specs/<slug>.md`, with the
+`change-design-spec` skill) only when the developer explicitly asks for a spec on a change. The
+developer can also ask to approve the plan before implementation starts on a specific change;
+when they do, the agent shows the plan and waits for that approval. Without such a request, the
+agent does not wait.
 
 Guards, used whenever their trigger applies:
 
@@ -53,7 +61,10 @@ Guards, used whenever their trigger applies:
 | "It is small, I will just edit." | Only a typo, comment or doc-wording change may skip gates. Everything else is classified first. |
 | "I know this code already." | Re-read it in this session. The engine changes fast. |
 | "The tests will pass, I will skip the run." | Claims need fresh output from this session. |
-| "I will fix the test to match my change." | Changing a test to go green hides a regression. Change a test only when the approved contract changed. |
+| "The plan is obvious, I will go straight to code." | Every non-trivial change gets a written plan in `docs/plans/<slug>.md` first. It is what the developer reviews afterwards. |
+| "I should wait for the developer to approve the plan." | Write the plan and carry on. The developer reviews it asynchronously, unless they asked to approve this particular plan first. |
+| "I will write a design spec to be safe." | A spec is written only when the developer asks for one. Put the decisions in the plan. |
+| "I will fix the test to match my change." | Changing a test to go green hides a regression. Change a test only when the contract change is stated in the plan. |
 | "I'll call `Math.random()` just this once." | It breaks determinism, replays, autopilot balancing and every seeded test. Use `rng.ts` with `state.rng`. |
 | "I'll bump `state.clock.minute` directly, it is only five minutes." | Time moves only through `advanceTime`, or day-end processing, needs and bills are skipped. |
 | "The button can just set `state.finance.cash`." | The UI never mutates `GameState`. Add or change an action and go through `performAction`. |
@@ -80,10 +91,10 @@ Classify before acting. If more than one applies, start at the earliest stage.
 - balancing (numbers in catalogues or engine constants)
 - handoff or delivery summary
 
-Content-only and balancing changes still pass the gates, but the spec and plan can be short:
-the list of entries or numbers, the honesty labels, and the tests that prove the catalogue is
-valid (and, for balancing, an autopilot run before and after). The developer may explicitly
-shorten a named gate ("skip the design spec, it is one new food"). Never assume it.
+Content-only and balancing changes still pass the gates, but the plan can be short: the list
+of entries or numbers, the honesty labels, and the tests that prove the catalogue is valid
+(and, for balancing, an autopilot run before and after). The developer may explicitly shorten a
+named gate ("no plan file needed, it is one new food"). Never assume it.
 
 ## 5. Context to read before any change
 
@@ -102,7 +113,7 @@ shorten a named gate ("skip the design spec, it is one new food"). Never assume 
 - Worktrees are optional: `git worktree add .worktrees/<branch> -b <branch> main` gives a separate checkout when several agents work in parallel (`.worktrees/` is gitignored). Run `npm install` inside a new worktree.
 - Pull requests: open with `gh pr create`; the body follows `.github/pull_request_template.md`.
 - If a git command fails inside an agent sandbox (lock file, permission, network), retry once outside the sandbox; never delete lock files or edit git config to work around it.
-- Spec and plan files live in the branch: `docs/specs/<slug>.md`, `docs/plans/<slug>.md`.
+- Plan files live in the branch: `docs/plans/<slug>.md`. A design spec, `docs/specs/<slug>.md`, exists only when the developer asked for one, and lives in the branch too. Both are committed with the change, under the same commit rules as the code.
 
 ## 7. Minimum validation
 
@@ -129,15 +140,22 @@ npm run skills:check
 
 ## 8. Definition of Ready
 
+A change is ready for the implementation gate when its plan in `docs/plans/<slug>.md` covers
+the following. Nobody needs to sign the plan off first; the developer reviews it alongside the
+result.
+
 - The owning module or catalogue is named.
 - Acceptance criteria are written and testable.
 - The contract change (engine API, action, event, save, catalogue type, MCP tool) is stated, or "none".
 - Save impact is known: does the `GameState` shape change, and what does the migration do?
 - Content impact is known: which real names, numbers, humour or claims are involved, and how they are labelled.
 - UI impact is known: which screens, and what happens at 360px.
+- Assumptions made in place of answers from the developer are written down.
+- The test-first slices name their failing tests and exact commands.
 
 ## 9. Definition of Done
 
+- The plan in `docs/plans/<slug>.md` matches what was built, or explains where it differs.
 - A failing test was written first and seen failing.
 - Typecheck, tests, build and skill parity pass, shown with fresh output.
 - The extra evidence from §7 for this kind of change is in the handoff.
@@ -150,7 +168,7 @@ npm run skills:check
 
 ## 10. Review checklist
 
-- Does the diff match the approved spec and plan, no more and no less?
+- Does the diff match the plan (and the spec, if the developer asked for one), no more and no less? Where it differs, does the plan say why?
 - Does every new engine behaviour have a test (happy path, unavailable case with its reason, boundary)?
 - Any `Math.random`, `Date.now`, argument-less `new Date()`, React or DOM import in `src/engine/`?
 - Does anything write `state.clock` outside `advanceTime`, or mutate `GameState` outside the engine?
@@ -165,21 +183,22 @@ npm run skills:check
 ## 11. Agent roles
 
 The session the developer starts is the **orchestrator**. It runs every gate, asks the
-developer every question, writes the spec and plan, runs the final verification, and holds
-commit and push approval. Work that needs no such judgment can go to a **role agent**:
+developer every question, writes the plan (and a spec when the developer asks for one), runs
+the final verification, and holds commit and push approval. Work that needs no such judgment
+can go to a **role agent**:
 
 | Role | Agent | Model | Used for |
 | --- | --- | --- | --- |
-| Orchestrator | the session | the session's model | Gates, questions, decisions, spec, plan, final evidence, completion menu, handoff |
+| Orchestrator | the session | the session's model | Gates, questions, decisions, plan (and spec on request), final evidence, completion menu, handoff |
 | Scout | `hm-scout` | haiku | Read-only discovery: find code, contracts, catalogue entries, tests, call sites; one scout per area, in parallel |
 | Implementer | `hm-implementer` | sonnet | One TDD plan slice, test-first, inside the named workspace; fixes from review |
-| Reviewer | `hm-reviewer` | sonnet | One slice's diff or the whole branch against the spec, plan, contracts and guards; validation runs on a brief |
+| Reviewer | `hm-reviewer` | sonnet | One slice's diff or the whole branch against the plan (and spec, if one exists), contracts and guards; validation runs on a brief |
 
 Rules:
 
 - **Name the role every time.** Do not dispatch a bare general-purpose agent for this work.
 - **Briefs are self-contained.** A role agent sees none of the conversation: give it the task, the workspace path, the plan text, the acceptance criteria, the guard skills that apply, and the report shape.
-- **Role agents report; they do not decide.** They never ask the developer, approve a gate, commit or push. Questions come back in the report.
+- **Role agents report; they do not decide.** They never ask the developer, pass a gate on the orchestrator's behalf, commit or push. Questions come back in the report.
 - **The session runs the final evidence.** A role agent's test run informs a review but is never the evidence for a pass claim.
 - **Escalate, do not swap.** After two failed attempts at the same slice, re-dispatch the same role with more effort, or do the work in the session.
 - **Do not hand off judgment.** Scouts gather facts; the orchestrator draws conclusions.

@@ -89,7 +89,7 @@ export function FeedbackToast() {
   const { feedback, dismissFeedback, state } = useLoadedGame();
   useEffect(() => {
     if (!feedback) return;
-    const t = setTimeout(dismissFeedback, feedback.ok ? 6000 : 3500);
+    const t = setTimeout(dismissFeedback, feedback.ok ? 3800 : 3200);
     return () => clearTimeout(t);
   }, [feedback, dismissFeedback]);
   if (!feedback || state.events.pending.length) return null;

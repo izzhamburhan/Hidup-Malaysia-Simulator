@@ -39,7 +39,7 @@ store something that must now resolve against it.
 
 ## Checks
 
-1. Diff `src/engine/types.ts`. If it changed, decide "shape change: yes/no" and write it in the spec.
+1. Diff `src/engine/types.ts`. If it changed, decide "shape change: yes/no" and write it in the plan.
 2. If yes: version bumped, migration added, migration test added and green, contract updated.
 3. Run the corrupt-save tests.
 4. Report the old and new `SAVE_VERSION` in the handoff.

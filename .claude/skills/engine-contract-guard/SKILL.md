@@ -6,7 +6,7 @@ description: Use when a HIDUP MALAYSIA change touches src/engine/, GameState, an
 # Engine Contract Guard
 
 The engine is the single owner of every gameplay rule. The UI and the MCP server depend on its
-contract. Check every item before design approval, before edits, and again at verification.
+contract. Check every item while writing the plan, before edits, and again at verification.
 The facts live in `CLAUDE.md` (Engine rules) and `docs/contracts/` (`engine-api.md`,
 `action-contract.md`, `event-contract.md`); read the ones the change touches.
 
@@ -32,7 +32,7 @@ The facts live in `CLAUDE.md` (Engine rules) and `docs/contracts/` (`engine-api.
 
 - Stats stay within 0 to 100 (`clamp` via `applyStats`).
 - Wallet cash is never negative. Voluntary purchases check `canAfford` and are unavailable with a reason when unaffordable. Obligations (bills, fines, rent) call `spend(..., true)` so a shortfall becomes overdue debt.
-- EPF is never spendable cash; nothing moves `epfBalance` into `cash` except a rule the spec names explicitly.
+- EPF is never spendable cash; nothing moves `epfBalance` into `cash` except a rule the plan names explicitly.
 
 ## Actions (`docs/contracts/action-contract.md`)
 

@@ -209,25 +209,68 @@ export function continueAfterEnding(state: GameState): GameState {
 
 // ---------------- Autopilot ----------------
 
-function tryAction(draft: GameState, id: string, param?: string): boolean {
+const routineFoods = (s: GameState): string[] => {
+  const home = currentHome(s);
+  return home.familyHome ? ['mak-cooking', 'nasi-campur'] : home.kitchen ? ['home-cooked', 'nasi-campur', 'roti-canai', 'maggi'] : ['nasi-campur', 'chicken-rice', 'roti-canai', 'maggi'];
+};
+
+export type RoutineStep =
+  | { kind: 'action'; id: string; param?: string; once?: string }
+  | { kind: 'sleep' }
+  | { kind: 'wake' }
+  | { kind: 'wait' };
+
+function can(s: GameState, id: string, param?: string): boolean {
   const def = actionById(id);
-  if (!def || draft.events.pending.length) return false;
-  if (!describeAction(draft, def, param).available) return false;
-  execute(draft, def, param);
-  return true;
+  return !!def && describeAction(s, def, param).available;
 }
 
-function routineMeal(draft: GameState): boolean {
-  const home = currentHome(draft);
-  const options = home.familyHome ? ['mak-cooking', 'nasi-campur'] : home.kitchen ? ['home-cooked', 'nasi-campur', 'roti-canai', 'maggi'] : ['nasi-campur', 'chicken-rice', 'roti-canai', 'maggi'];
-  for (const id of options) {
-    if (foodById(id) && tryAction(draft, 'eat', id)) return true;
+function mealStep(s: GameState): RoutineStep | null {
+  const food = routineFoods(s).find((id) => foodById(id) && can(s, 'eat', id));
+  return food ? { kind: 'action', id: 'eat', param: food } : null;
+}
+
+/** The default routine's next move. Pure: reads the state, never changes it. */
+export function chooseRoutineStep(s: GameState): RoutineStep {
+  const hour = s.clock.minute / 60;
+  const day = s.clock.day;
+  if (hour < 6) return { kind: 'wake' };
+  if (s.stats.satiety < 60) {
+    const meal = mealStep(s);
+    if (meal) return meal;
   }
-  return false;
+  const job = s.career.job;
+  if (job && !s.career.workedToday) {
+    if (job.schedule !== 'parttime' && isWorkday(s) && !onLeave(s) && hour < 11 && can(s, 'work-shift')) return { kind: 'action', id: 'work-shift' };
+    if (job.schedule === 'parttime' && !isWorkday(s) && hour >= 8 && hour < 17 && can(s, 'work-shift')) return { kind: 'action', id: 'work-shift' };
+  }
+  if (isClassDay(s) && !s.education.attendedToday && hour < 13 && can(s, 'attend-class')) return { kind: 'action', id: 'attend-class' };
+  if (s.education.status === 'studying' && hour < 21 && s.stats.energy > 35) {
+    if (can(s, 'assignment')) return { kind: 'action', id: 'assignment' };
+    if (s.flags.routineStudied !== day) {
+      if (can(s, 'fyp')) return { kind: 'action', id: 'fyp', once: 'routineStudied' };
+      if (can(s, 'study', '2')) return { kind: 'action', id: 'study', param: '2', once: 'routineStudied' };
+    }
+  }
+  if (!job && s.hustles.length && hour >= 8 && hour < 19 && s.flags.routineHustle !== day && can(s, 'work-hustle', s.hustles[0].id)) {
+    return { kind: 'action', id: 'work-hustle', param: s.hustles[0].id, once: 'routineHustle' };
+  }
+  if (!job && s.education.status !== 'studying' && hour >= 9 && hour < 18 && s.flags.routineGrow !== day) {
+    if (can(s, 'update-cv')) return { kind: 'action', id: 'update-cv', once: 'routineGrow' };
+    if (can(s, 'self-study', 'communication')) return { kind: 'action', id: 'self-study', param: 'communication', once: 'routineGrow' };
+  }
+  if (s.fitness.gymMember && !s.today.exercised && day % 2 === 0 && hour >= 17 && hour < 22 && s.stats.energy > 35 && can(s, 'gym')) return { kind: 'action', id: 'gym' };
+  if (s.relationships.partner && s.relationships.partner.lastContactDay < day && hour >= 19 && can(s, 'chat-partner')) return { kind: 'action', id: 'chat-partner' };
+  if (hour >= 18 && s.food.today.filter((f) => foodById(f.foodId)?.meal).length < 3 && s.stats.satiety < 70) {
+    const meal = mealStep(s);
+    if (meal) return meal;
+  }
+  if (hour >= 22.5 || s.stats.energy < 12) return { kind: 'sleep' };
+  return can(s, 'chill') ? { kind: 'action', id: 'chill' } : { kind: 'wait' };
 }
 
-function routineSleep(draft: GameState): void {
-  const minutes = Math.max(360, Math.min(600, minutesUntil(draft, 7 * 60)));
+function sleepUntilMorning(draft: GameState, minimum: number): void {
+  const minutes = Math.max(minimum, Math.min(600, minutesUntil(draft, 7 * 60)));
   draft.lastSleepMinutes = minutes;
   draft.flags.awakeMinutes = 0;
   if (minutes < 360) draft.flags.tiredDay = draft.clock.day + 1;
@@ -235,54 +278,46 @@ function routineSleep(draft: GameState): void {
   postProcess(draft);
 }
 
+/** Execute one routine step on the draft. Returns a short title for feedback. */
+function executeStep(draft: GameState, step: RoutineStep): { title: string; lines: string[] } {
+  switch (step.kind) {
+    case 'wake':
+      sleepUntilMorning(draft, 0);
+      return { title: '😴 Slept until morning', lines: [] };
+    case 'sleep':
+      sleepUntilMorning(draft, 360);
+      return { title: `😴 Slept ${(draft.lastSleepMinutes / 60).toFixed(1)} hours`, lines: [] };
+    case 'wait':
+      advanceTime(draft, 60);
+      return { title: '⏳ An hour passed', lines: [] };
+    case 'action': {
+      const def = actionById(step.id)!;
+      const title = `${def.icon} ${describeAction(draft, def, step.param).title}`;
+      if (step.once) draft.flags[step.once] = draft.clock.day;
+      return { title, lines: execute(draft, def, step.param) };
+    }
+  }
+}
+
 /** Simulate one routine day on the draft. Returns false if interrupted by an event. */
 function routineDay(draft: GameState): boolean {
   const startDay = draft.clock.day;
   for (let guard = 0; guard < 40; guard++) {
     if (draft.events.pending.length || draft.ending) return false;
-    const hour = draft.clock.minute / 60;
-    if (draft.clock.day > startDay && hour >= 6.5) return true;
-    if (hour < 6 && draft.clock.day > startDay) {
-      routineSleep(draft);
-      continue;
-    }
-    if (hour < 6) {
-      advanceTime(draft, minutesUntil(draft, 7 * 60), { asleep: true });
-      draft.lastSleepMinutes = 420;
-      continue;
-    }
-    if (draft.stats.satiety < 60 && routineMeal(draft)) continue;
-    const job = draft.career.job;
-    if (job && !draft.career.workedToday) {
-      if (job.schedule !== 'parttime' && isWorkday(draft) && !onLeave(draft) && hour < 11 && tryAction(draft, 'work-shift')) continue;
-      if (job.schedule === 'parttime' && !isWorkday(draft) && hour >= 8 && hour < 17 && tryAction(draft, 'work-shift')) continue;
-    }
-    if (isClassDay(draft) && !draft.education.attendedToday && hour < 13 && tryAction(draft, 'attend-class')) continue;
-    if (draft.education.status === 'studying' && hour < 21 && draft.stats.energy > 35) {
-      if (tryAction(draft, 'assignment')) continue;
-      if (!draft.flags.routineStudied || draft.flags.routineStudied !== draft.clock.day) {
-        draft.flags.routineStudied = draft.clock.day;
-        if (tryAction(draft, 'fyp') || tryAction(draft, 'study', '2')) continue;
-      }
-    }
-    if (!job && draft.hustles.length && hour >= 8 && hour < 19 && Number(draft.flags.routineHustle ?? -1) !== draft.clock.day) {
-      draft.flags.routineHustle = draft.clock.day;
-      if (tryAction(draft, 'work-hustle', draft.hustles[0].id)) continue;
-    }
-    if (!job && draft.education.status !== 'studying' && hour >= 9 && hour < 18 && draft.flags.routineGrow !== draft.clock.day) {
-      draft.flags.routineGrow = draft.clock.day;
-      if (tryAction(draft, 'update-cv') || tryAction(draft, 'self-study', 'communication')) continue;
-    }
-    if (draft.fitness.gymMember && !draft.today.exercised && draft.clock.day % 2 === 0 && hour >= 17 && hour < 22 && draft.stats.energy > 35 && tryAction(draft, 'gym')) continue;
-    if (draft.relationships.partner && draft.relationships.partner.lastContactDay < draft.clock.day && hour >= 19 && tryAction(draft, 'chat-partner')) continue;
-    if (hour >= 18 && draft.food.today.filter((f) => foodById(f.foodId)?.meal).length < 3 && draft.stats.satiety < 70 && routineMeal(draft)) continue;
-    if (hour >= 22.5 || draft.stats.energy < 12) {
-      routineSleep(draft);
-      continue;
-    }
-    if (!tryAction(draft, 'chill')) advanceTime(draft, 60);
+    if (draft.clock.day > startDay && draft.clock.minute >= 6.5 * 60) return true;
+    executeStep(draft, chooseRoutineStep(draft));
   }
   return true;
+}
+
+/** The "Next" button: do the routine's next sensible step and report it. */
+export function runRoutineStep(state: GameState): EngineResult {
+  if (state.events.pending.length) return fail(state, 'Next', 'Deal with the current event first.');
+  if (state.ending) return fail(state, 'Next', 'This chapter has ended.');
+  const draft = structuredClone(state);
+  const before = snapshot(draft);
+  const { title, lines } = executeStep(draft, chooseRoutineStep(draft));
+  return { state: draft, feedback: { ok: true, title, lines, deltas: diff(before, draft) } };
 }
 
 export interface AutopilotResult extends EngineResult {

@@ -34,17 +34,25 @@ shorten the flow, unless the developer explicitly names a gate to skip.
 
 ## Route to the lifecycle skill
 
-For any non-trivial feature, bug, refactor, content or balancing change, use the skill for the current stage:
+For any non-trivial feature, bug, refactor, content or balancing change, the flow is **plan,
+then implement**. Use the skill for the current gate (`playbook.md` §3):
 
-| Stage | Skill |
-| --- | --- |
-| Intake and discovery (read-only) | `change-intake-discovery` |
-| Requirements and design spec | `change-design-spec` |
-| Test-first plan | `tdd-plan` |
-| Workspace, baseline, edit boundary (immediately before edits) | `implementation-gate` |
-| Fresh evidence before any "done" claim | `verification-review` |
-| What happens to the changes | `completion-checkpoint` |
-| End-of-task summary | `handoff-summary` |
+| Gate | Stage | Skill |
+| --- | --- | --- |
+| 1 | Discovery (read-only, kept light) | `change-intake-discovery` |
+| 2 | Plan: write `docs/plans/<slug>.md` with test-first slices and exact commands | `tdd-plan` |
+| 3 | Implementation gate: workspace, green baseline, edit boundary compared with the plan | `implementation-gate` |
+| 4 | Implementation: red, green, refactor, one slice at a time | the guards below |
+| 5 | Fresh evidence before any "done" claim | `verification-review` |
+| 6 | What happens to the changes | `completion-checkpoint` |
+| 7 | End-of-task summary | `handoff-summary` |
+
+Do not stop after the plan to wait for approval. The developer reviews the plan and the result
+asynchronously, so carry on from Gate 2 to Gate 3 in the same turn. Two exceptions, both only
+when the developer asks for them on a specific change:
+
+- **A design spec.** Use `change-design-spec` to write `docs/specs/<slug>.md` before the plan. Never write a spec unprompted.
+- **Plan approval.** Show the plan and wait for the developer's approval before Gate 3.
 
 ## Invoke the guards
 
@@ -73,7 +81,8 @@ self-contained brief. The session keeps every decision, question, and the final 
 
 ## Hard rules
 
-- Do not skip discovery, design, TDD planning, or verification for non-trivial work.
+- Do not skip discovery, the written plan, or verification for non-trivial work.
+- Do not wait for plan approval unless the developer asked to approve this plan.
 - Do not edit before the active gate allows edits.
 - Keep facts in `AGENTS.md`, `playbook.md` and `docs/contracts/`; do not copy them into skills.
 

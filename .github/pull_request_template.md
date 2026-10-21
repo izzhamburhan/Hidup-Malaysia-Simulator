@@ -1,6 +1,6 @@
 ## Summary
 
-<!-- The player-visible change in plain language, then the technical change. Link the spec and plan: docs/specs/<slug>.md, docs/plans/<slug>.md -->
+<!-- The player-visible change in plain language, then the technical change. Link the plan: docs/plans/<slug>.md. Link the design spec (docs/specs/<slug>.md) only if one was written. -->
 
 ## Area(s) touched
 

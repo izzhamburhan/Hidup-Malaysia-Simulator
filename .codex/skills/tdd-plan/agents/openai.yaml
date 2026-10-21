@@ -1,6 +1,6 @@
 interface:
   display_name: "TDD Plan"
-  short_description: "Use when a HIDUP MALAYSIA design spec is approved and a feature, bug fix, refactor, content, balancing, or..."
+  short_description: "Use when HIDUP MALAYSIA discovery is done and a feature, bug fix, refactor, content, balancing, or test-onl..."
   default_prompt: "Use $tdd-plan to handle this HIDUP MALAYSIA task."
 
 policy:

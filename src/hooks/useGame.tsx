@@ -3,7 +3,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  continueAfterEnding, endChapter, interact as engineInteract, newGame as engineNewGame, performAction, resolveEvent, runAutopilot,
+  continueAfterEnding, endChapter, interact as engineInteract, newGame as engineNewGame, performAction, resolveEvent, runAutopilot, runRoutineStep,
   type ActionView,
 } from '../engine/simulationEngine';
 import { clearSave, deserialize, loadGame, saveGame, SETTINGS_KEY, type LoadResult } from '../engine/save';
@@ -48,6 +48,7 @@ interface GameApi {
   cancelPending: () => void;
   choose: (choiceId: string) => void;
   autopilot: (days: number) => void;
+  step: () => void;
   interact: (kind: 'like' | 'invite' | 'challenge' | 'setting', id: string, value?: boolean) => ActionFeedback;
   finishChapter: () => void;
   keepLiving: () => void;
@@ -163,6 +164,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (result.feedback.ok) {
           commit(result.state, result.feedback);
         } else setFeedback(result.feedback);
+      },
+      step: () => {
+        const current = stateRef.current;
+        if (!current) return;
+        const result = runRoutineStep(current);
+        if (result.feedback.ok) commit(result.state, result.feedback);
+        else setFeedback(result.feedback);
       },
       interact: (kind, id, value) => {
         const current = stateRef.current;

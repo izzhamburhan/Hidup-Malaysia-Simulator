@@ -1,11 +1,16 @@
 ---
 name: change-intake-discovery
-description: Use when starting a non-trivial HIDUP MALAYSIA change and the current behaviour, owning module, contracts, or risks are not yet established. Read-only discovery before any spec, plan, or edit.
+description: Use when starting a non-trivial HIDUP MALAYSIA change and the current behaviour, owning module, contracts, or risks are not yet established. Light, read-only discovery before the plan or any edit.
 ---
 
 # Change Intake and Discovery
 
-Establish facts before proposing anything. This skill is read-only: no edits, no branches, no files.
+This is Gate 1 of `playbook.md`. Establish facts before proposing anything. This skill is
+read-only: no edits, no branches, no files.
+
+Keep it light. Read enough to write a sound plan: the owner, the current behaviour, and the
+contracts and guards involved. Do not survey the whole codebase, and scale the depth to the
+size of the change; a one-entry content change needs a few minutes, not a report.
 
 ## Required inputs
 
@@ -25,7 +30,7 @@ Establish facts before proposing anything. This skill is read-only: no edits, no
 6. **Content impact.** Real names, fictional numbers, payroll or calorie claims, humour, politics. If any, `content-guard` applies.
 7. **UI impact.** Which screens change, and whether a major decision needs a confirmation.
 8. **Risks.** Determinism, negative cash, stats out of range, time moving outside `advanceTime`, events that can trap the player, balance drift.
-9. **Open questions.** Only those the developer can resolve. Ask them one at a time with the question tool.
+9. **Open questions.** Only those the developer can resolve. Ask a question only when it genuinely blocks the plan (you cannot pick a sensible default). Otherwise choose the most reasonable answer, mark it as an assumption, and carry it into the plan, where the developer will see it.
 
 ## Delegation
 
@@ -34,10 +39,13 @@ tests) with self-contained briefs. They report facts with `path:line`; you draw 
 
 ## Exit condition
 
-Report the findings in chat as a short discovery note (owner, current behaviour, contracts,
-save, content and UI impact, risks, open questions) and wait for the developer's go-ahead. Then
-continue with `change-design-spec`, or `implementation-gate` if the developer says the change is
-small enough to skip the spec and plan.
+Summarise the findings in chat as a short discovery note (owner, current behaviour, contracts,
+save, content and UI impact, risks, assumptions). Do not wait for a go-ahead: continue straight
+to `tdd-plan`, which turns these findings and the developer's request into the plan.
+
+Only if the developer explicitly asked for a design spec on this change, write it first with
+`change-design-spec`, then continue to `tdd-plan`. If the developer explicitly said the change
+needs no plan file, go to `implementation-gate` instead.
 
 ## Common mistakes
 

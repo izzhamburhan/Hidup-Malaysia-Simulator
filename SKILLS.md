@@ -14,16 +14,22 @@ instead of copying them.
 
 ## Lifecycle skills (the gates)
 
+The flow is plan, then implement. The agent writes the plan and continues to implementation
+without waiting for approval; the developer reviews the plan and the result asynchronously.
+
 | Skill | Invoke when | Gate |
 | --- | --- | --- |
 | `hidup-workflow` | Starting any task, before reading, answering, planning, reviewing, editing or running commands. Mandatory entry point. | 0. Route |
-| `change-intake-discovery` | A non-trivial change where current behaviour, owner, contracts or risks are unknown. Read-only. | 1. Discovery |
-| `implementation-gate` | Setting up the branch or worktree (Gate 1.5), and immediately before edits (Gate 4). | 1.5 and 4 |
-| `change-design-spec` | Discovery is done; write `docs/specs/<slug>.md` and get approval. | 2. Design spec |
-| `tdd-plan` | The spec is approved; write `docs/plans/<slug>.md` and get approval. | 3. TDD plan |
-| `verification-review` | Implementation is done; fresh evidence before any "done" claim. | 6. Verification |
-| `completion-checkpoint` | Verified; the developer picks commit, push, PR, or leave. | 6.5. Completion |
+| `change-intake-discovery` | A non-trivial change where current behaviour, owner, contracts or risks are unknown. Read-only and kept light. | 1. Discovery |
+| `tdd-plan` | Discovery is done; write `docs/plans/<slug>.md` with test-first slices and exact commands, then continue without waiting for approval. | 2. Plan |
+| `implementation-gate` | Immediately before edits: set up the workspace, confirm a green baseline, and declare the edit boundary against the plan. | 3. Implementation gate |
+| `verification-review` | Implementation is done; fresh evidence before any "done" claim. | 5. Verification |
+| `completion-checkpoint` | Verified; commit, push, PR, or leave. Commit and push only when the developer asked or approved. | 6. Completion |
 | `handoff-summary` | End of any AI-assisted task. | 7. Handoff |
+| `change-design-spec` | Only when the developer explicitly asks for a design spec; write `docs/specs/<slug>.md` before the plan. | Optional, not a gate |
+
+Gate 4 (Implementation) has no lifecycle skill of its own: it is red, green, refactor, one plan
+slice at a time, under the guard skills below.
 
 ## Guard skills (used whenever their trigger applies)
 

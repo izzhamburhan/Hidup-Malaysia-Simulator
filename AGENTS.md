@@ -17,11 +17,11 @@ Skills enforce the process gates in `playbook.md`. **Use them (Codex: `$skill-na
 | --- | --- |
 | `hidup-workflow` | Starting any task. The mandatory entry point; classifies the task and routes to the rest. |
 | `change-intake-discovery` | A non-trivial change where current behaviour, owning module, contracts, or risks are not yet established. Read-only. |
-| `change-design-spec` | Discovery is done; requirements, acceptance criteria, contract, save and content impact must be decided and approved. |
-| `tdd-plan` | The spec is approved; turn it into test-first slices. |
+| `tdd-plan` | Discovery is done; write the plan in `docs/plans/<slug>.md` with test-first slices and exact commands, then continue without waiting for approval. |
+| `change-design-spec` | Only when the developer explicitly asks for a design spec on a change. Optional; not a gate. |
 | `implementation-gate` | Code edits are imminent. Confirms workspace, green baseline, and edit boundary. |
 | `verification-review` | Implementation is done; produces fresh evidence before any completion claim. |
-| `completion-checkpoint` | Work is verified; the developer chooses commit, push, PR, or leave (Gate 6.5). |
+| `completion-checkpoint` | Work is verified; decide commit, push, PR, or leave (Gate 6). Commit and push only when the developer asked or approved. |
 | `handoff-summary` | End of any AI-assisted task. |
 | `engine-contract-guard` | Any change under `src/engine/`, or to `GameState`, an action, an event, or the public engine API. |
 | `save-compat-guard` | Any change to the shape of `GameState`, to `src/engine/save.ts`, or to migrations. |
@@ -33,11 +33,11 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 
 ## Process
 
-`playbook.md` is the process: gates 0 to 7, git and branch rules, validation commands, Definition of Ready and Done, review checklist, agent roles. Short version: classify, discover, write the spec, write the TDD plan (the developer approves both), confirm the baseline, implement test-first, verify with fresh output, let the developer choose commit, push, or PR, then hand off. Do not commit or push without the developer's say-so.
+`playbook.md` is the process: gates 0 to 7, git and branch rules, validation commands, Definition of Ready and Done, review checklist, agent roles. The flow is plan, then implement: classify the task, do light read-only discovery, write the TDD plan in `docs/plans/<slug>.md`, set up the workspace and confirm a green baseline, implement test-first, verify with fresh output, settle commit, push, or PR, then hand off. Do not stop to wait for plan approval; the developer reviews the plan and the result asynchronously. A design spec is written only when the developer asks for one, and the developer can ask to approve a specific plan before implementation starts. Do not commit or push without the developer's say-so.
 
 ## Layout
 
-`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges). `src/components/` and `src/screens/` UI; `src/main.tsx`, `src/App.tsx`. `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/specs/` and `docs/plans/` one file per change (`<slug>.md`). `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
+`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges). `src/components/` and `src/screens/` UI; `src/main.tsx`, `src/App.tsx`. `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/plans/` one TDD plan per non-trivial change (`<slug>.md`); `docs/specs/` design specs, only when the developer asks for one. `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
 
 ## Status
 
@@ -74,6 +74,10 @@ npm run mcp            # start the hidup-sim MCP server on stdio
 ```
 
 One test file: `npx vitest run tests/<file>.test.ts`.
+
+## Deployment
+
+Live: https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/. Every push to `main` runs `.github/workflows/deploy.yml` (npm ci, typecheck, test, build) and force-pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. The Vite base is relative (`./`), so the build works under the repository sub-path. `public/manifest.webmanifest` and the PNG icons make it installable on phones.
 
 ## Rules
 
