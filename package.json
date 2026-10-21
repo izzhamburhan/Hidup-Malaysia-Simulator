@@ -1,0 +1,38 @@
+{
+  "name": "hidup-malaysia",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "HIDUP MALAYSIA - a mobile-first, choice-based Malaysian life simulator that runs entirely in the browser.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run test && npm run build && npm run skills:check",
+    "skills:sync": "node scripts/sync-codex-skills.mjs",
+    "skills:check": "node scripts/check-skill-parity.mjs",
+    "mcp": "tsx mcp/hidup-sim/server.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^1.61.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5",
+    "zod": "^4.6.7"
+  }
+}

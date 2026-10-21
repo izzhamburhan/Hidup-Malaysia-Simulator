@@ -1,0 +1,7 @@
+interface:
+  display_name: "Content Guard"
+  short_description: "Use when a HIDUP MALAYSIA change touches src/data/, UI copy, event or feed text, humour, real universities..."
+  default_prompt: "Use $content-guard to handle this HIDUP MALAYSIA task."
+
+policy:
+  allow_implicit_invocation: true

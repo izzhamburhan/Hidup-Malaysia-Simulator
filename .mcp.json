@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hidup-sim": {
+      "command": "npx",
+      "args": ["tsx", "mcp/hidup-sim/server.ts"]
+    }
+  }
+}

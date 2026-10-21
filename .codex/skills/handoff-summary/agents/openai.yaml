@@ -1,0 +1,7 @@
+interface:
+  display_name: "Handoff Summary"
+  short_description: "Use when an AI-assisted task in the HIDUP MALAYSIA repo is ending, to produce the required honest handoff s..."
+  default_prompt: "Use $handoff-summary to handle this HIDUP MALAYSIA task."
+
+policy:
+  allow_implicit_invocation: true

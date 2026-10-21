@@ -1,0 +1,144 @@
+// Versioned save format with migrations. Storage is injected so the engine
+// stays testable without a browser; the UI passes window.localStorage.
+
+import { SAVE_VERSION, emptyState } from './newGame';
+import type { GameState } from './types';
+
+export const SAVE_KEY = 'hidup-malaysia:save';
+export const CORRUPT_KEY = 'hidup-malaysia:save:corrupt';
+export const SETTINGS_KEY = 'hidup-malaysia:settings';
+
+export interface StorageLike {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+export interface SaveEnvelope {
+  version: number;
+  savedAt: string;
+  state: GameState;
+}
+
+type Migration = (state: Record<string, unknown>) => Record<string, unknown>;
+
+/**
+ * migrations[n] upgrades a save from version n to n + 1. Add one whenever the
+ * GameState shape changes, then bump SAVE_VERSION in newGame.ts.
+ */
+export const migrations: Record<number, Migration> = {
+  // 0 -> 1: pre-release saves without a scheduled-events queue.
+  0: (s) => {
+    const events = (s.events ?? {}) as Record<string, unknown>;
+    return { ...s, events: { scheduled: [], ...events }, version: 1 };
+  },
+};
+
+export function migrate(raw: Record<string, unknown>): GameState {
+  let current = { ...raw };
+  let version = typeof current.version === 'number' ? current.version : 0;
+  if (version > SAVE_VERSION) throw new Error(`Save is from a newer version (${version}).`);
+  while (version < SAVE_VERSION) {
+    const step = migrations[version];
+    if (!step) throw new Error(`No migration from version ${version}.`);
+    current = step(current);
+    version = typeof current.version === 'number' ? current.version : version + 1;
+  }
+  return fillDefaults(current as unknown as GameState);
+}
+
+/** Deep-fill missing fields from a fresh state so older saves never crash the UI. */
+function fillDefaults(state: GameState): GameState {
+  const base = emptyState() as unknown as Record<string, unknown>;
+  const merged = deepFill(base, state as unknown as Record<string, unknown>);
+  return merged as unknown as GameState;
+}
+
+function deepFill(base: Record<string, unknown>, value: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...value };
+  for (const [k, v] of Object.entries(base)) {
+    if (!(k in out) || out[k] === undefined) out[k] = v;
+    else if (v && typeof v === 'object' && !Array.isArray(v) && out[k] && typeof out[k] === 'object' && !Array.isArray(out[k])) {
+      out[k] = deepFill(v as Record<string, unknown>, out[k] as Record<string, unknown>);
+    }
+  }
+  return out;
+}
+
+export function isValidState(value: unknown): value is GameState {
+  if (!value || typeof value !== 'object') return false;
+  const s = value as Partial<GameState>;
+  return (
+    typeof s.clock?.day === 'number' &&
+    typeof s.clock?.minute === 'number' &&
+    typeof s.finance?.cash === 'number' &&
+    typeof s.stats?.energy === 'number' &&
+    typeof s.character?.name === 'string' &&
+    (s.mode === 'realistic' || s.mode === 'chaotic')
+  );
+}
+
+export function serialize(state: GameState, savedAt: string): string {
+  const envelope: SaveEnvelope = { version: SAVE_VERSION, savedAt, state };
+  return JSON.stringify(envelope);
+}
+
+export type LoadResult =
+  | { status: 'empty' }
+  | { status: 'ok'; state: GameState; savedAt: string; migrated: boolean }
+  | { status: 'corrupt'; error: string };
+
+export function deserialize(text: string): LoadResult {
+  try {
+    const parsed = JSON.parse(text) as Partial<SaveEnvelope>;
+    if (!parsed || typeof parsed !== 'object' || !parsed.state) return { status: 'corrupt', error: 'Missing state.' };
+    const stateVersion = typeof parsed.state.version === 'number' ? parsed.state.version : 0;
+    // Validate the core shape before defaults are filled in, so junk is never "repaired" into a fake life.
+    if (!isValidState(parsed.state)) return { status: 'corrupt', error: 'Save failed validation.' };
+    const state = migrate(parsed.state as unknown as Record<string, unknown>);
+    if (!isValidState(state)) return { status: 'corrupt', error: 'Save failed validation.' };
+    state.version = SAVE_VERSION;
+    return { status: 'ok', state, savedAt: parsed.savedAt ?? '', migrated: stateVersion !== SAVE_VERSION };
+  } catch (err) {
+    return { status: 'corrupt', error: err instanceof Error ? err.message : 'Unreadable save.' };
+  }
+}
+
+export function saveGame(storage: StorageLike, state: GameState, savedAt: string): boolean {
+  try {
+    storage.setItem(SAVE_KEY, serialize(state, savedAt));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Load the save. A corrupt save is moved aside (never silently deleted) and reported. */
+export function loadGame(storage: StorageLike): LoadResult {
+  let text: string | null = null;
+  try {
+    text = storage.getItem(SAVE_KEY);
+  } catch {
+    return { status: 'empty' };
+  }
+  if (!text) return { status: 'empty' };
+  const result = deserialize(text);
+  if (result.status === 'corrupt') {
+    try {
+      storage.setItem(CORRUPT_KEY, text);
+      storage.removeItem(SAVE_KEY);
+    } catch {
+      /* storage unavailable: nothing else to do */
+    }
+  }
+  return result;
+}
+
+export function clearSave(storage: StorageLike): void {
+  try {
+    storage.removeItem(SAVE_KEY);
+    storage.removeItem(CORRUPT_KEY);
+  } catch {
+    /* ignore */
+  }
+}

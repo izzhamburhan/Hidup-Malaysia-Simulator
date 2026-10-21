@@ -1,0 +1,7 @@
+interface:
+  display_name: "Save Compat Guard"
+  short_description: "Use when a HIDUP MALAYSIA change adds, removes, renames, or retypes a GameState field, or touches src/engin..."
+  default_prompt: "Use $save-compat-guard to handle this HIDUP MALAYSIA task."
+
+policy:
+  allow_implicit_invocation: true

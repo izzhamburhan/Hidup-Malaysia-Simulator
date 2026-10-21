@@ -1,0 +1,7 @@
+interface:
+  display_name: "Change Design Spec"
+  short_description: "Use when HIDUP MALAYSIA discovery is done and requirements, acceptance criteria, the engine or data contrac..."
+  default_prompt: "Use $change-design-spec to handle this HIDUP MALAYSIA task."
+
+policy:
+  allow_implicit_invocation: true

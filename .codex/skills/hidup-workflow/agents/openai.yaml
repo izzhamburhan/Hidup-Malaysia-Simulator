@@ -1,0 +1,7 @@
+interface:
+  display_name: "Hidup Workflow"
+  short_description: "Use when starting any conversation or task in the HIDUP MALAYSIA repo, before responding, reading files, pl..."
+  default_prompt: "Use $hidup-workflow to handle this HIDUP MALAYSIA task."
+
+policy:
+  allow_implicit_invocation: true

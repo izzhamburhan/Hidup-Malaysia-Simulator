@@ -1,0 +1,7 @@
+interface:
+  display_name: "Mobile UI Guard"
+  short_description: "Use when a HIDUP MALAYSIA change touches src/components/, src/screens/, src/App.tsx, or styling"
+  default_prompt: "Use $mobile-ui-guard to handle this HIDUP MALAYSIA task."
+
+policy:
+  allow_implicit_invocation: true
