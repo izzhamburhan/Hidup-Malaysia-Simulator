@@ -77,7 +77,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
           {state.flags.chapterOffered && !state.ending ? (
             <BigButton dark={dark} onClick={() => go('report')} icon="📖" title="See my life report" sub="Your chapter is complete" />
           ) : primary ? (
-            <BigButton dark={dark} onClick={() => request(primary)} icon={primary.icon} title={primary.title} sub={meta(primary)} />
+            <BigButton dark={dark} onClick={() => request(primary, 'primary')} icon={primary.icon} title={primary.title} sub={meta(primary)} />
           ) : (
             <BigButton dark={dark} disabled={blocked} onClick={step} icon="⏭️" title="Carry on with my day" sub="Do the next sensible thing" />
           )}
@@ -96,7 +96,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
       {/* One-tap tiles */}
       <div className="grid grid-cols-2 gap-2">
         {tiles.slice(0, 6).map((t) => (
-          <Tile key={t.id + (t.param ?? '')} view={t} onClick={() => request(t)} />
+          <Tile key={t.id + (t.param ?? '')} view={t} onClick={() => request(t, 'tile')} />
         ))}
       </div>
 

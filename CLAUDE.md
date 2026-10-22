@@ -69,6 +69,8 @@ src/data/              catalogues: universities, courses, companies, jobs, foods
 src/components/        UI components
 src/screens/           screens
 src/main.tsx, src/App.tsx
+src/config.ts          public site config: analytics ID, feedback form URL, game URL
+src/lib/analytics.ts   privacy-first analytics (UI layer only)
 tests/                 Vitest tests for the engine and data (tests/*.test.ts)
 mcp/hidup-sim/         local stdio MCP server exposing the engine (run with tsx)
 docs/contracts/        engine, action, event, save, data, payroll and MCP contracts
@@ -123,6 +125,15 @@ npm run mcp            # start the hidup-sim MCP server on stdio
 
 Run one test file with `npx vitest run tests/<file>.test.ts`.
 
+## Analytics, feedback and privacy
+
+Anonymous, cookie-free usage stats via Umami Cloud, off until `UMAMI_WEBSITE_ID` is set in
+`src/config.ts`. `src/lib/analytics.ts` sends only allow-listed events and fields (never the
+character name, free text or money), respects Do Not Track, skips localhost, and players can opt
+out in Settings → Privacy. The engine never imports analytics and the save is untouched.
+In-game quick feedback (emoji rating and improvement chips) is sent the same way; an optional
+`FEEDBACK_FORM_URL` adds a long-form link. Contract: `docs/contracts/analytics.md`.
+
 ## Deployment
 
 Live: https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/. Every push to `main` runs `.github/workflows/deploy.yml` (npm ci, typecheck, test, build) and force-pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. The Vite base is relative (`./`), so the build works under the repository sub-path. `public/manifest.webmanifest` and the PNG icons make it installable on phones.
@@ -149,7 +160,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 - **Payroll is a SIMPLIFIED SIMULATION** of EPF/KWSP, SOCSO/PERKESO, EIS and PCB/LHDN. Rates live in `src/data/statutory.ts` with links to the official sources. A payslip always shows `STATUTORY_DISCLAIMER` and is never presented as official. See `docs/contracts/payroll.md`.
 - **Holiday dates are a simulated calendar.** Lunar and Islamic festivals are pinned to fixed dates in `src/data/holidays.ts`; they are not the real calendar.
 - **Humour and politics.** Humour is original, friendly and recognisably Malaysian. No defamation of real people. Politics appears only through fictional parties and politicians in the fictional town of Seri Harapan. No ethnic or religious stereotypes. Being single, never marrying, never buying a house and every ending are valid outcomes, not failures.
-- **Privacy.** Store only what the game needs, and only locally. No accounts, analytics, paid APIs or real social media in v1.
+- **Privacy.** Store only what the game needs, and only locally. No accounts, ads, tracking cookies, paid APIs or real social media in v1. The only analytics allowed is the cookie-free, opt-out, allow-listed kind in `docs/contracts/analytics.md`.
 
 ## Save and versioning
 

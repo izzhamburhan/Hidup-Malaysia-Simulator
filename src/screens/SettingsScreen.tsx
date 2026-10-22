@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { Download, Trash2, Upload } from 'lucide-react';
 import { useLoadedGame } from '../hooks/useGame';
 import { Button, Card, Disclaimer, KeyValue, Modal, SectionTitle } from '../components/ui';
+import { PrivacyNotice } from '../components/PrivacyNotice';
+import { analyticsConfigured } from '../lib/analytics';
 
 export function SettingsScreen({ onExit }: { onExit: () => void }) {
   const { state, settings, setSettings, interact, exportSave, importSave, resetAll, lastSavedAt, saveError } = useLoadedGame();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
   const [importText, setImportText] = useState('');
   const [message, setMessage] = useState<string | null>(null);
 
@@ -72,6 +75,22 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
           onChange={(v) => interact('setting', 'comparisonAnxiety', v)}
         />
         <Toggle label="Reduce motion" hint="Turns off animations." checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
+        <Toggle label="Show 'How to play' again" hint="Replays the intro next time you open the game." checked={!settings.tutorialSeen} onChange={(v) => setSettings({ tutorialSeen: !v })} />
+      </Card>
+
+      <SectionTitle>Privacy</SectionTitle>
+      <Card className="space-y-3">
+        {analyticsConfigured() && (
+          <Toggle
+            label="Share anonymous usage stats"
+            hint="Cookie-free counts of visits and features used. Never your name or save."
+            checked={!settings.analyticsOptOut}
+            onChange={(v) => setSettings({ analyticsOptOut: !v })}
+          />
+        )}
+        <Button variant="secondary" className="w-full" onClick={() => setPrivacy(true)}>
+          Read the privacy note
+        </Button>
       </Card>
 
       <SectionTitle>Danger zone</SectionTitle>
@@ -79,6 +98,8 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
         <Trash2 size={16} /> Reset all game data
       </Button>
       {message && <p className="mt-3 text-center text-sm text-ink-soft">{message}</p>}
+
+      <PrivacyNotice open={privacy} onClose={() => setPrivacy(false)} />
 
       <SectionTitle>About</SectionTitle>
       <Card className="text-xs leading-relaxed text-ink-soft">

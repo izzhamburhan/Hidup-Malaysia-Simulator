@@ -7,6 +7,7 @@ import { formatRM } from '../engine/core';
 import { Skyline } from '../components/Skyline';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
+import { PrivacyNotice } from '../components/PrivacyNotice';
 
 const FEATURES = [
   ['🎓', 'Study at UM, UTM, MMU and 21 more'],
@@ -20,6 +21,7 @@ const FEATURES = [
 export function Landing({ onNew, onContinue }: { onNew: () => void; onContinue: () => void }) {
   const { state, boot } = useGame();
   const [confirmNew, setConfirmNew] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col px-4 pb-8 pt-6">
@@ -80,13 +82,19 @@ export function Landing({ onNew, onContinue }: { onNew: () => void; onContinue: 
       <footer className="mt-6 space-y-2 text-[11px] leading-snug text-ink-soft">
         <p className="flex gap-1.5">
           <ShieldCheck size={14} className="mt-0.5 shrink-0" />
-          Runs entirely in your browser. No account, no tracking; your save stays on this device.
+          <span>
+            Runs entirely in your browser. No account, no ads, no tracking cookies; your save stays on this device.{' '}
+            <button type="button" onClick={() => setPrivacy(true)} className="font-semibold text-teal underline">
+              Privacy
+            </button>
+          </span>
         </p>
         <p>
           Real universities and companies appear as names only and do not imply vacancies, fees or rankings. Salaries, prices and calories are fictional game estimates. Payroll is a simplified simulation, not
           an official KWSP, PERKESO or LHDN calculation. Politics are fictional.
         </p>
       </footer>
+      <PrivacyNotice open={privacy} onClose={() => setPrivacy(false)} />
 
       <Modal
         open={confirmNew}

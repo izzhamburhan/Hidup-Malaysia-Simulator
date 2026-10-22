@@ -3,6 +3,8 @@ import { Share2 } from 'lucide-react';
 import { formatRM } from '../engine/core';
 import { endings, lifeReport, shareText } from '../engine/endings';
 import { useLoadedGame } from '../hooks/useGame';
+import { GAME_URL } from '../config';
+import { track } from '../lib/analytics';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
 import { Button, Card, KeyValue, Modal, Pill, SectionTitle } from '../components/ui';
@@ -17,11 +19,12 @@ export function ReportScreen() {
   const chapterLeft = Math.max(0, state.chapterDays - state.clock.day);
 
   const share = async () => {
-    const text = shareText({ ...report, ending });
+    const text = `${shareText({ ...report, ending })}\nPlay: ${GAME_URL}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: 'HIDUP MALAYSIA', text });
         setShareMsg('Shared!');
+        track('share', { source: 'native', ending: ending.id });
         return;
       }
     } catch {
@@ -30,6 +33,7 @@ export function ReportScreen() {
     try {
       await navigator.clipboard.writeText(text);
       setShareMsg('Copied to clipboard. Paste it anywhere!');
+      track('share', { source: 'clipboard', ending: ending.id });
     } catch {
       setShareMsg('Sharing is not available here. Take a screenshot of the card instead.');
     }

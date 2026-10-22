@@ -37,7 +37,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 
 ## Layout
 
-`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance). `src/components/` and `src/screens/` UI; `src/main.tsx`, `src/App.tsx`. `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/plans/` one TDD plan per non-trivial change (`<slug>.md`); `docs/specs/` design specs, only when the developer asks for one. `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
+`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance). `src/components/` and `src/screens/` UI; `src/main.tsx`, `src/App.tsx`. `src/config.ts` public site config (analytics ID, feedback form, game URL); `src/lib/analytics.ts` privacy-first analytics (UI layer only). `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/plans/` one TDD plan per non-trivial change (`<slug>.md`); `docs/specs/` design specs, only when the developer asks for one. `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
 
 ## Status
 
@@ -74,6 +74,15 @@ npm run mcp            # start the hidup-sim MCP server on stdio
 ```
 
 One test file: `npx vitest run tests/<file>.test.ts`.
+
+## Analytics, feedback and privacy
+
+Anonymous, cookie-free usage stats via Umami Cloud, off until `UMAMI_WEBSITE_ID` is set in
+`src/config.ts`. `src/lib/analytics.ts` sends only allow-listed events and fields (never the
+character name, free text or money), respects Do Not Track, skips localhost, and players can opt
+out in Settings → Privacy. The engine never imports analytics and the save is untouched.
+In-game quick feedback (emoji rating and improvement chips) is sent the same way; an optional
+`FEEDBACK_FORM_URL` adds a long-form link. Contract: `docs/contracts/analytics.md`.
 
 ## Deployment
 

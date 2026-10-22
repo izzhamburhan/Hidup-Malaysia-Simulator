@@ -77,6 +77,24 @@ The other tabs (Act, Money, Life, Feed) are for deeper decisions: moving house, 
 - **Holiday dates use a simulated calendar.** Lunar and Islamic festivals are pinned to fixed dates.
 - **Politics are fictional.** The parties and the town of Seri Harapan are made up. Real people are never the target of jokes.
 
+## Analytics and feedback (setup)
+
+The game can show you visitors, visit time, and which buttons and features players use, without
+cookies or personal data. It is off until you connect it:
+
+1. Create a free account at https://cloud.umami.is (Hobby plan).
+2. Add a website: name `Hidup Malaysia`, domain `izzhamburhan.github.io`.
+3. Copy the **Website ID** and paste it into `UMAMI_WEBSITE_ID` in `src/config.ts`, then push to `main`.
+4. Optional: create a Google Form for longer feedback and paste its link into `FEEDBACK_FORM_URL`.
+
+The Umami dashboard then shows visitors, visit duration, bounce rate, countries and devices,
+plus game events such as `game_start`, `action`, `day_reached`, `share` and `feedback`
+(see `docs/contracts/analytics.md`). Players can switch stats off in Settings → Privacy.
+
+## Licence
+
+Proprietary, all rights reserved (see `LICENSE`). The code is public to read, not to reuse.
+
 ## Deployment
 
 Every push to `main` runs `.github/workflows/deploy.yml`, which installs, typechecks, tests and builds the game, then publishes `dist/` to the `gh-pages` branch. GitHub Pages serves that branch at the URL above. The build uses a relative base path, so it works under the repository sub-path.

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles, Trophy, Wallet, Zap, LogOut, Compass } from 'lucide-react';
+import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles, Trophy, Wallet, Zap, LogOut, Compass, HelpCircle, MessageSquareHeart } from 'lucide-react';
 import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { useLoadedGame } from '../hooks/useGame';
@@ -7,6 +7,9 @@ import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
 import { ConfirmModal, DayReportModal, EventModal, FeedbackToast } from '../components/Overlays';
 import { Modal, cx } from '../components/ui';
+import { Tutorial } from '../components/Tutorial';
+import { FeedbackSheet, feedbackAvailable } from '../components/FeedbackSheet';
+import { track } from '../lib/analytics';
 import { Dashboard } from './Dashboard';
 import { ActScreen } from './ActScreen';
 import { MoneyScreen } from './MoneyScreen';
@@ -27,10 +30,13 @@ const NAV: { id: Tab; label: string; icon: typeof Home }[] = [
 ];
 
 export function GameShell({ onExit }: { onExit: () => void }) {
-  const { state } = useLoadedGame();
+  const { state, settings, setSettings } = useLoadedGame();
   const [tab, setTab] = useState<Tab>('home');
   const [menu, setMenu] = useState(false);
+  const [tutorial, setTutorial] = useState(!settings.tutorialSeen);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const go = (t: Tab) => {
+    if (t !== tab) track('tab_view', { tab: t });
     setTab(t);
     setMenu(false);
     window.scrollTo({ top: 0 });
@@ -102,6 +108,24 @@ export function GameShell({ onExit }: { onExit: () => void }) {
           <MenuItem icon={<Trophy size={20} />} label="Goals & achievements" onClick={() => go('goals')} />
           <MenuItem icon={<BookOpen size={20} />} label="Life report" onClick={() => go('report')} highlight={!!state.flags.chapterOffered && !state.ending} />
           <MenuItem icon={<SettingsIcon size={20} />} label="Settings & saves" onClick={() => go('settings')} />
+          <MenuItem
+            icon={<HelpCircle size={20} />}
+            label="How to play"
+            onClick={() => {
+              setMenu(false);
+              setTutorial(true);
+            }}
+          />
+          {feedbackAvailable() && (
+            <MenuItem
+              icon={<MessageSquareHeart size={20} />}
+              label="Give feedback"
+              onClick={() => {
+                setMenu(false);
+                setFeedbackOpen(true);
+              }}
+            />
+          )}
           <MenuItem icon={<LogOut size={20} />} label="Main menu" onClick={onExit} />
         </div>
         <p className="mt-4 flex items-center gap-1 text-xs text-ink-soft">
@@ -109,6 +133,15 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         </p>
       </Modal>
 
+      <Tutorial
+        open={tutorial && !state.events.pending.length}
+        appearance={state.character.appearance}
+        onClose={() => {
+          setTutorial(false);
+          if (!settings.tutorialSeen) setSettings({ tutorialSeen: true });
+        }}
+      />
+      <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} optedOut={settings.analyticsOptOut} />
       <EventModal />
       <ConfirmModal />
       <DayReportModal />

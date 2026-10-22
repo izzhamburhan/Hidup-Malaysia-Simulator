@@ -1,19 +1,32 @@
 // React bridge to the engine: holds GameState, routes every gameplay change
-// through the engine API, autosaves, and queues feedback for the UI.
+// through the engine API, autosaves, queues feedback for the UI, and sends
+// privacy-safe analytics events from one place.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   continueAfterEnding, endChapter, interact as engineInteract, newGame as engineNewGame, performAction, resolveEvent, runAutopilot, runRoutineStep,
   type ActionView,
 } from '../engine/simulationEngine';
+import { actionById } from '../engine/actions';
 import { clearSave, deserialize, loadGame, saveGame, SETTINGS_KEY, type LoadResult } from '../engine/save';
 import type { ActionFeedback, DayReport, GameState, NewGameOptions } from '../engine/types';
+import { TRACK_ACTIONS } from '../config';
+import { initAnalytics, track } from '../lib/analytics';
 
 export interface Settings {
   reducedMotion: boolean;
+  /** Player chose not to share anonymous usage stats. */
+  analyticsOptOut: boolean;
+  /** The first-game "how to play" overlay has been shown. */
+  tutorialSeen: boolean;
 }
 
-const defaultSettings: Settings = { reducedMotion: false };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false };
+
+/** In-game days that count as retention milestones in analytics. */
+const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];
+
+export type ActionSource = 'primary' | 'tile' | 'list';
 
 function storage(): Storage | null {
   try {
@@ -42,8 +55,8 @@ interface GameApi {
   saveError: boolean;
   settings: Settings;
   start: (options: NewGameOptions) => void;
-  act: (actionId: string, param?: string) => ActionFeedback;
-  request: (view: ActionView) => void;
+  act: (actionId: string, param?: string, source?: ActionSource) => ActionFeedback;
+  request: (view: ActionView, source?: ActionSource) => void;
   confirmPending: () => void;
   cancelPending: () => void;
   choose: (choiceId: string) => void;
@@ -71,12 +84,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<GameState | null>(boot.status === 'ok' ? boot.state : null);
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
   const [dayReport, setDayReport] = useState<DayReport | null>(null);
-  const [confirmFor, setConfirmFor] = useState<ActionView | null>(null);
+  const [confirmFor, setConfirmFor] = useState<{ view: ActionView; source: ActionSource } | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(boot.status === 'ok' ? boot.savedAt : null);
   const [saveError, setSaveError] = useState(false);
   const [settings, setSettingsState] = useState<Settings>(loadSettings);
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  // Analytics loads only when configured, allowed by the player, and not on localhost.
+  useEffect(() => {
+    initAnalytics(settings.analyticsOptOut);
+  }, [settings.analyticsOptOut]);
 
   // Autosave after every meaningful change.
   useEffect(() => {
@@ -97,29 +115,34 @@ export function GameProvider({ children }: { children: ReactNode }) {
     stateRef.current = next;
     setState(next);
     setFeedback(fb);
-    if (prev && next.clock.day > prev.clock.day && next.dayReports[0]) setDayReport(next.dayReports[0]);
+    if (prev && next.clock.day > prev.clock.day) {
+      if (next.dayReports[0]) setDayReport(next.dayReports[0]);
+      for (const m of DAY_MILESTONES) if (prev.clock.day < m && next.clock.day >= m) track('day_reached', { day: m, mode: next.mode });
+    }
   }, []);
 
   const act = useCallback(
-    (actionId: string, param?: string) => {
+    (actionId: string, param?: string, source: ActionSource = 'list') => {
       const current = stateRef.current;
       if (!current) return { ok: false, title: '', lines: [], deltas: [], error: 'No game loaded.' };
       const result = performAction(current, actionId, param);
-      if (result.feedback.ok) commit(result.state, result.feedback);
-      else setFeedback(result.feedback);
+      if (result.feedback.ok) {
+        commit(result.state, result.feedback);
+        if (TRACK_ACTIONS) track('action', { id: actionId, category: actionById(actionId)?.category, source });
+      } else setFeedback(result.feedback);
       return result.feedback;
     },
     [commit],
   );
 
   const request = useCallback(
-    (view: ActionView) => {
+    (view: ActionView, source: ActionSource = 'list') => {
       if (!view.available) {
         setFeedback({ ok: false, title: view.title, lines: [], deltas: [], error: view.reason ?? 'Not available.' });
         return;
       }
-      if (view.confirm) setConfirmFor(view);
-      else act(view.id, view.param);
+      if (view.confirm) setConfirmFor({ view, source });
+      else act(view.id, view.param, source);
     },
     [act],
   );
@@ -130,7 +153,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       boot,
       feedback,
       dayReport,
-      confirmFor,
+      confirmFor: confirmFor?.view ?? null,
       lastSavedAt,
       saveError,
       settings,
@@ -142,20 +165,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setState(s);
         setFeedback(null);
         setDayReport(null);
+        track('game_start', { mode: s.mode, stage: s.character.lifeStage, background: s.character.backgroundId });
       },
       act,
       request,
       confirmPending: () => {
-        if (confirmFor) act(confirmFor.id, confirmFor.param);
+        if (confirmFor) act(confirmFor.view.id, confirmFor.view.param, confirmFor.source);
         setConfirmFor(null);
       },
       cancelPending: () => setConfirmFor(null),
       choose: (choiceId) => {
         const current = stateRef.current;
         if (!current) return;
+        const eventId = current.events.pending[0]?.eventId;
         const result = resolveEvent(current, choiceId);
-        if (result.feedback.ok) commit(result.state, result.feedback);
-        else setFeedback(result.feedback);
+        if (result.feedback.ok) {
+          commit(result.state, result.feedback);
+          track('event_choice', { id: eventId, source: choiceId });
+        } else setFeedback(result.feedback);
       },
       autopilot: (days) => {
         const current = stateRef.current;
@@ -163,14 +190,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const result = runAutopilot(current, days);
         if (result.feedback.ok) {
           commit(result.state, result.feedback);
+          track('routine', { source: days === 1 ? 'end_day' : 'week', days: result.daysSimulated });
         } else setFeedback(result.feedback);
       },
       step: () => {
         const current = stateRef.current;
         if (!current) return;
         const result = runRoutineStep(current);
-        if (result.feedback.ok) commit(result.state, result.feedback);
-        else setFeedback(result.feedback);
+        if (result.feedback.ok) {
+          commit(result.state, result.feedback);
+          track('routine', { source: 'next' });
+        } else setFeedback(result.feedback);
       },
       interact: (kind, id, value) => {
         const current = stateRef.current;
@@ -184,7 +214,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       },
       finishChapter: () => {
         const current = stateRef.current;
-        if (current) setState(endChapter(current));
+        if (!current) return;
+        const next = endChapter(current);
+        setState(next);
+        track('chapter_end', { ending: next.ending?.id, day: next.clock.day });
       },
       keepLiving: () => {
         const current = stateRef.current;
@@ -198,6 +231,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setFeedback(null);
       },
       resetAll: () => {
+        track('reset');
         const store = storage();
         if (store) {
           clearSave(store);
@@ -215,6 +249,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       },
       importSave: (text) => {
         const res = deserialize(text.trim());
+        track('save_import', { ok: res.status === 'ok' });
         if (res.status !== 'ok') return res.status === 'corrupt' ? `Import failed: ${res.error}` : 'Nothing to import.';
         stateRef.current = res.state;
         setState(res.state);
