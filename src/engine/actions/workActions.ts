@@ -180,7 +180,7 @@ export const workActions: ActionDef[] = [
     id: 'self-study',
     category: 'career',
     icon: '🧠',
-    title: 'Free self-study (library / YouTube)',
+    title: (_s, p) => `Free self-study: ${p ?? 'tech'}`,
     description: 'Slower than a paid course, but free. Pick a skill.',
     minutes: 120,
     energy: -8,

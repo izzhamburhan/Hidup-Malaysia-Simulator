@@ -93,3 +93,11 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 
 The save holds only game state: the player-chosen name, choices, and simulated numbers. No
 personal data beyond that name, no analytics, nothing sent anywhere.
+
+## Version 2 (pixel characters)
+
+`migrations[1]` upgrades a version-1 save to version 2 by adding `character.appearance`
+(`Appearance` in `src/engine/types.ts`). An old save gets a deterministic look from
+`randomAppearance(state.seed)`; a save that already holds a valid appearance keeps it.
+Appearance is cosmetic and never feeds the simulation. Test: `tests/save.test.ts`
+("migrates version-1 saves by adding a pixel character appearance").

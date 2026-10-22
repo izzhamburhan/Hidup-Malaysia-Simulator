@@ -16,6 +16,8 @@ import { listActions, viewAction, type ActionView } from '../engine/simulationEn
 import { STAGE_LABEL } from '../engine/social';
 import { hustleProfitTotal } from '../engine/business';
 import { useLoadedGame } from '../hooks/useGame';
+import { OrgBadge } from '../components/OrgBadge';
+import { NpcAvatar } from '../components/PixelAvatar';
 import { ActionCard, VariantRow } from '../components/ActionCard';
 import { Button, Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, StatBar, Tabs, cx } from '../components/ui';
 
@@ -89,7 +91,8 @@ function CareerTab() {
       <SectionTitle>Current job</SectionTitle>
       {job ? (
         <Card>
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-3">
+            <OrgBadge text={companyById(job.companyId)?.badge ?? '?'} kind={companyById(job.companyId)?.fictional ? 'fictional' : 'company'} size={48} title={companyById(job.companyId)?.name} />
             <div>
               <div className="text-base font-bold">
                 {jobById(job.jobId)?.icon} {job.title}
@@ -183,7 +186,7 @@ function CareerTab() {
             return (
               <Card key={l.id} className="p-3">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">{j.icon}</span>
+                  <OrgBadge text={c.badge} kind={c.fictional ? 'fictional' : 'company'} size={44} title={c.name} />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-bold">{j.title}</div>
                     <div className="text-xs text-ink-soft">
@@ -229,6 +232,10 @@ function StudyTab() {
       <div>
         <SectionTitle>Studies</SectionTitle>
         <Card>
+          <div className="mb-2 flex items-center gap-3">
+            <OrgBadge text={universityById(e.universityId)?.short ?? '?'} kind={universityById(e.universityId)?.type === 'private' ? 'private-uni' : 'public-uni'} size={48} title={universityById(e.universityId)?.name} />
+            <span className="text-[11px] text-ink-soft">Name badge only, not the institution's logo.</span>
+          </div>
           <div className="text-base font-bold">{course.name}</div>
           <div className="text-sm text-ink-soft">
             {universityById(e.universityId)?.name} · {universityById(e.universityId)?.type}
@@ -416,8 +423,9 @@ function PeopleTab() {
       <SectionTitle>Love life</SectionTitle>
       {p ? (
         <Card>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <NpcAvatar name={p.name} size={52} />
+            <div className="min-w-0 flex-1">
               <div className="text-base font-bold">💞 {p.name}</div>
               <div className="text-xs text-ink-soft">
                 {p.trait}, into {p.interest} {p.longDistance && '· long-distance'}
@@ -443,7 +451,12 @@ function PeopleTab() {
           <SectionTitle>People you've met</SectionTitle>
           <div className="grid gap-2">
             {r.prospects.map((x) => (
-              <V key={x.id} id="talk-prospect" param={x.id} label={`${x.name} — ${x.trait}, into ${x.interest}`} />
+              <div key={x.id} className="flex items-center gap-2">
+                <NpcAvatar name={x.name} size={48} />
+                <div className="min-w-0 flex-1">
+                  <V id="talk-prospect" param={x.id} label={`${x.name} — ${x.trait}, into ${x.interest}`} />
+                </div>
+              </div>
             ))}
           </div>
         </>

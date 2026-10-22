@@ -105,3 +105,11 @@ Added for the Home play screen (plan: `docs/plans/one-tap-play-and-pages.md`).
 | `primaryAction(state)` | `insights.ts` | Pure. The single most sensible available `ActionView` right now (rest when exhausted, eat when starving, interview, offer, work or class, sleep at night, assignment, side hustle, best job application), or `null` when the routine step is the best move. |
 | `quickActions(state)` | `insights.ts` | Pure. At most six unique `ActionView`s for the play tiles, available ones first. Meal tiles carry the dish's emoji. |
 | `mealFor(state)`, `bestListing(state)` | `insights.ts` | Pure helpers: a time-appropriate meal; the highest-match job listing the player can apply for now. |
+
+## Pixel characters
+
+`NewGameOptions.appearance?: Appearance` sets the player's look; an invalid or missing value
+falls back to `randomAppearance(seed)`. Helpers in `src/engine/appearance.ts` (pure, cosmetic,
+own generator, never touch `state.rng`): `randomAppearance(seed)`, `appearanceFromName(name)`
+(stable NPC faces), `isValidAppearance(value)`, `moodOf(state)` (`happy`, `neutral`, `tired`,
+`stressed`, `unwell` from health, energy, stress and happiness).

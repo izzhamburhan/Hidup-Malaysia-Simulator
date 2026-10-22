@@ -2,6 +2,7 @@ import { Heart } from 'lucide-react';
 import { formatTime } from '../engine/calendar';
 import { viewAction } from '../engine/simulationEngine';
 import { useLoadedGame } from '../hooks/useGame';
+import { NpcAvatar, PixelAvatar } from '../components/PixelAvatar';
 import { ActionCard } from '../components/ActionCard';
 import { Card, Disclaimer, EmptyState, Pill, cx } from '../components/ui';
 
@@ -27,7 +28,15 @@ export function FeedScreen() {
         {state.feed.map((p) => (
           <Card key={p.id} className={cx('p-3', p.kind === 'player' && 'border-teal/40 bg-teal-soft/40')}>
             <div className="flex items-start gap-3">
-              <div className={cx('flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white', AVATAR_COLORS[p.author.length % AVATAR_COLORS.length])}>{p.author[0]}</div>
+              {p.kind === 'player' ? (
+                <span className="inline-flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-teal-soft">
+                  <PixelAvatar appearance={state.character.appearance} mood="happy" size={36} />
+                </span>
+              ) : p.kind === 'world' ? (
+                <div className={cx('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white', AVATAR_COLORS[p.author.length % AVATAR_COLORS.length])}>{p.author[0]}</div>
+              ) : (
+                <NpcAvatar name={p.author} size={40} />
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-baseline gap-x-1.5 text-sm">
                   <span className="font-bold">{p.author}</span>

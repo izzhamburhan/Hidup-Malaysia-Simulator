@@ -61,6 +61,13 @@ describe('data catalogues', () => {
     expect(backgrounds.length).toBeGreaterThanOrEqual(7);
   });
 
+  it('gives every company a short neutral badge (initials, never a logo)', () => {
+    for (const c of companies) {
+      expect(c.badge, c.id).toMatch(/^[A-Z]{2,5}$/);
+    }
+    expect(unique(companies.map((c) => c.badge))).toBe(true);
+  });
+
   it('labels fictional companies as fictional', () => {
     for (const c of companies.filter((x) => x.fictional)) expect(c.name).toMatch(/fictional/i);
   });

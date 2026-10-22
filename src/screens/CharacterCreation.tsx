@@ -6,7 +6,10 @@ import { jobs } from '../data/jobs';
 import { homeStates } from '../data/lifestyle';
 import { universities } from '../data/universities';
 import { formatRM } from '../engine/core';
-import type { GameMode, LifeStage } from '../engine/types';
+import type { Appearance, GameMode, LifeStage, Mood } from '../engine/types';
+import { randomAppearance } from '../engine/appearance';
+import { AvatarEditor } from '../components/AvatarEditor';
+import { PixelAvatar } from '../components/PixelAvatar';
 import { useGame } from '../hooks/useGame';
 import { Button, Card, Disclaimer, SectionTitle, cx } from '../components/ui';
 
@@ -28,6 +31,8 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
   const [startSemester, setStartSemester] = useState(1);
   const [jobId, setJobId] = useState('swe');
   const [chapterYears, setChapterYears] = useState(1);
+  const [appearance, setAppearance] = useState<Appearance>(() => randomAppearance(Math.floor(Math.random() * 1e9)));
+  const [previewMood, setPreviewMood] = useState<Mood>('happy');
 
   const uni = universities.find((u) => u.id === universityId)!;
   const uniCourses = useMemo(() => courses.filter((c) => uni.fields.includes(c.field)), [uni]);
@@ -53,6 +58,7 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
       startSemester,
       jobId,
       chapterYears,
+      appearance,
     });
     onDone();
   };
@@ -64,6 +70,9 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
       </button>
       <h1 className="font-display text-3xl font-black">Create your life</h1>
       <p className="text-sm text-ink-soft">Backgrounds change your starting point, not your destiny.</p>
+
+      <SectionTitle>Your character</SectionTitle>
+      <AvatarEditor value={appearance} onChange={setAppearance} preview={previewMood} onPreview={setPreviewMood} />
 
       <SectionTitle>Name</SectionTitle>
       <div className="flex gap-2">
@@ -250,6 +259,7 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-paper/95 px-4 pt-3 backdrop-blur safe-bottom">
         <div className="mx-auto flex max-w-lg items-center gap-3">
+          <PixelAvatar appearance={appearance} mood="happy" size={36} />
           <div className="min-w-0 flex-1 text-xs text-ink-soft">
             <div className="truncate font-semibold text-ink">
               {bg.icon} {stageDef.name}, {age}

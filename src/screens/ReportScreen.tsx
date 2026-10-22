@@ -3,6 +3,8 @@ import { Share2 } from 'lucide-react';
 import { formatRM } from '../engine/core';
 import { endings, lifeReport, shareText } from '../engine/endings';
 import { useLoadedGame } from '../hooks/useGame';
+import { PixelAvatar } from '../components/PixelAvatar';
+import { moodOf } from '../engine/appearance';
 import { Button, Card, KeyValue, Modal, Pill, SectionTitle } from '../components/ui';
 
 export function ReportScreen() {
@@ -46,7 +48,12 @@ export function ReportScreen() {
         <div className="songket absolute inset-0 opacity-30" aria-hidden />
         <div className="relative flex h-full flex-col">
           <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold">Hidup Malaysia · {report.mode}</div>
-          <div className="mt-3 text-5xl">{ending.icon}</div>
+          <div className="mt-2 flex items-end justify-between">
+            <div className="text-5xl">{ending.icon}</div>
+            <div className="-mb-1 rounded-2xl bg-white/10 px-2 pt-2">
+              <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={72} />
+            </div>
+          </div>
           <div className="font-display mt-1 text-3xl font-black leading-tight">{ending.title}</div>
           <p className="mt-1 text-sm text-white/80">{ending.blurb}</p>
           <div className="mt-auto space-y-1.5 text-sm">

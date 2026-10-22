@@ -101,3 +101,23 @@ body {
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3%);
+  }
+}
+
+.avatar-bob {
+  animation: bob 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-bob {
+    animation: none;
+  }
+}

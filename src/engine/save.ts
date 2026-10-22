@@ -2,6 +2,7 @@
 // stays testable without a browser; the UI passes window.localStorage.
 
 import { SAVE_VERSION, emptyState } from './newGame';
+import { isValidAppearance, randomAppearance } from './appearance';
 import type { GameState } from './types';
 
 export const SAVE_KEY = 'hidup-malaysia:save';
@@ -31,6 +32,13 @@ export const migrations: Record<number, Migration> = {
   0: (s) => {
     const events = (s.events ?? {}) as Record<string, unknown>;
     return { ...s, events: { scheduled: [], ...events }, version: 1 };
+  },
+  // 1 -> 2: pixel characters. Old lives get a look derived from their seed.
+  1: (s) => {
+    const character = (s.character ?? {}) as Record<string, unknown>;
+    const seed = typeof s.seed === 'number' ? s.seed : 1;
+    const appearance = isValidAppearance(character.appearance) ? character.appearance : randomAppearance(seed);
+    return { ...s, character: { ...character, appearance }, version: 2 };
   },
 };
 

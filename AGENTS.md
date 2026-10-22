@@ -37,7 +37,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 
 ## Layout
 
-`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges). `src/components/` and `src/screens/` UI; `src/main.tsx`, `src/App.tsx`. `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/plans/` one TDD plan per non-trivial change (`<slug>.md`); `docs/specs/` design specs, only when the developer asks for one. `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
+`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance). `src/components/` and `src/screens/` UI; `src/main.tsx`, `src/App.tsx`. `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/plans/` one TDD plan per non-trivial change (`<slug>.md`); `docs/specs/` design specs, only when the developer asks for one. `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
 
 ## Status
 
@@ -52,12 +52,12 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Events | done: 96 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
 | Actions catalogue | done: 89 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 39 achievements, 10 challenges, 10 endings, life report, share card |
-| Save and migrations | done: SAVE_VERSION 1, migration chain, corrupt-save quarantine, export/import |
+| Save and migrations | done: SAVE_VERSION 2 (v2 adds the pixel character appearance), migration chain, corrupt-save quarantine, export/import |
 | Public engine API (`simulationEngine.ts`) | done: performAction, resolveEvent, listActions, runAutopilot, interact, endChapter |
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
-| UI (screens, components) | done: landing, creation, Home/Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
+| UI (screens, components) | done: one-tap Home play screen, pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 12 Vitest files, 92 tests |
+| Tests | done: 14 Vitest files, 112 tests |
 
 ## Commands
 
@@ -96,11 +96,11 @@ Live: https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/. Every push to `m
 
 ## Data honesty
 
-Real universities and companies are catalogue names only: no implied vacancies, rankings, fees, salaries or practices. Salaries, tuition, prices, rents and vehicle costs are FICTIONAL GAME ESTIMATES and labelled so. Calories are rough estimates, not medical or nutrition advice. Payroll (EPF/KWSP, SOCSO/PERKESO, EIS, PCB/LHDN) is a SIMPLIFIED SIMULATION with rates and official links in `src/data/statutory.ts`; a payslip is never presented as official. Holiday dates are a simulated calendar. Humour is original, friendly and recognisably Malaysian; no defamation of real people; politics only via fictional parties and politicians in the fictional town of Seri Harapan; no ethnic or religious stereotypes; being single and every ending are valid outcomes.
+Real universities and companies are catalogue names only: no implied vacancies, rankings, fees, salaries or practices. No real logos or brand marks: organisations show a neutral initials badge (`OrgBadge`) in the game palette. Salaries, tuition, prices, rents and vehicle costs are FICTIONAL GAME ESTIMATES and labelled so. Calories are rough estimates, not medical or nutrition advice. Payroll (EPF/KWSP, SOCSO/PERKESO, EIS, PCB/LHDN) is a SIMPLIFIED SIMULATION with rates and official links in `src/data/statutory.ts`; a payslip is never presented as official. Holiday dates are a simulated calendar. Humour is original, friendly and recognisably Malaysian; no defamation of real people; politics only via fictional parties and politicians in the fictional town of Seri Harapan; no ethnic or religious stereotypes; being single and every ending are valid outcomes.
 
 ## Save format
 
-LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`; settings under `hidup-malaysia:settings`; corrupt saves are copied to `hidup-malaysia:save:corrupt`. `SAVE_VERSION` is currently 1. Contract: `docs/contracts/save-format.md`.
+LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`; settings under `hidup-malaysia:settings`; corrupt saves are copied to `hidup-malaysia:save:corrupt`. `SAVE_VERSION` is currently 2 (v2 adds the pixel character appearance). Contract: `docs/contracts/save-format.md`.
 
 ## MCP server
 

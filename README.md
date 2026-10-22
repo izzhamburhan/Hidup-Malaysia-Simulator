@@ -40,7 +40,7 @@ Everything for a normal day is on the **Home** screen:
 
 The other tabs (Act, Money, Life, Feed) are for deeper decisions: moving house, buying a car, the job board, payslips, dating, side hustles.
 
-1. **Create a life.** Pick a name, a mode (Realistic or Chaotic), a life stage, a background, your home state, and your university, course or job.
+1. **Create a life.** Design your pixel character (skin tone, hair, outfit, tudung, songkok, cap, glasses), then pick a name, a mode (Realistic or Chaotic), a life stage, a background, your home state, and your university, course or job.
 2. **Act.** Every action takes game time: eating takes 20 minutes, a workday about 9 hours plus your commute, sleep several hours. The clock only moves when you act or wait.
 3. **Watch the 1st and the last day of each month.** Bills, rent and loan repayments are charged on the 1st. Salaries arrive on the last day of the month with a payslip.
 4. **Decide.** Random and dated events (traffic jams, kenduri, Hari Raya, a recruiter, a scam SMS, a breakup talk) pause the game until you choose.
@@ -70,6 +70,7 @@ The other tabs (Act, Money, Life, Feed) are for deeper decisions: moving house, 
 
 ## Honesty about data
 
+- **Names, not logos.** Organisations appear as neutral initials badges in the game's own colours. No real logo or brand mark is used.
 - **Real names, fictional numbers.** Universities and companies are real names used as catalogue entries. They do not imply vacancies, fees, rankings or practices. Salaries, tuition, rents, vehicle prices and other costs are **fictional game estimates**.
 - **Payroll is a simplified simulation.** It approximates published rates: EPF 11% employee and 13%/12% employer, SOCSO and EIS up to a RM6,000 ceiling, and an annualised PCB using resident tax bands, reliefs and the rebate. It is **not an official calculation**. Check [KWSP](https://www.kwsp.gov.my/), [PERKESO](https://www.perkeso.gov.my/) and [LHDN](https://www.hasil.gov.my/) for real figures. Rates live in `src/data/statutory.ts`.
 - **Calories are rough estimates.** The game is not a medical or nutrition tool.

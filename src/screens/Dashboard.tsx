@@ -11,8 +11,14 @@ import { currentHome } from '../engine/living';
 import type { ActionView } from '../engine/simulationEngine';
 import { relationshipStatus } from '../engine/social';
 import { useLoadedGame } from '../hooks/useGame';
+import { PixelAvatar } from '../components/PixelAvatar';
+import { moodOf } from '../engine/appearance';
+import type { Mood } from '../engine/types';
+
 import { Card, SectionTitle, StatBar, cx } from '../components/ui';
 import type { Tab } from './GameShell';
+
+const MOOD_BUBBLE: Record<Mood, string> = { happy: '😄', neutral: '', tired: '💤', stressed: '😰', unwell: '🤒' };
 
 type Scene = { greeting: string; bg: string; dark: boolean; sky: string };
 
@@ -30,6 +36,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
   const scene = sceneFor(state.clock.minute);
   const dark = scene.dark;
   const objective = currentObjective(state);
+  const mood = moodOf(state);
   const primary = primaryAction(state);
   const tiles = quickActions(state).filter((t) => !primary || t.id !== primary.id || t.param !== primary.param);
   const blocked = state.events.pending.length > 0 || !!state.ending;
@@ -54,9 +61,17 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
               </div>
               <div className={cx('text-sm', dark ? 'text-white/80' : 'text-ink/75')}>{objective.detail}</div>
             </div>
-            <span className="text-4xl" aria-hidden>
-              {scene.sky}
-            </span>
+            <div className="relative -mb-2 -mr-1 flex shrink-0 flex-col items-center">
+              <span className="text-xl leading-none" aria-hidden>
+                {scene.sky}
+              </span>
+              {MOOD_BUBBLE[mood] && (
+                <span className="absolute -left-3 top-5 rounded-full bg-white px-1.5 py-0.5 text-sm shadow" aria-hidden>
+                  {MOOD_BUBBLE[mood]}
+                </span>
+              )}
+              <PixelAvatar appearance={state.character.appearance} mood={mood} size={76} bob title={`${state.character.name} feels ${mood}`} />
+            </div>
           </div>
 
           {state.flags.chapterOffered && !state.ending ? (

@@ -5,6 +5,8 @@ import { Button, Modal } from '../components/ui';
 import { formatDate } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { Skyline } from '../components/Skyline';
+import { PixelAvatar } from '../components/PixelAvatar';
+import { moodOf } from '../engine/appearance';
 
 const FEATURES = [
   ['🎓', 'Study at UM, UTM, MMU and 21 more'],
@@ -42,8 +44,11 @@ export function Landing({ onNew, onContinue }: { onNew: () => void; onContinue: 
             onClick={onContinue}
             className="anim-pop flex w-full items-center gap-3 rounded-2xl border-2 border-teal bg-white p-4 text-left shadow-sm transition hover:bg-teal-soft"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal text-white">
-              <Play size={20} />
+            <span className="relative flex h-14 w-12 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-teal-soft">
+              <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={44} />
+              <span className="absolute bottom-0.5 right-0.5 rounded-full bg-teal p-0.5 text-white">
+                <Play size={10} />
+              </span>
             </span>
             <span className="flex-1">
               <span className="block font-bold">Continue {state.character.name}'s life</span>

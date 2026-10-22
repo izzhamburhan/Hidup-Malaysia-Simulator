@@ -18,8 +18,25 @@ export interface Clock {
   minute: number;
 }
 
+export type HairStyle = 'short' | 'side' | 'spiky' | 'curly' | 'long' | 'bun' | 'bald';
+export type Outfit = 'tshirt' | 'kemeja' | 'hoodie' | 'blazer' | 'baju-kurung' | 'baju-melayu';
+export type Headwear = 'none' | 'tudung' | 'songkok' | 'cap';
+export type Mood = 'happy' | 'neutral' | 'tired' | 'stressed' | 'unwell';
+
+/** Cosmetic pixel-character look. Indexes point into src/data/appearance.ts palettes. */
+export interface Appearance {
+  skin: number;
+  hair: HairStyle;
+  hairColor: number;
+  outfit: Outfit;
+  outfitColor: number;
+  headwear: Headwear;
+  glasses: boolean;
+}
+
 export interface Character {
   name: string;
+  appearance: Appearance;
   startAge: number;
   homeState: string;
   backgroundId: string;
@@ -435,4 +452,5 @@ export interface NewGameOptions {
   jobId?: string;
   chapterYears?: number;
   seed?: number;
+  appearance?: Appearance;
 }

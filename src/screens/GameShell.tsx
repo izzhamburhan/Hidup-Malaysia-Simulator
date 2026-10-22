@@ -3,6 +3,8 @@ import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles
 import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { useLoadedGame } from '../hooks/useGame';
+import { PixelAvatar } from '../components/PixelAvatar';
+import { moodOf } from '../engine/appearance';
 import { ConfirmModal, DayReportModal, EventModal, FeedbackToast } from '../components/Overlays';
 import { Modal, cx } from '../components/ui';
 import { Dashboard } from './Dashboard';
@@ -38,20 +40,20 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   return (
     <div className="mx-auto min-h-screen max-w-lg pb-24">
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-paper/95 px-4 pb-2 pt-3 backdrop-blur">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => go('home')} className="shrink-0 rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label="Home">
+            <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={30} />
+          </button>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-semibold text-ink-soft">
-              {formatDate(state)} · Age {ageOf(state)}
-              {state.mode === 'chaotic' && <span className="ml-1 text-hibiscus">· 🌀 Chaotic</span>}
+            <div className="truncate text-[11px] font-semibold text-ink-soft">
+              Day {state.clock.day + 1} · {formatDate(state)} · Age {ageOf(state)}
+              {state.mode === 'chaotic' && <span className="ml-1 text-hibiscus">· 🌀</span>}
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-2xl font-black tabular-nums">{formatTime(state.clock.minute)}</span>
-              <span className="text-xs text-ink-soft">Day {state.clock.day + 1}</span>
-            </div>
+            <div className="font-display whitespace-nowrap text-2xl font-black leading-tight tabular-nums">{formatTime(state.clock.minute)}</div>
           </div>
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft">Wallet</div>
-            <div className={cx('font-display text-lg font-black tabular-nums', state.finance.cash < 100 ? 'text-hibiscus' : 'text-teal')}>{formatRM(state.finance.cash, 2)}</div>
+            <div className={cx('font-display whitespace-nowrap text-base font-black tabular-nums', state.finance.cash < 100 ? 'text-hibiscus' : 'text-teal')}>{formatRM(state.finance.cash, 2)}</div>
           </div>
           <button type="button" onClick={() => setMenu(true)} className="rounded-xl border border-ink/10 bg-white p-2" aria-label="Open menu">
             <Menu size={20} />

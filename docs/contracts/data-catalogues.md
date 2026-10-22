@@ -47,3 +47,13 @@ When a file is added, renamed, or changes its main type, update this table (`doc
 Content follows `content-guard`: original, friendly, recognisably Malaysian humour; no
 defamation; politics only through fictional parties and politicians in Seri Harapan; no ethnic or
 religious stereotypes; every life path and ending is valid.
+
+## Appearance and badges
+
+| File | Contents | Honesty label |
+| --- | --- | --- |
+| `src/data/appearance.ts` | Skin tones, hair styles and colours, outfits, outfit colours, headwear (with random weights) for pixel characters | Cosmetic only; options are free to mix and are never tied to background, stats or outcomes |
+| `src/data/companies.ts` `badge` | 2 to 5 capital letters per company, shown by `OrgBadge` | A neutral name badge, never a logo, brand colour or lookalike |
+
+Universities use their `short` name for the badge; statutory bodies (EPF, SOCSO, EIS, PCB) use
+their common abbreviations. No image of any real logo is stored or drawn.

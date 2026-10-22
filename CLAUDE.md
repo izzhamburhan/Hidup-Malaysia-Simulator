@@ -58,12 +58,14 @@ src/engine/            pure simulation engine (no React, no DOM)
   events.ts            data-driven event engine
   actions/             action catalogue by domain (types.ts, lifeActions, workActions, peopleActions, ownershipActions)
   progression.ts       achievement and challenge checks
+  appearance.ts        cosmetic pixel-character looks and moods (own generator, never state.rng)
   endings.ts           chapter endings and the life report
   newGame.ts           newGame, emptyState, SAVE_VERSION, START_DATE
   save.ts              versioned LocalStorage save and migrations
   simulationEngine.ts  public API: newGame, performAction, resolveEvent, listActions, runAutopilot (and helpers)
 src/data/              catalogues: universities, courses, companies, jobs, foods, vehicles, housing,
                        lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges
+                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance
 src/components/        UI components
 src/screens/           screens
 src/main.tsx, src/App.tsx
@@ -95,11 +97,13 @@ SKILLS.md              index of every skill
 | Actions catalogue | done: 89 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 39 achievements, 10 challenges, 10 endings, life report, share card |
 | Save and migrations | done: SAVE_VERSION 1, migration chain, corrupt-save quarantine, export/import |
+| Save and migrations | done: SAVE_VERSION 2 (v2 adds the pixel character appearance), migration chain, corrupt-save quarantine, export/import |
 | Public engine API (`simulationEngine.ts`) | done: performAction, resolveEvent, listActions, runAutopilot, interact, endChapter |
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: landing, creation, Home/Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
+| UI (screens, components) | done: one-tap Home play screen, pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 12 Vitest files, 92 tests |
+| Tests | done: 14 Vitest files, 112 tests |
 
 ## Commands
 
@@ -139,6 +143,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 ## Data honesty
 
 - **Real names are catalogue names only.** Real universities and companies appear as names. Their presence implies no vacancies, rankings, entry requirements, fees, salaries or practices.
+- **No real logos or brand marks.** Organisations are shown with a neutral initials badge (`OrgBadge`: game palette, plain text, one shape for all), never a logo, brand colour or lookalike. Logos are trademarks and would imply endorsement.
 - **Numbers are fictional game estimates.** Salaries, tuition, prices, rents, deposits, vehicle and running costs are FICTIONAL GAME ESTIMATES chosen for balance, and every catalogue file says so in its header comment. UI copy never presents them as market data.
 - **Calories are rough estimates** for gameplay, not medical or nutrition advice.
 - **Payroll is a SIMPLIFIED SIMULATION** of EPF/KWSP, SOCSO/PERKESO, EIS and PCB/LHDN. Rates live in `src/data/statutory.ts` with links to the official sources. A payslip always shows `STATUTORY_DISCLAIMER` and is never presented as official. See `docs/contracts/payroll.md`.
@@ -150,6 +155,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 
 - LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`. Settings live under `hidup-malaysia:settings`.
 - `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 1; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
+- `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 2; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
 - Any change to the shape of `GameState` bumps `SAVE_VERSION`, adds a migration from the previous version, and adds a Vitest test that migrates a fixture of the old shape.
 - A corrupt or unreadable save never crashes the app: the raw text is backed up to `hidup-malaysia:save:corrupt` and the player gets a clear message and a fresh start.
 - Full contract: `docs/contracts/save-format.md`.

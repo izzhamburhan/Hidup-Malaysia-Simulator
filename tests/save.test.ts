@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CORRUPT_KEY, SAVE_KEY, clearSave, deserialize, loadGame, migrate, saveGame, serialize } from '../src/engine/save';
 import { SAVE_VERSION, performAction } from '../src/engine/simulationEngine';
+import { isValidAppearance } from '../src/engine/appearance';
 import { inMemoryStorage, makeGame } from './helpers';
 
 describe('save system', () => {
@@ -52,6 +53,16 @@ describe('save system', () => {
     expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.events.scheduled).toEqual([]);
     expect(migrated.memories).toEqual([]);
+  });
+
+  it('migrates version-1 saves by adding a pixel character appearance', () => {
+    const old = JSON.parse(JSON.stringify(makeGame()));
+    old.version = 1;
+    delete old.character.appearance;
+    const migrated = migrate(old);
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(isValidAppearance(migrated.character.appearance)).toBe(true);
+    expect(migrate(JSON.parse(JSON.stringify(old))).character.appearance).toEqual(migrated.character.appearance);
   });
 
   it('refuses saves from a newer version', () => {

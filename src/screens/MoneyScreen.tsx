@@ -6,6 +6,7 @@ import { computePayslip } from '../engine/payroll';
 import { listActions, viewAction } from '../engine/simulationEngine';
 import type { Payslip } from '../engine/types';
 import { useLoadedGame } from '../hooks/useGame';
+import { OrgBadge } from '../components/OrgBadge';
 import { ActionCard, VariantRow } from '../components/ActionCard';
 import { Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, Tabs, cx } from '../components/ui';
 
@@ -147,6 +148,12 @@ function PayslipView() {
             <div className="text-xs text-ink-soft">{slip.employer}</div>
           </div>
           <Pill tone="gold">Simplified</Pill>
+        </div>
+        <div className="mb-2 flex gap-1.5 font-sans">
+          <OrgBadge text="EPF" kind="gov" size={34} title="EPF / KWSP (name only, simplified rates)" />
+          <OrgBadge text="SOCSO" kind="gov" size={34} title="SOCSO / PERKESO (name only, simplified rates)" />
+          <OrgBadge text="EIS" kind="gov" size={34} title="EIS / SIP (name only, simplified rates)" />
+          <OrgBadge text="PCB" kind="gov" size={34} title="PCB / MTD tax estimate (LHDN rules, simplified)" />
         </div>
         <Line label="Basic salary" value={slip.basic} />
         {slip.overtime > 0 && <Line label="Overtime" value={slip.overtime} />}
