@@ -6,7 +6,7 @@
  * completely: no script loads and no events are sent.
  * Get it from https://cloud.umami.is → Settings → Websites → your site → Website ID.
  */
-export const UMAMI_WEBSITE_ID = '';
+export const UMAMI_WEBSITE_ID = 'a1f80fe7-f382-44a5-af47-c2af2becdd59';
 
 /** Public address of the game, added to shared result cards. */
 export const GAME_URL = 'https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/';
