@@ -9,13 +9,13 @@
 export const UMAMI_WEBSITE_ID = 'a1f80fe7-f382-44a5-af47-c2af2becdd59';
 
 /** Public address of the game, added to shared result cards. */
-export const GAME_URL = 'https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/';
+export const GAME_URL = 'https://hidupmalaysia.com/';
 
 /** Umami script location (cloud by default; change if you self-host). */
 export const UMAMI_SCRIPT_URL = 'https://cloud.umami.is/script.js';
 
 /** Only these hostnames send analytics (keeps local testing out of the stats). */
-export const ANALYTICS_DOMAINS = ['izzhamburhan.github.io'];
+export const ANALYTICS_DOMAINS = ['hidupmalaysia.com', 'www.hidupmalaysia.com', 'izzhamburhan.github.io'];
 
 /** Send one event per gameplay action. Turn off if the free plan's event quota gets tight. */
 export const TRACK_ACTIONS = true;

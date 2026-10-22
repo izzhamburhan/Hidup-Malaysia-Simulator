@@ -86,7 +86,7 @@ In-game quick feedback (emoji rating and improvement chips) is sent the same way
 
 ## Deployment
 
-Live: https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/. Every push to `main` runs `.github/workflows/deploy.yml` (npm ci, typecheck, test, build) and force-pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. The Vite base is relative (`./`), so the build works under the repository sub-path. `public/manifest.webmanifest` and the PNG icons make it installable on phones.
+Live: https://hidupmalaysia.com/ (custom domain on Cloudflare Registrar; DNS: four A records to GitHub Pages plus a www CNAME, DNS only; `public/CNAME` keeps it on every deploy; the old github.io address forwards). Every push to `main` runs `.github/workflows/deploy.yml` (npm ci, typecheck, test, build) and force-pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. The Vite base is relative (`./`), so the build works under the repository sub-path. `public/manifest.webmanifest` and the PNG icons make it installable on phones.
 
 ## Rules
 

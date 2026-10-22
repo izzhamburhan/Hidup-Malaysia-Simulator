@@ -6,7 +6,7 @@ HIDUP MALAYSIA is a mobile-first, choice-based life simulator that runs entirely
 
 It needs no backend, no account, no API keys and no database. Saves live in your browser's LocalStorage.
 
-**Play it:** https://izzhamburhan.github.io/Hidup-Malaysia-Simulator/
+**Play it:** https://hidupmalaysia.com/
 
 On a phone, open the link, then use **Add to Home Screen** (Safari share menu, or the Chrome menu) to install it like an app.
 
@@ -83,7 +83,7 @@ The game can show you visitors, visit time, and which buttons and features playe
 cookies or personal data. It is off until you connect it:
 
 1. Create a free account at https://cloud.umami.is (Hobby plan).
-2. Add a website: name `Hidup Malaysia`, domain `izzhamburhan.github.io`.
+2. Add a website: name `Hidup Malaysia`, domain `hidupmalaysia.com`.
 3. Copy the **Website ID** and paste it into `UMAMI_WEBSITE_ID` in `src/config.ts`, then push to `main`.
 4. Optional: create a Google Form for longer feedback and paste its link into `FEEDBACK_FORM_URL`.
 
