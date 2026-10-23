@@ -3,7 +3,7 @@
 // Their presence does not imply current vacancies, salaries or practices.
 // In-game behaviour is generic; pay factors are fictional balance values.
 
-export type Industry = 'energy' | 'tech' | 'finance' | 'transport' | 'electronics' | 'public' | 'sme';
+export type Industry = 'energy' | 'tech' | 'finance' | 'transport' | 'electronics' | 'public' | 'sme' | 'retail';
 
 export interface Company {
   id: string;
@@ -26,6 +26,7 @@ export const industryLabels: Record<Industry, string> = {
   electronics: 'Electronics & manufacturing',
   public: 'Schools & clinics (fictional)',
   sme: 'SMEs & startups (fictional)',
+  retail: 'Cafés & retail chains',
 };
 
 export const companies: Company[] = [
@@ -49,6 +50,9 @@ export const companies: Company[] = [
   { id: 'kopitiam', name: 'Kopitiam Pak Lang (fictional)', industry: 'sme', pace: 'fast', payFactor: 0.9, fictional: true, badge: 'KPL' },
   { id: 'startup', name: 'Lepak Labs Sdn Bhd (fictional)', industry: 'sme', pace: 'intense', payFactor: 0.97, fictional: true, badge: 'LL' },
   { id: 'agency', name: 'Kreatif Gila Agency (fictional)', industry: 'sme', pace: 'intense', payFactor: 0.92, fictional: true, badge: 'KGA' },
+  { id: 'zus', name: 'ZUS Coffee', industry: 'retail', pace: 'fast', payFactor: 0.92, badge: 'ZUS' },
+  { id: 'kenangan', name: 'Kopi Kenangan', industry: 'retail', pace: 'fast', payFactor: 0.9, badge: 'KK' },
+  { id: 'chagee', name: 'Chagee', industry: 'retail', pace: 'fast', payFactor: 0.93, badge: 'CHG' },
 ];
 
 export const companyById = (id: string | null | undefined) => companies.find((c) => c.id === id);

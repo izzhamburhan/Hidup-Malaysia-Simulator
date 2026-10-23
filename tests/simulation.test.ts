@@ -82,7 +82,8 @@ describe('long-run simulation', () => {
   });
 
   it('overtime pays out on the next payslip', () => {
-    let s = makeGame({ lifeStage: 'working', jobId: 'swe' });
+    // Seed chosen so the random work-shift event resolves in time for an evening overtime slot.
+    let s = makeGame({ lifeStage: 'working', jobId: 'swe', seed: 1 });
     s = performAction(s, 'work-shift').state;
     while (s.events.pending.length) s = resolveEvent(s, currentEvent(s)!.choices.find((c) => !c.disabledReason)!.id).state;
     const r = performAction(s, 'overtime', '2');

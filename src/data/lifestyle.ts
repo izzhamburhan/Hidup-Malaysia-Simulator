@@ -69,6 +69,7 @@ export const hustleDefs: HustleDef[] = [
   { id: 'kuih-business', name: 'Kuih & lunch box business', icon: '🍱', description: 'Cook at dawn, sell by noon. Repeat customers are everything.', startupCost: 400, requiresItem: 'cookware', requiresSkill: { cooking: 15 }, minutes: 180, energy: 16, baseRevenue: 150, costRate: 0.45, volatility: 0.35, skill: 'cooking' },
   { id: 'content', name: 'Content creation', icon: '🎬', description: 'Post relatable videos. Most get 37 views. One day, one might not.', startupCost: 0, requiresItem: 'phone', minutes: 150, energy: 10, baseRevenue: 30, costRate: 0.1, volatility: 0.95, skill: 'creative' },
   { id: 'photo-service', name: 'Photography services', icon: '📸', description: 'Weddings, convos and product shoots. Weekends become work days.', startupCost: 300, requiresItem: 'camera', requiresSkill: { creative: 25 }, minutes: 240, energy: 16, baseRevenue: 260, costRate: 0.15, volatility: 0.45, skill: 'creative' },
+  { id: 'kopi-kiosk', name: 'Specialty kopi kiosk', icon: '☕', description: "Everyone's opening a trendy kopi kiosk these days. Yours serves kopi O ais with oat milk and an Instagram-worthy cup.", startupCost: 3000, requiresSkill: { cooking: 15, business: 10 }, minutes: 180, energy: 16, baseRevenue: 220, costRate: 0.5, volatility: 0.3, skill: 'cooking' },
 ];
 
 export const hustleDefById = (id: string | null | undefined) => hustleDefs.find((h) => h.id === id);

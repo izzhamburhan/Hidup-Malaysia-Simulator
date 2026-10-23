@@ -46,6 +46,39 @@ describe('data catalogues', () => {
     }
   });
 
+  it('includes real Malaysian coffee chains as drinks and retail employers', () => {
+    for (const id of ['zus-coffee', 'kopi-kenangan', 'chagee-tea']) {
+      const f = foods.find((x) => x.id === id);
+      expect(f, id).toBeDefined();
+      expect(f!.category).toBe('drink');
+      expect(f!.meal).toBe(false);
+    }
+    for (const id of ['zus', 'kenangan', 'chagee']) {
+      const c = companies.find((x) => x.id === id);
+      expect(c, id).toBeDefined();
+      expect(c!.industry).toBe('retail');
+      expect(c!.fictional).toBeFalsy();
+    }
+    expect(jobs.find((j) => j.id === 'barista')?.industries).toContain('retail');
+    expect(jobs.find((j) => j.id === 'retail')?.industries).toContain('retail');
+    expect(jobs.find((j) => j.id === 'store-supervisor')?.industries).toContain('retail');
+  });
+
+  it('lets the player open a fictional kopi kiosk, not a named real franchise', () => {
+    const kiosk = hustleDefs.find((h) => h.id === 'kopi-kiosk');
+    expect(kiosk).toBeDefined();
+    expect(kiosk!.name).not.toMatch(/ZUS|Kenangan|Chagee/i);
+  });
+
+  it('includes more real Malaysian car models to buy', () => {
+    for (const id of ['perodua-bezza-used', 'perodua-alza', 'proton-x50', 'proton-x70', 'honda-city']) {
+      const v = vehicles.find((x) => x.id === id);
+      expect(v, id).toBeDefined();
+      expect(v!.kind).toBe('car');
+      expect(v!.price).toBeGreaterThan(0);
+    }
+  });
+
   it('has sane game values', () => {
     for (const j of jobs) expect(j.salaryRange[0]).toBeLessThanOrEqual(j.salaryRange[1]);
     for (const f of foods) {

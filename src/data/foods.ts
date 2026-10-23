@@ -44,6 +44,9 @@ export const foods: Food[] = [
   { id: 'kopi-ais', name: 'Kopi ais', icon: '🥤', category: 'drink', calories: 160, price: 3, satiety: 4, energy: 8, health: -0.2, happiness: 3, minutes: 10, meal: false },
   { id: 'milo-ais', name: 'Milo ais', icon: '🍫', category: 'drink', calories: 220, price: 3.5, satiety: 6, energy: 5, health: -0.2, happiness: 4, minutes: 10, meal: false },
   { id: 'bubble-tea', name: 'Bubble tea', icon: '🧋', category: 'drink', calories: 350, price: 13, satiety: 8, energy: 3, health: -0.5, happiness: 6, minutes: 15, meal: false },
+  { id: 'zus-coffee', name: 'ZUS Coffee (iced latte)', icon: '☕', category: 'drink', calories: 200, price: 9.9, satiety: 6, energy: 9, health: -0.2, happiness: 6, minutes: 10, meal: false },
+  { id: 'kopi-kenangan', name: 'Kopi Kenangan (iced coffee)', icon: '☕', category: 'drink', calories: 210, price: 10.9, satiety: 6, energy: 9, health: -0.3, happiness: 6, minutes: 10, meal: false },
+  { id: 'chagee-tea', name: 'Chagee (milk tea)', icon: '🧋', category: 'drink', calories: 260, price: 13.9, satiety: 7, energy: 4, health: -0.4, happiness: 7, minutes: 15, meal: false },
 ];
 
 export const foodById = (id: string | null | undefined) => foods.find((f) => f.id === id);

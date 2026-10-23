@@ -21,7 +21,9 @@ describe('career', () => {
   });
 
   it('goes from application to interview to offer to a job', () => {
-    let s = makeGame();
+    // Seed chosen so the job-board fill and the interview roll land on the expected branch;
+    // this test fixes app.score to 100 but a roll above 90 can still reject (see career.ts).
+    let s = makeGame({ seed: 1 });
     s.career.listings = [];
     refreshListings(s);
     const listing = s.career.listings[0];
