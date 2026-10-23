@@ -4,7 +4,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  continueAfterEnding, endChapter, interact as engineInteract, newGame as engineNewGame, performAction, resolveEvent, runAutopilot, runRoutineStep,
+  chooseRoutineStep, continueAfterEnding, endChapter, interact as engineInteract, newGame as engineNewGame, performAction, resolveEvent, runAutopilot, runRoutineStep,
   type ActionView,
 } from '../engine/simulationEngine';
 import { actionById } from '../engine/actions';
@@ -30,6 +30,13 @@ const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];
 
 export type ActionSource = 'primary' | 'tile' | 'list';
+
+/** The last thing the player did, for the Home room animation. UI-only, never saved. */
+export interface LastActivity {
+  id: string;
+  param?: string;
+  seq: number;
+}
 
 function storage(): Storage | null {
   try {
@@ -57,6 +64,7 @@ interface GameApi {
   lastSavedAt: string | null;
   saveError: boolean;
   settings: Settings;
+  lastActivity: LastActivity | null;
   start: (options: NewGameOptions) => void;
   act: (actionId: string, param?: string, source?: ActionSource) => ActionFeedback;
   request: (view: ActionView, source?: ActionSource) => void;
@@ -91,6 +99,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(boot.status === 'ok' ? boot.savedAt : null);
   const [saveError, setSaveError] = useState(false);
   const [settings, setSettingsState] = useState<Settings>(loadSettings);
+  const [lastActivity, setLastActivity] = useState<LastActivity | null>(null);
+  const played = useCallback((id: string, param?: string) => setLastActivity((p) => ({ id, param, seq: (p?.seq ?? 0) + 1 })), []);
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -131,11 +141,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const result = performAction(current, actionId, param);
       if (result.feedback.ok) {
         commit(result.state, result.feedback);
+        played(actionId, param);
         if (TRACK_ACTIONS) track('action', { id: actionId, category: actionById(actionId)?.category, source });
       } else setFeedback(result.feedback);
       return result.feedback;
     },
-    [commit],
+    [commit, played],
   );
 
   const request = useCallback(
@@ -160,6 +171,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lastSavedAt,
       saveError,
       settings,
+      lastActivity,
       start: (options) => {
         const seed = options.seed ?? (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
         const s = engineNewGame({ ...options, seed });
@@ -193,15 +205,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const result = runAutopilot(current, days);
         if (result.feedback.ok) {
           commit(result.state, result.feedback);
+          if (!result.interrupted) played('sleep');
           track('routine', { source: days === 1 ? 'end_day' : 'week', days: result.daysSimulated });
         } else setFeedback(result.feedback);
       },
       step: () => {
         const current = stateRef.current;
         if (!current) return;
+        const next = chooseRoutineStep(current);
         const result = runRoutineStep(current);
         if (result.feedback.ok) {
           commit(result.state, result.feedback);
+          if (next.kind === 'action') played(next.id, next.param);
+          else played(next.kind === 'wait' ? 'wait' : 'sleep');
           track('routine', { source: 'next' });
         } else setFeedback(result.feedback);
       },
@@ -275,7 +291,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
       },
     }),
-    [state, boot, feedback, dayReport, confirmFor, lastSavedAt, saveError, settings, act, request, commit],
+    [state, boot, feedback, dayReport, confirmFor, lastSavedAt, saveError, settings, lastActivity, act, request, commit, played],
   );
 
   return <GameContext.Provider value={api}>{children}</GameContext.Provider>;

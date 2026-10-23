@@ -11,14 +11,11 @@ import { currentHome } from '../engine/living';
 import type { ActionView } from '../engine/simulationEngine';
 import { relationshipStatus } from '../engine/social';
 import { useLoadedGame } from '../hooks/useGame';
-import { PixelAvatar } from '../components/PixelAvatar';
-import { moodOf } from '../engine/appearance';
-import type { Mood } from '../engine/types';
+import { Room } from '../components/room/Room';
 
 import { Card, SectionTitle, StatBar, cx } from '../components/ui';
 import type { Tab } from './GameShell';
 
-const MOOD_BUBBLE: Record<Mood, string> = { happy: '😄', neutral: '', tired: '💤', stressed: '😰', unwell: '🤒' };
 
 const CHECKLIST: { id: Exclude<Tab, 'home' | 'goals' | 'report' | 'settings'>; icon: string; label: string }[] = [
   { id: 'act', icon: '⚡', label: 'Try Act' },
@@ -27,14 +24,12 @@ const CHECKLIST: { id: Exclude<Tab, 'home' | 'goals' | 'report' | 'settings'>; i
   { id: 'feed', icon: '💬', label: 'See Feed' },
 ];
 
-type Scene = { greeting: string; bg: string; dark: boolean; sky: string };
-
-function sceneFor(minute: number): Scene {
+function greetingFor(minute: number): string {
   const h = minute / 60;
-  if (h >= 5 && h < 11) return { greeting: 'Selamat pagi', bg: 'from-[#f6c768] to-[#e98b3a]', dark: false, sky: '☀️' };
-  if (h >= 11 && h < 16) return { greeting: 'Selamat tengah hari', bg: 'from-teal-2 to-teal', dark: true, sky: '🌤️' };
-  if (h >= 16 && h < 19.5) return { greeting: 'Selamat petang', bg: 'from-[#d9653b] to-[#8a2f4f]', dark: true, sky: '🌇' };
-  return { greeting: 'Selamat malam', bg: 'from-[#1e2a4a] to-[#0b1220]', dark: true, sky: '🌙' };
+  if (h >= 5 && h < 11) return 'Selamat pagi';
+  if (h >= 11 && h < 16) return 'Selamat tengah hari';
+  if (h >= 16 && h < 19.5) return 'Selamat petang';
+  return 'Selamat malam';
 }
 
 export function Dashboard({ go }: { go: (t: Tab) => void }) {
@@ -42,10 +37,8 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
   const [more, setMore] = useState(false);
   const checklistRemaining = CHECKLIST.filter((c) => !settings.visitedTabs[c.id]);
   const showChecklist = checklistRemaining.length > 0 && state.clock.day < 7;
-  const scene = sceneFor(state.clock.minute);
-  const dark = scene.dark;
+  const greeting = greetingFor(state.clock.minute);
   const objective = currentObjective(state);
-  const mood = moodOf(state);
   const primary = primaryAction(state);
   const tiles = quickActions(state).filter((t) => !primary || t.id !== primary.id || t.param !== primary.param);
   const blocked = state.events.pending.length > 0 || !!state.ending;
@@ -56,42 +49,31 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
 
   return (
     <div className="space-y-3">
-      {/* Scene + primary action */}
-      <section className={cx('relative overflow-hidden rounded-3xl bg-gradient-to-br p-4 shadow-md', scene.bg, dark ? 'text-white' : 'text-ink')}>
-        <div className="songket absolute inset-0 opacity-20" aria-hidden />
-        <div className="relative">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className={cx('text-xs font-bold uppercase tracking-[0.18em]', dark ? 'text-gold' : 'text-ink/70')}>
-                {scene.greeting}, {state.character.name}
-              </div>
-              <div className="font-display mt-1 text-xl font-black leading-tight">
-                {objective.icon} {objective.title}
-              </div>
-              <div className={cx('text-sm', dark ? 'text-white/80' : 'text-ink/75')}>{objective.detail}</div>
-            </div>
-            <div className="relative -mb-2 -mr-1 flex shrink-0 flex-col items-center">
-              <span className="text-xl leading-none" aria-hidden>
-                {scene.sky}
-              </span>
-              {MOOD_BUBBLE[mood] && (
-                <span className="absolute -left-3 top-5 rounded-full bg-white px-1.5 py-0.5 text-sm shadow" aria-hidden>
-                  {MOOD_BUBBLE[mood]}
-                </span>
-              )}
-              <PixelAvatar appearance={state.character.appearance} mood={mood} size={76} bob title={`${state.character.name} feels ${mood}`} />
-            </div>
-          </div>
+      {/* Pou-style room: the character in the middle, animating after each action */}
+      <Room greeting={`${greeting}, ${state.character.name}`} title={`${objective.icon} ${objective.title}`} detail={objective.detail} />
 
-          {state.flags.chapterOffered && !state.ending ? (
-            <BigButton dark={dark} onClick={() => go('report')} icon="📖" title="See my life report" sub="Your chapter is complete" />
-          ) : primary ? (
-            <BigButton dark={dark} onClick={() => request(primary, 'primary')} icon={primary.icon} title={primary.title} sub={meta(primary)} />
-          ) : (
-            <BigButton dark={dark} disabled={blocked} onClick={step} icon="⏭️" title="Carry on with my day" sub="Do the next sensible thing" />
-          )}
-        </div>
-      </section>
+      {/* Big round one-tap buttons, one swipeable row */}
+      <div className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto px-4 pt-1">
+        {tiles.slice(0, 6).map((t) => (
+          <RoundButton key={t.id + (t.param ?? '')} view={t} onClick={() => request(t, 'tile')} />
+        ))}
+      </div>
+
+      {/* Do this next */}
+      {state.flags.chapterOffered && !state.ending ? (
+        <BigButton onClick={() => go('report')} icon="📖" title="See my life report" sub="Your chapter is complete" />
+      ) : primary ? (
+        <BigButton onClick={() => request(primary, 'primary')} icon={primary.icon} title={primary.title} sub={meta(primary)} />
+      ) : (
+        <BigButton disabled={blocked} onClick={step} icon="⏭️" title="Carry on with my day" sub="Do the next sensible thing" />
+      )}
+
+      {/* Time controls */}
+      <div className="grid grid-cols-3 gap-2">
+        <TimeButton disabled={blocked} onClick={step} icon={<SkipForward size={18} />} label="Next" sub="1 activity" />
+        <TimeButton disabled={blocked} onClick={() => autopilot(1)} icon={<Moon size={18} />} label="End day" sub="to tomorrow" />
+        <TimeButton disabled={blocked} onClick={() => autopilot(7)} icon={<FastForward size={18} />} label="Week" sub="on routine" />
+      </div>
 
       {/* New here? checklist */}
       {showChecklist && (
@@ -112,20 +94,6 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
           {invites > 0 && <Chip onClick={() => go('feed')}>💌 {invites} invite{invites > 1 ? 's' : ''}</Chip>}
         </div>
       )}
-
-      {/* One-tap tiles */}
-      <div className="grid grid-cols-2 gap-2">
-        {tiles.slice(0, 6).map((t) => (
-          <Tile key={t.id + (t.param ?? '')} view={t} onClick={() => request(t, 'tile')} />
-        ))}
-      </div>
-
-      {/* Time controls */}
-      <div className="grid grid-cols-3 gap-2">
-        <TimeButton disabled={blocked} onClick={step} icon={<SkipForward size={18} />} label="Next" sub="1 activity" />
-        <TimeButton disabled={blocked} onClick={() => autopilot(1)} icon={<Moon size={18} />} label="End day" sub="to tomorrow" />
-        <TimeButton disabled={blocked} onClick={() => autopilot(7)} icon={<FastForward size={18} />} label="Week" sub="on routine" />
-      </div>
 
       {/* Ticker */}
       {recent.length > 0 && (
@@ -159,21 +127,18 @@ function meta(v: ActionView): string {
     .join(' · ');
 }
 
-function BigButton({ dark, onClick, icon, title, sub, disabled }: { dark: boolean; onClick: () => void; icon: string; title: string; sub: string; disabled?: boolean }) {
+function BigButton({ onClick, icon, title, sub, disabled }: { onClick: () => void; icon: string; title: string; sub: string; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cx(
-        'anim-pop mt-4 flex w-full items-center gap-3 rounded-2xl p-3.5 text-left shadow-lg transition active:scale-[0.98] disabled:opacity-60',
-        dark ? 'bg-white text-ink' : 'bg-ink text-white',
-      )}
+      className="anim-pop flex w-full items-center gap-3 rounded-2xl bg-ink p-3.5 text-left text-white shadow-lg transition active:scale-[0.98] disabled:opacity-60"
     >
-      <span className={cx('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl', dark ? 'bg-paper-2' : 'bg-white/10')}>{icon}</span>
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-base font-bold">{title}</span>
-        {sub && <span className={cx('block text-xs', dark ? 'text-ink-soft' : 'text-white/70')}>{sub}</span>}
+        {sub && <span className="block text-xs text-white/70">{sub}</span>}
       </span>
       <span className="text-xl font-black" aria-hidden>
         ▶
@@ -182,21 +147,25 @@ function BigButton({ dark, onClick, icon, title, sub, disabled }: { dark: boolea
   );
 }
 
-function Tile({ view, onClick }: { view: ActionView; onClick: () => void }) {
+function RoundButton({ view, onClick }: { view: ActionView; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-disabled={!view.available}
       title={view.reason ?? view.description}
-      className={cx(
-        'flex min-h-[92px] flex-col items-start rounded-2xl border p-3 text-left transition active:scale-[0.97]',
-        view.available ? 'border-ink/10 bg-white hover:border-teal/50 hover:shadow-sm' : 'border-ink/5 bg-white/50',
-      )}
+      className="group flex w-[78px] shrink-0 flex-col items-center text-center"
     >
-      <span className={cx('text-2xl', !view.available && 'opacity-60 grayscale')}>{view.icon}</span>
-      <span className={cx('mt-1 line-clamp-2 text-[13px] font-semibold leading-tight', !view.available && 'text-ink-soft')}>{view.title}</span>
-      <span className={cx('mt-auto line-clamp-2 pt-1 text-[11px] font-semibold leading-tight', view.available ? 'text-ink-soft' : 'text-hibiscus')}>
+      <span
+        className={cx(
+          'flex h-16 w-16 items-center justify-center rounded-full border-b-4 text-[30px] shadow-md transition group-active:translate-y-0.5 group-active:border-b-2',
+          view.available ? 'border-teal bg-white group-hover:ring-2 group-hover:ring-teal/30' : 'border-ink/15 bg-paper-2',
+        )}
+      >
+        <span className={cx(!view.available && 'opacity-50 grayscale')}>{view.icon}</span>
+      </span>
+      <span className={cx('mt-1.5 line-clamp-2 text-[11px] font-bold leading-tight', !view.available && 'text-ink-soft')}>{view.title}</span>
+      <span className={cx('line-clamp-1 text-[10px] font-semibold leading-tight', view.available ? 'text-ink-soft' : 'text-hibiscus')}>
         {view.available ? meta(view) || 'Instant' : (view.reason ?? 'Locked')}
       </span>
     </button>
