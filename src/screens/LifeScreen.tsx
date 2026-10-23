@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { companyById, industryLabels } from '../data/companies';
 import { courseById, courses } from '../data/courses';
 import { foods, portions } from '../data/foods';
@@ -12,6 +12,7 @@ import { scheduleLabel, jobEligibility } from '../engine/career';
 import { formatRM, SKILL_KEYS } from '../engine/core';
 import { CLASS_DAYS, computeGpa, isFinalSemester, semesterDay } from '../engine/education';
 import { commuteMinutes, currentHome } from '../engine/living';
+import { rankLifeTabs, type LifeTabId } from '../engine/insights';
 import { listActions, viewAction, type ActionView } from '../engine/simulationEngine';
 import { STAGE_LABEL } from '../engine/social';
 import { hustleProfitTotal } from '../engine/business';
@@ -21,22 +22,28 @@ import { NpcAvatar } from '../components/PixelAvatar';
 import { ActionCard, VariantRow } from '../components/ActionCard';
 import { Button, Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, StatBar, Tabs, cx } from '../components/ui';
 
-type Sub = 'career' | 'study' | 'home' | 'transport' | 'food' | 'fitness' | 'people' | 'hustle' | 'shop';
+type Sub = LifeTabId;
 
-const SUBS: { id: Sub; label: string }[] = [
-  { id: 'career', label: '💼 Career' },
-  { id: 'study', label: '🎓 Study' },
-  { id: 'food', label: '🍛 Food' },
-  { id: 'fitness', label: '🏋️ Fitness' },
-  { id: 'people', label: '💞 People' },
-  { id: 'home', label: '🏠 Home' },
-  { id: 'transport', label: '🚗 Transport' },
-  { id: 'hustle', label: '🛠️ Hustle' },
-  { id: 'shop', label: '🛒 Shop' },
-];
+const LABELS: Record<Sub, string> = {
+  career: '💼 Career',
+  study: '🎓 Study',
+  food: '🍛 Food',
+  fitness: '🏋️ Fitness',
+  people: '💞 People',
+  home: '🏠 Home',
+  transport: '🚗 Transport',
+  hustle: '🛠️ Hustle',
+  shop: '🛒 Shop',
+};
 
 export function LifeScreen() {
-  const [sub, setSub] = useState<Sub>('career');
+  const { state } = useLoadedGame();
+  // Ordered by relevance to what the player is doing right now (never hidden, just reordered —
+  // see docs/plans/cut-ui-width.md). Tabs don't jump around mid-visit: only the first render
+  // of a new life picks the order and the default tab.
+  const order = useMemo(() => rankLifeTabs(state), [state.character.backgroundId]);
+  const SUBS = useMemo(() => order.map((id) => ({ id, label: LABELS[id] })), [order]);
+  const [sub, setSub] = useState<Sub>(order[0]);
   return (
     <div>
       <Tabs tabs={SUBS} value={sub} onChange={setSub} />

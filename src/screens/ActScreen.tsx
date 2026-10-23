@@ -28,7 +28,9 @@ const LABELS = Object.fromEntries(GROUPS.map((g) => [g.id, g.label]));
 export function ActScreen() {
   const { state } = useLoadedGame();
   const [group, setGroup] = useState<'all' | ActionCategory>('all');
-  const [onlyAvailable, setOnlyAvailable] = useState(false);
+  // Defaults on so a new player sees what they can actually do right now, not a wall of
+  // greyed-out locked actions. Still a toggle: nothing is removed, just hidden to start.
+  const [onlyAvailable, setOnlyAvailable] = useState(true);
   const views = useMemo(() => listActions(state), [state]);
   const present = new Set(views.map((v) => v.category));
   const tabs = GROUPS.filter((g) => g.id === 'all' || present.has(g.id as ActionCategory));

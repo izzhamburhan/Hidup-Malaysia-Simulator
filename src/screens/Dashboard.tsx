@@ -20,6 +20,13 @@ import type { Tab } from './GameShell';
 
 const MOOD_BUBBLE: Record<Mood, string> = { happy: '😄', neutral: '', tired: '💤', stressed: '😰', unwell: '🤒' };
 
+const CHECKLIST: { id: Exclude<Tab, 'home' | 'goals' | 'report' | 'settings'>; icon: string; label: string }[] = [
+  { id: 'act', icon: '⚡', label: 'Try Act' },
+  { id: 'money', icon: '💰', label: 'Check Money' },
+  { id: 'life', icon: '🧭', label: 'Explore Life' },
+  { id: 'feed', icon: '💬', label: 'See Feed' },
+];
+
 type Scene = { greeting: string; bg: string; dark: boolean; sky: string };
 
 function sceneFor(minute: number): Scene {
@@ -31,8 +38,10 @@ function sceneFor(minute: number): Scene {
 }
 
 export function Dashboard({ go }: { go: (t: Tab) => void }) {
-  const { state, request, step, autopilot } = useLoadedGame();
+  const { state, request, step, autopilot, settings } = useLoadedGame();
   const [more, setMore] = useState(false);
+  const checklistRemaining = CHECKLIST.filter((c) => !settings.visitedTabs[c.id]);
+  const showChecklist = checklistRemaining.length > 0 && state.clock.day < 7;
   const scene = sceneFor(state.clock.minute);
   const dark = scene.dark;
   const objective = currentObjective(state);
@@ -83,6 +92,17 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
           )}
         </div>
       </section>
+
+      {/* New here? checklist */}
+      {showChecklist && (
+        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
+          {checklistRemaining.map((c) => (
+            <Chip key={c.id} onClick={() => go(c.id)}>
+              {c.icon} {c.label}
+            </Chip>
+          ))}
+        </div>
+      )}
 
       {/* Inbox chips */}
       {(offers > 0 || interviews > 0 || invites > 0) && (

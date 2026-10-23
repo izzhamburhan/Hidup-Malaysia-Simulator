@@ -79,6 +79,32 @@ export function upcoming(s: GameState, horizon = 31): Upcoming[] {
   return out.sort((a, b) => a.day - b.day).slice(0, 8);
 }
 
+export type LifeTabId = 'career' | 'study' | 'food' | 'fitness' | 'people' | 'home' | 'transport' | 'hustle' | 'shop';
+
+/**
+ * Orders the Life screen's sub-tabs by relevance to what the player is doing right now.
+ * Never removes a tab — every id in `ALL_LIFE_TABS` always comes back exactly once — so no
+ * feature (enrolling, starting a hustle) ever becomes unreachable. Pure and read-only.
+ */
+export const ALL_LIFE_TABS: LifeTabId[] = ['career', 'study', 'food', 'fitness', 'people', 'home', 'transport', 'hustle', 'shop'];
+
+export function rankLifeTabs(s: GameState): LifeTabId[] {
+  const studying = s.education.status === 'studying';
+  const jobless = !s.career.job && !studying && s.character.lifeStage !== 'retired';
+  const score: Record<LifeTabId, number> = {
+    career: jobless ? 100 : s.career.job ? 40 : 10,
+    study: studying ? 95 : 5,
+    food: s.stats.satiety < 50 ? 70 : 30,
+    fitness: s.fitness.gymMember || s.fitness.streak > 0 ? 35 : 15,
+    people: s.relationships.partner || s.relationships.prospects.length > 0 ? 45 : 25,
+    home: 30,
+    transport: s.career.job && !s.transport.vehicleId ? 55 : 20,
+    hustle: s.hustles.length > 0 ? 50 : 8,
+    shop: 12,
+  };
+  return [...ALL_LIFE_TABS].sort((a, b) => score[b] - score[a]);
+}
+
 /** Up to four suggested action ids for the dashboard, based on time and needs. */
 export function suggestedActions(s: GameState): { id: string; param?: string }[] {
   const hour = s.clock.minute / 60;
