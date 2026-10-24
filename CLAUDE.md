@@ -67,6 +67,7 @@ src/data/              catalogues: universities, courses, companies, jobs, foods
                        lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance
 src/components/        UI components
   room/                Home room: activity.ts (action to room/animation mapping, presentation only), Room.tsx
+  celebrate/           big-moment banner: celebrations.ts (pure state diff), Celebrate.tsx
 src/screens/           screens
 src/main.tsx, src/App.tsx
 src/config.ts          public site config: analytics ID, feedback form URL, game URL
@@ -102,9 +103,9 @@ SKILLS.md              index of every skill
 | Save and migrations | done: SAVE_VERSION 2 (v2 adds the pixel character appearance), migration chain, corrupt-save quarantine, export/import |
 | Public engine API (`simulationEngine.ts`) | done: performAction, resolveEvent, listActions, runAutopilot, interact, endChapter |
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
-| UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
+| UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 18 Vitest files, 131 tests |
+| Tests | done: 19 Vitest files, 136 tests |
 
 ## Commands
 

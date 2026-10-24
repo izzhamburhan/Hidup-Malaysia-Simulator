@@ -4,6 +4,7 @@ import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { useLoadedGame } from '../hooks/useGame';
 import { useGameSounds } from '../hooks/useGameSounds';
+import { Celebrate } from '../components/celebrate/Celebrate';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
 import { ConfirmModal, DayReportModal, EventModal, FeedbackToast } from '../components/Overlays';
@@ -147,6 +148,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         }}
       />
       <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} optedOut={settings.analyticsOptOut} />
+      <Celebrate />
       <EventModal />
       <ConfirmModal />
       <DayReportModal />
