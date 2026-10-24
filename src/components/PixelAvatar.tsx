@@ -319,6 +319,11 @@ function rects(grid: Grid) {
   return out;
 }
 
+/** The sprite as horizontal runs of one colour, for drawing outside SVG (the share image). */
+export function avatarCells(appearance: Appearance, mood: Mood = 'neutral') {
+  return { width: W, height: H, cells: rects(paint(appearance, mood)) };
+}
+
 export interface PixelAvatarProps {
   appearance: Appearance;
   mood?: Mood;

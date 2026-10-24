@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Share2 } from 'lucide-react';
+import { Share2, Image as ImageIcon } from 'lucide-react';
 import { formatRM } from '../engine/core';
 import { endings, lifeReport, shareText } from '../engine/endings';
 import { useLoadedGame } from '../hooks/useGame';
+import { renderShareCard } from '../lib/shareCard';
 import { GAME_URL } from '../config';
 import { track } from '../lib/analytics';
 import { PixelAvatar } from '../components/PixelAvatar';
@@ -17,6 +18,30 @@ export function ReportScreen() {
   const ended = !!state.ending;
   const ending = ended ? (endings.find((e) => e.id === state.ending!.id) ?? report.ending) : report.ending;
   const chapterLeft = Math.max(0, state.chapterDays - state.clock.day);
+
+  const shareImage = async () => {
+    try {
+      const blob = await renderShareCard({ ...report, ending }, state.character.appearance, moodOf(state));
+      const file = new File([blob], 'hidup-malaysia.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'HIDUP MALAYSIA', text: `My life in HIDUP MALAYSIA: ${ending.title}. ${GAME_URL}` });
+        setShareMsg('Shared!');
+        track('share', { source: 'image', ending: ending.id });
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'hidup-malaysia.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      setShareMsg('Image saved. Post it anywhere!');
+      track('share', { source: 'image_download', ending: ending.id });
+    } catch (e) {
+      if ((e as Error)?.name === 'AbortError') return;
+      setShareMsg('Could not make the image here. Try Share as text.');
+    }
+  };
 
   const share = async () => {
     const text = `${shareText({ ...report, ending })}\nPlay: ${GAME_URL}`;
@@ -86,8 +111,11 @@ export function ReportScreen() {
       </div>
 
       <div className="mx-auto mt-3 grid max-w-sm grid-cols-1 gap-2">
-        <Button onClick={share}>
-          <Share2 size={16} /> Share result
+        <Button onClick={shareImage}>
+          <ImageIcon size={16} /> Share image
+        </Button>
+        <Button variant="secondary" onClick={share}>
+          <Share2 size={16} /> Share as text
         </Button>
         {shareMsg && <p className="text-center text-xs text-ink-soft">{shareMsg}</p>}
         {!ended ? (
