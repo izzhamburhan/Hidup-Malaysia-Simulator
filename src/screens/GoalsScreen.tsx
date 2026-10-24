@@ -1,14 +1,30 @@
 import { achievements, challenges, MAX_ACTIVE_CHALLENGES } from '../data/achievements';
 import { formatRM } from '../engine/core';
+import { endings } from '../engine/endings';
 import { canStartChallenge } from '../engine/progression';
 import { useLoadedGame } from '../hooks/useGame';
 import { Button, Card, Pill, SectionTitle, cx } from '../components/ui';
 
 export function GoalsScreen() {
-  const { state, interact } = useLoadedGame();
+  const { state, interact, collection } = useLoadedGame();
   const unlocked = Object.keys(state.achievements).length;
+  const found = endings.filter((e) => collection.endings[e.id]).length;
   return (
     <div>
+      <SectionTitle action={<Pill tone="gold">{found}/{endings.length} found</Pill>}>Ending collection</SectionTitle>
+      <p className="-mt-1 mb-2 text-xs text-ink-soft">Every life ends one way. Finish a chapter on the Report screen to lock yours in, then try a new life to find the rest.</p>
+      <div className="mb-4 grid grid-cols-2 gap-2">
+        {endings.map((e) => {
+          const got = collection.endings[e.id];
+          return (
+            <div key={e.id} className={cx('rounded-2xl border p-3', got ? 'border-teal bg-teal-soft/60' : 'border-dashed border-ink/20 bg-white')}>
+              <div className={cx('text-2xl', !got && 'opacity-40 grayscale')}>{got ? e.icon : '❓'}</div>
+              <div className="mt-1 text-sm font-bold leading-tight">{got ? e.title : '???'}</div>
+              <div className="text-[11px] leading-snug text-ink-soft">{got ? `Found by ${got.firstName}${got.count > 1 ? ` · ${got.count} times` : ''}` : `Hint: ${e.hint}`}</div>
+            </div>
+          );
+        })}
+      </div>
       <SectionTitle action={<Pill tone="teal">{state.challenges.active.length}/{MAX_ACTIVE_CHALLENGES} active</Pill>}>Life challenges</SectionTitle>
       <div className="space-y-2">
         {challenges.map((c) => {

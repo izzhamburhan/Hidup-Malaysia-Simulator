@@ -17,22 +17,24 @@ export interface EndingDef {
   title: string;
   icon: string;
   blurb: string;
+  /** Shown as a clue in the ending collection before it is found. */
+  hint: string;
   score: (s: GameState) => number;
 }
 
 const avg = (...n: number[]) => n.reduce((a, b) => a + b, 0) / n.length;
 
 export const endings: EndingDef[] = [
-  { id: 'stable', title: 'Financially Stable', icon: '🏦', blurb: 'Bills paid, buffer built, no 3 AM money panic. Quietly powerful.', score: (s) => Math.min(100, (netWorth(s) / 400) + (s.finance.emergencyFund > 3000 ? 20 : 0) - (totalDebt(s) > 20000 ? 10 : 0)) },
-  { id: 'career', title: 'Career-Focused', icon: '🚀', blurb: 'Titles, responsibilities and a calendar full of meetings you actually run.', score: (s) => (s.career.job ? 30 : 0) + s.career.promotions * 25 + (s.career.job?.performance ?? 0) / 4 },
-  { id: 'entrepreneur', title: 'Entrepreneur', icon: '🧑‍💼', blurb: 'You built something of your own. Messy, risky, yours.', score: (s) => s.hustles.length * 10 + s.counters.hustleProfit / 100 + (s.hustles.some((h) => h.registered) ? 30 : 0) },
-  { id: 'traveller', title: 'Adventurous Traveller', icon: '✈️', blurb: 'Memories over money. Your camera roll is a travel guide.', score: (s) => s.counters.trips * 12 },
-  { id: 'family', title: 'Family-Oriented', icon: '🏡', blurb: 'Your people come first, and they know it.', score: (s) => s.relationships.family * 0.6 + (s.relationships.partner?.stage === 'married' ? 30 : s.relationships.partner ? 10 : 0) + Math.min(20, s.counters.helpedParentsTotal / 200) },
-  { id: 'fitness', title: 'Fitness-Focused', icon: '💪', blurb: 'Strong body, sharp mind, suspiciously early mornings.', score: (s) => s.stats.fitness * 0.8 + Math.min(30, s.counters.gymSessions) },
-  { id: 'balanced', title: 'Balanced Life', icon: '⚖️', blurb: 'Not perfect, but steady. Work, rest, people and play in reasonable proportions.', score: (s) => (Math.min(s.stats.happiness, s.stats.health, 100 - s.stats.stress, s.relationships.friends, s.relationships.family) >= 50 ? 70 : 0) + avg(s.stats.happiness, s.stats.health, 100 - s.stats.stress) / 4 },
-  { id: 'burned', title: 'Burned Out', icon: '🔥', blurb: 'You gave everything to everything. Time to give something back to yourself.', score: (s) => (s.stats.stress > 80 ? 50 : 0) + (s.stats.health < 35 ? 30 : 0) + s.counters.burnouts * 15 },
-  { id: 'debt', title: 'Debt Recovery Arc', icon: '🧾', blurb: 'The numbers were scary. You faced them. The comeback is underway.', score: (s) => (totalDebt(s) > 15000 ? 40 : 0) + s.counters.debtsCleared * 20 + (s.finance.debts.some((d) => d.kind === 'overdue') ? 20 : 0) },
-  { id: 'figuring', title: 'Still Figuring Life Out', icon: '🧭', blurb: 'Plot twist: so is everyone else. The story is still being written.', score: () => 35 },
+  { id: 'stable', title: 'Financially Stable', icon: '🏦', blurb: 'Bills paid, buffer built, no 3 AM money panic. Quietly powerful.', hint: 'Build a cash buffer and keep debt low.', score: (s) => Math.min(100, (netWorth(s) / 400) + (s.finance.emergencyFund > 3000 ? 20 : 0) - (totalDebt(s) > 20000 ? 10 : 0)) },
+  { id: 'career', title: 'Career-Focused', icon: '🚀', blurb: 'Titles, responsibilities and a calendar full of meetings you actually run.', hint: 'Climb the ladder. Promotions count.', score: (s) => (s.career.job ? 30 : 0) + s.career.promotions * 25 + (s.career.job?.performance ?? 0) / 4 },
+  { id: 'entrepreneur', title: 'Entrepreneur', icon: '🧑‍💼', blurb: 'You built something of your own. Messy, risky, yours.', hint: 'Start a side hustle and grow it.', score: (s) => s.hustles.length * 10 + s.counters.hustleProfit / 100 + (s.hustles.some((h) => h.registered) ? 30 : 0) },
+  { id: 'traveller', title: 'Adventurous Traveller', icon: '✈️', blurb: 'Memories over money. Your camera roll is a travel guide.', hint: 'Take lots of trips.', score: (s) => s.counters.trips * 12 },
+  { id: 'family', title: 'Family-Oriented', icon: '🏡', blurb: 'Your people come first, and they know it.', hint: 'Stay close to your family. Maybe say "I do".', score: (s) => s.relationships.family * 0.6 + (s.relationships.partner?.stage === 'married' ? 30 : s.relationships.partner ? 10 : 0) + Math.min(20, s.counters.helpedParentsTotal / 200) },
+  { id: 'fitness', title: 'Fitness-Focused', icon: '💪', blurb: 'Strong body, sharp mind, suspiciously early mornings.', hint: 'Train hard, and often.', score: (s) => s.stats.fitness * 0.8 + Math.min(30, s.counters.gymSessions) },
+  { id: 'balanced', title: 'Balanced Life', icon: '⚖️', blurb: 'Not perfect, but steady. Work, rest, people and play in reasonable proportions.', hint: 'Keep mood, health, friends and family all healthy, and stress low.', score: (s) => (Math.min(s.stats.happiness, s.stats.health, 100 - s.stats.stress, s.relationships.friends, s.relationships.family) >= 50 ? 70 : 0) + avg(s.stats.happiness, s.stats.health, 100 - s.stats.stress) / 4 },
+  { id: 'burned', title: 'Burned Out', icon: '🔥', blurb: 'You gave everything to everything. Time to give something back to yourself.', hint: 'Push yourself far too hard for far too long.', score: (s) => (s.stats.stress > 80 ? 50 : 0) + (s.stats.health < 35 ? 30 : 0) + s.counters.burnouts * 15 },
+  { id: 'debt', title: 'Debt Recovery Arc', icon: '🧾', blurb: 'The numbers were scary. You faced them. The comeback is underway.', hint: 'Fall deep into debt, then fight your way back.', score: (s) => (totalDebt(s) > 15000 ? 40 : 0) + s.counters.debtsCleared * 20 + (s.finance.debts.some((d) => d.kind === 'overdue') ? 20 : 0) },
+  { id: 'figuring', title: 'Still Figuring Life Out', icon: '🧭', blurb: 'Plot twist: so is everyone else. The story is still being written.', hint: 'No plan needed. Just live.', score: () => 35 },
 ];
 
 export interface LifeReport {

@@ -8,7 +8,8 @@ server copy and no account.
 | Key | Holds |
 | --- | --- |
 | `hidup-malaysia:save` | The current life, as a save envelope (JSON). |
-| `hidup-malaysia:settings` | Player settings (JSON): `comparisonAnxiety`, `reducedMotion`, `confirmMajor` (the `Settings` type). Independent of the save. |
+| `hidup-malaysia:settings` | Player settings (JSON, the `Settings` type in `src/hooks/useGame.tsx`): reduced motion, analytics opt-out, tutorial seen, visited tabs, sound, vibration. Independent of the save. |
+| `hidup-malaysia:collection` | Endings found across every life (JSON `EndingCollection`: `{ version: 1, endings: { [id]: { count, firstName } } }`). Read and written by `loadCollection` / `saveCollection` in `save.ts`; a bad value loads as empty, unknown ending ids are dropped. Cleared by "Reset all game data". |
 | `hidup-malaysia:save:corrupt` | The raw text of the last save that could not be loaded, kept so it is never silently lost. |
 
 No other keys. Adding one updates this table in the same change.

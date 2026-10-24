@@ -10,7 +10,7 @@ import { moodOf } from '../engine/appearance';
 import { Button, Card, KeyValue, Modal, Pill, SectionTitle } from '../components/ui';
 
 export function ReportScreen() {
-  const { state, finishChapter, keepLiving } = useLoadedGame();
+  const { state, finishChapter, keepLiving, collection } = useLoadedGame();
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
   const report = lifeReport(state);
@@ -60,6 +60,11 @@ export function ReportScreen() {
           </div>
           <div className="font-display mt-1 text-3xl font-black leading-tight">{ending.title}</div>
           <p className="mt-1 text-sm text-white/80">{ending.blurb}</p>
+          {ended && collection.endings[ending.id]?.count === 1 && (
+            <div className="mt-2 inline-flex self-start rounded-full bg-gold px-2.5 py-0.5 text-xs font-bold text-ink">
+              ✨ New ending found! {Object.keys(collection.endings).length}/{endings.length}
+            </div>
+          )}
           <div className="mt-auto space-y-1.5 text-sm">
             <Row k="Who" v={`${report.name}, ${report.age} · day ${report.days + 1}`} />
             <Row k="Career" v={report.career} />

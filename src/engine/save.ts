@@ -3,11 +3,14 @@
 
 import { SAVE_VERSION, emptyState } from './newGame';
 import { isValidAppearance, randomAppearance } from './appearance';
+import { endings } from './endings';
 import type { GameState } from './types';
 
 export const SAVE_KEY = 'hidup-malaysia:save';
 export const CORRUPT_KEY = 'hidup-malaysia:save:corrupt';
 export const SETTINGS_KEY = 'hidup-malaysia:settings';
+/** Endings found across every life. Lives outside the save so a new life keeps it. */
+export const COLLECTION_KEY = 'hidup-malaysia:collection';
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -154,5 +157,41 @@ export function clearSave(storage: StorageLike): void {
     storage.removeItem(CORRUPT_KEY);
   } catch {
     /* ignore */
+  }
+}
+
+export interface EndingCollection {
+  version: 1;
+  endings: Record<string, { count: number; firstName: string }>;
+}
+
+export const emptyCollection = (): EndingCollection => ({ version: 1, endings: {} });
+
+export function recordEnding(c: EndingCollection, endingId: string, name: string): EndingCollection {
+  const prev = c.endings[endingId];
+  return { version: 1, endings: { ...c.endings, [endingId]: prev ? { ...prev, count: prev.count + 1 } : { count: 1, firstName: name } } };
+}
+
+/** Never throws: anything unreadable becomes an empty collection, unknown endings are dropped. */
+export function loadCollection(storage: StorageLike): EndingCollection {
+  try {
+    const raw = JSON.parse(storage.getItem(COLLECTION_KEY) ?? 'null') as { endings?: unknown } | null;
+    if (!raw || typeof raw.endings !== 'object' || raw.endings === null || Array.isArray(raw.endings)) return emptyCollection();
+    const out = emptyCollection();
+    for (const e of endings) {
+      const v = (raw.endings as Record<string, { count?: unknown; firstName?: unknown }>)[e.id];
+      if (v && Number.isInteger(v.count) && (v.count as number) > 0 && typeof v.firstName === 'string') out.endings[e.id] = { count: v.count as number, firstName: v.firstName };
+    }
+    return out;
+  } catch {
+    return emptyCollection();
+  }
+}
+
+export function saveCollection(storage: StorageLike, c: EndingCollection): void {
+  try {
+    storage.setItem(COLLECTION_KEY, JSON.stringify(c));
+  } catch {
+    /* storage unavailable or full: the collection is a nice-to-have */
   }
 }

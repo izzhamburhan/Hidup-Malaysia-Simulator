@@ -52,6 +52,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
 | Actions catalogue | done: 96 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 42 achievements, 10 challenges, 10 endings, life report, share card |
+| Ending collection | done: endings found across all lives (own LocalStorage key), Goals gallery with hints, "new ending found" on the Report |
 | Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day) |
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
 | Home decor | done: 16 decor items in four slots, bought from the room's Decorate button, shown in the living room and bedroom, small daily comfort bonus |
@@ -61,7 +62,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 23 Vitest files, 163 tests |
+| Tests | done: 24 Vitest files, 167 tests |
 
 ## Commands
 
@@ -113,7 +114,7 @@ Real universities and companies are catalogue names only: no implied vacancies, 
 
 ## Save format
 
-LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`; settings under `hidup-malaysia:settings`; corrupt saves are copied to `hidup-malaysia:save:corrupt`. `SAVE_VERSION` is currently 2 (v2 adds the pixel character appearance). Contract: `docs/contracts/save-format.md`.
+LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`; settings under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; corrupt saves are copied to `hidup-malaysia:save:corrupt`. `SAVE_VERSION` is currently 2 (v2 adds the pixel character appearance). Contract: `docs/contracts/save-format.md`.
 
 ## MCP server
 

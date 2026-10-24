@@ -103,6 +103,7 @@ SKILLS.md              index of every skill
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
 | Actions catalogue | done: 96 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 42 achievements, 10 challenges, 10 endings, life report, share card |
+| Ending collection | done: endings found across all lives (own LocalStorage key), Goals gallery with hints, "new ending found" on the Report |
 | Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day) |
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
 | Home decor | done: 16 decor items in four slots, bought from the room's Decorate button, shown in the living room and bedroom, small daily comfort bonus |
@@ -112,7 +113,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 23 Vitest files, 163 tests |
+| Tests | done: 24 Vitest files, 167 tests |
 
 ## Commands
 
@@ -171,7 +172,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 
 ## Save and versioning
 
-- LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`. Settings live under `hidup-malaysia:settings`.
+- LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`. Settings live under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`.
 - `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 5; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
 - Any change to the shape of `GameState` bumps `SAVE_VERSION`, adds a migration from the previous version, and adds a Vitest test that migrates a fixture of the old shape.
 - A corrupt or unreadable save never crashes the app: the raw text is backed up to `hidup-malaysia:save:corrupt` and the player gets a clear message and a fresh start.

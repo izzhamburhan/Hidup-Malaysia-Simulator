@@ -8,7 +8,7 @@ import {
   type ActionView,
 } from '../engine/simulationEngine';
 import { actionById } from '../engine/actions';
-import { clearSave, deserialize, loadGame, saveGame, SETTINGS_KEY, type LoadResult } from '../engine/save';
+import { COLLECTION_KEY, clearSave, deserialize, emptyCollection, loadCollection, loadGame, recordEnding, saveCollection, saveGame, SETTINGS_KEY, type EndingCollection, type LoadResult } from '../engine/save';
 import type { ActionFeedback, DayReport, GameState, NewGameOptions } from '../engine/types';
 import { TRACK_ACTIONS } from '../config';
 import { initAnalytics, track } from '../lib/analytics';
@@ -69,6 +69,8 @@ interface GameApi {
   saveError: boolean;
   settings: Settings;
   lastActivity: LastActivity | null;
+  /** Endings found across every life. */
+  collection: EndingCollection;
   start: (options: NewGameOptions) => void;
   act: (actionId: string, param?: string, source?: ActionSource) => ActionFeedback;
   request: (view: ActionView, source?: ActionSource) => void;
@@ -104,6 +106,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [saveError, setSaveError] = useState(false);
   const [settings, setSettingsState] = useState<Settings>(loadSettings);
   const [lastActivity, setLastActivity] = useState<LastActivity | null>(null);
+  const [collection, setCollection] = useState<EndingCollection>(() => {
+    const store = storage();
+    return store ? loadCollection(store) : emptyCollection();
+  });
   const played = useCallback((id: string, param?: string) => setLastActivity((p) => ({ id, param, seq: (p?.seq ?? 0) + 1 })), []);
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -176,6 +182,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       saveError,
       settings,
       lastActivity,
+      collection,
       start: (options) => {
         const seed = options.seed ?? (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
         const s = engineNewGame({ ...options, seed });
@@ -240,6 +247,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (!current) return;
         const next = endChapter(current);
         setState(next);
+        if (next.ending) {
+          const updated = recordEnding(collection, next.ending.id, next.character.name);
+          setCollection(updated);
+          const store = storage();
+          if (store) saveCollection(store, updated);
+        }
         track('chapter_end', { ending: next.ending?.id, day: next.clock.day });
       },
       keepLiving: () => {
@@ -260,6 +273,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           clearSave(store);
           try {
             store.removeItem(SETTINGS_KEY);
+            store.removeItem(COLLECTION_KEY);
           } catch {
             /* ignore */
           }
@@ -269,6 +283,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setFeedback(null);
         setDayReport(null);
         setSettingsState(defaultSettings);
+        setCollection(emptyCollection());
       },
       importSave: (text) => {
         const res = deserialize(text.trim());
@@ -295,7 +310,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
       },
     }),
-    [state, boot, feedback, dayReport, confirmFor, lastSavedAt, saveError, settings, lastActivity, act, request, commit, played],
+    [state, boot, feedback, dayReport, confirmFor, lastSavedAt, saveError, settings, lastActivity, collection, act, request, commit, played],
   );
 
   return <GameContext.Provider value={api}>{children}</GameContext.Provider>;
