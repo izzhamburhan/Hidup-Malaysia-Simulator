@@ -10,6 +10,7 @@ import type { Appearance, GameMode, LifeStage, Mood } from '../engine/types';
 import { randomAppearance } from '../engine/appearance';
 import { AvatarEditor } from '../components/AvatarEditor';
 import { PixelAvatar } from '../components/PixelAvatar';
+import { StateFlag } from '../components/StateFlag';
 import { useGame } from '../hooks/useGame';
 import { Button, Card, Disclaimer, SectionTitle, cx } from '../components/ui';
 
@@ -161,14 +162,24 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
           </span>
           <input type="range" min={stageDef.ageRange[0]} max={stageDef.ageRange[1]} value={age} onChange={(e) => setAge(Number(e.target.value))} className="mt-1 w-full accent-teal" />
         </label>
-        <label className="block text-sm">
+        <div className="text-sm">
           <span className="font-medium">Home state</span>
-          <select value={homeState} onChange={(e) => setHomeState(e.target.value)} className={selectClass}>
+          <div className="mt-1 grid grid-cols-4 gap-1.5" role="radiogroup" aria-label="Home state">
             {homeStates.map((s) => (
-              <option key={s}>{s}</option>
+              <button
+                key={s}
+                type="button"
+                role="radio"
+                aria-checked={homeState === s}
+                onClick={() => setHomeState(s)}
+                className={cx('flex flex-col items-center gap-1 rounded-xl border p-1.5 text-center', homeState === s ? 'border-teal bg-teal-soft ring-2 ring-teal/30' : 'border-ink/10 bg-white')}
+              >
+                <StateFlag state={s} width={44} />
+                <span className="line-clamp-2 text-[10px] font-semibold leading-tight">{s}</span>
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
 
         {stage === 'student' && (
           <>

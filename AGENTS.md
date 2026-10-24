@@ -52,6 +52,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
 | Actions catalogue | done: 99 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 43 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| State flags | done: official flags of all 13 states and 3 federal territories (Wikimedia Commons, credited), flag grid in character creation, flag in the game header |
 | Festive seasons | done: 11 seasons on the simulated calendar (CNY, Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
 | Starter quests | done: 6 quests for a new life (eat, move, career step, chat, make it yours, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
@@ -68,7 +69,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 32 Vitest files, 195 tests |
+| Tests | done: 33 Vitest files, 199 tests |
 
 ## Commands
 
@@ -117,6 +118,7 @@ Live: https://hidupmalaysia.com/ (custom domain on Cloudflare Registrar; DNS: fo
 ## Data honesty
 
 Real universities and companies are catalogue names only: no implied vacancies, rankings, fees, salaries or practices. No real logos or brand marks: organisations show a neutral initials badge (`OrgBadge`) in the game palette. Salaries, tuition, prices, rents and vehicle costs are FICTIONAL GAME ESTIMATES and labelled so. Calories are rough estimates, not medical or nutrition advice. Payroll (EPF/KWSP, SOCSO/PERKESO, EIS, PCB/LHDN) is a SIMPLIFIED SIMULATION with rates and official links in `src/data/statutory.ts`; a payslip is never presented as official. Holiday dates are a simulated calendar. Humour is original, friendly and recognisably Malaysian; no defamation of real people; politics only via fictional parties and politicians in the fictional town of Seri Harapan; no ethnic or religious stereotypes; being single and every ending are valid outcomes.
+State and federal territory flags are the one exception to "no real marks": official files from Wikimedia Commons in `public/flags/`, unmodified, licence-checked and credited in `src/data/stateFlags.ts` and Settings → Credits (CC BY-SA files keep their author credit), shown for identification only with no implied endorsement. Never hand-draw or alter them.
 No pig or pork, alcohol or gambling imagery anywhere (emoji included); `tests/content.test.ts` enforces the emoji list.
 
 ## Save format

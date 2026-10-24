@@ -110,6 +110,7 @@ SKILLS.md              index of every skill
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
 | Actions catalogue | done: 99 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 43 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| State flags | done: official flags of all 13 states and 3 federal territories (Wikimedia Commons, credited), flag grid in character creation, flag in the game header |
 | Festive seasons | done: 11 seasons on the simulated calendar (CNY, Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
 | Starter quests | done: 6 quests for a new life (eat, move, career step, chat, make it yours, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
@@ -126,7 +127,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 32 Vitest files, 195 tests |
+| Tests | done: 33 Vitest files, 199 tests |
 
 ## Commands
 
@@ -176,6 +177,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 
 - **Real names are catalogue names only.** Real universities and companies appear as names. Their presence implies no vacancies, rankings, entry requirements, fees, salaries or practices.
 - **No real logos or brand marks.** Organisations are shown with a neutral initials badge (`OrgBadge`: game palette, plain text, one shape for all), never a logo, brand colour or lookalike. Logos are trademarks and would imply endorsement.
+- **State flags.** State and federal territory flags are the one exception to "no real marks": official files from Wikimedia Commons in `public/flags/`, unmodified, licence-checked and credited in `src/data/stateFlags.ts` and Settings → Credits (CC BY-SA files keep their author credit), shown for identification only with no implied endorsement. Never hand-draw or alter them.
 - **Numbers are fictional game estimates.** Salaries, tuition, prices, rents, deposits, vehicle and running costs are FICTIONAL GAME ESTIMATES chosen for balance, and every catalogue file says so in its header comment. UI copy never presents them as market data.
 - **Calories are rough estimates** for gameplay, not medical or nutrition advice.
 - **Payroll is a SIMPLIFIED SIMULATION** of EPF/KWSP, SOCSO/PERKESO, EIS and PCB/LHDN. Rates live in `src/data/statutory.ts` with links to the official sources. A payslip always shows `STATUTORY_DISCLAIMER` and is never presented as official. See `docs/contracts/payroll.md`.

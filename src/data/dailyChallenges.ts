@@ -63,7 +63,7 @@ export const DAILY_CHALLENGES: DailyChallenge[] = [
     icon: '💰',
     blurb: 'Payday was yesterday. How much of it survives the week?',
     goal: 'Grow your net worth by RM300.',
-    options: { backgroundId: 'middle', lifeStage: 'working', startAge: 26, homeState: 'Penang', jobId: 'swe' },
+    options: { backgroundId: 'middle', lifeStage: 'working', startAge: 26, homeState: 'Pulau Pinang', jobId: 'swe' },
     won: (s) => netWorth(s) - startWorth(s) >= 300,
   },
   {

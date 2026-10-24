@@ -33,6 +33,7 @@ and the risk. The facts live in `AGENTS.md` (Data honesty, Adding content),
 - Politics only through fictional parties and fictional politicians in the fictional town of Seri Harapan. No real parties, politicians, or current controversies.
 - No ethnic or religious stereotypes, and no jokes about race, religion, disability, or appearance. Festivals are celebrated warmly and respectfully.
 - No pig or pork, alcohol or gambling imagery anywhere (emoji included); `tests/content.test.ts` enforces the emoji list.
+- State and federal territory flags are the one exception to "no real marks": official files from Wikimedia Commons in `public/flags/`, unmodified, licence-checked and credited in `src/data/stateFlags.ts` and Settings → Credits (CC BY-SA files keep their author credit), shown for identification only with no implied endorsement. Never hand-draw or alter them.
 - Being single, not marrying, renting forever, not owning a car, and every ending are valid outcomes, never framed as failure.
 - Mental health and debt are handled kindly: no shaming, and serious states point to rest or help, not punchlines.
 - Copy is clear plain English; Malay and Manglish phrases are welcome where natural.

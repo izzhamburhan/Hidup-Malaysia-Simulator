@@ -8,6 +8,7 @@ import { useT } from '../hooks/useT';
 import type { StringKey } from '../i18n';
 import { Celebrate } from '../components/celebrate/Celebrate';
 import { PixelAvatar } from '../components/PixelAvatar';
+import { StateFlag } from '../components/StateFlag';
 import { moodOf } from '../engine/appearance';
 import { ConfirmModal, DayReportModal, EventModal, FeedbackToast } from '../components/Overlays';
 import { Modal, cx } from '../components/ui';
@@ -58,6 +59,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
           </button>
           <div className="min-w-0 flex-1">
             <div className="truncate text-[11px] font-semibold text-ink-soft">
+              <StateFlag state={state.character.homeState} width={18} className="mr-1 align-[-2px]" />
               Day {state.clock.day + 1} · {formatDate(state)} · Age {ageOf(state)}
               {state.mode === 'chaotic' && <span className="ml-1 text-hibiscus">· 🌀</span>}
             </div>

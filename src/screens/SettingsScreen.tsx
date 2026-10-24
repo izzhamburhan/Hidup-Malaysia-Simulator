@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Download, Trash2, Upload } from 'lucide-react';
 import { useLoadedGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
+import { CC_BY_SA_3, STATE_FLAGS } from '../data/stateFlags';
+import { StateFlag } from '../components/StateFlag';
 import { IosInstallHelp, useInstall } from '../components/InstallBanner';
 import { Button, Card, Disclaimer, KeyValue, Modal, SectionTitle } from '../components/ui';
 import { PrivacyNotice } from '../components/PrivacyNotice';
@@ -123,6 +125,34 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
         <Button variant="secondary" className="w-full" onClick={() => setPrivacy(true)}>
           Read the privacy note
         </Button>
+      </Card>
+
+      <SectionTitle>Credits</SectionTitle>
+      <Card className="space-y-2 text-xs text-ink-soft">
+        <p>State and federal territory flags are from Wikimedia Commons, shown for identification only. No state government is connected with this game.</p>
+        <ul className="space-y-1">
+          {STATE_FLAGS.map((f) => (
+            <li key={f.state} className="flex items-center gap-2">
+              <StateFlag state={f.state} width={20} />
+              <span className="min-w-0 flex-1">
+                <a href={f.source} target="_blank" rel="noreferrer" className="font-semibold text-teal underline">
+                  {f.state}
+                </a>
+                {' · '}
+                {f.license === 'CC BY-SA 3.0' ? (
+                  <>
+                    by {f.author},{' '}
+                    <a href={CC_BY_SA_3} target="_blank" rel="noreferrer" className="underline">
+                      CC BY-SA 3.0
+                    </a>
+                  </>
+                ) : (
+                  'Public domain'
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
       </Card>
 
       <SectionTitle>Danger zone</SectionTitle>
