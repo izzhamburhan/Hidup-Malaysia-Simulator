@@ -6,6 +6,7 @@ import { foodById } from '../../data/foods';
 import { moodOf } from '../../engine/appearance';
 import type { Mood } from '../../engine/types';
 import { decorById } from '../../data/decor';
+import { festiveSeason } from '../../engine/festive';
 import { viewAction } from '../../engine/simulationEngine';
 import { useLoadedGame } from '../../hooks/useGame';
 import { useT } from '../../hooks/useT';
@@ -72,6 +73,7 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
   const home = roomId === 'livingroom' || roomId === 'bedroom';
   const mine = (slot: 'wall' | 'left' | 'right' | 'centre', fallback: string) => (home ? decorById(state.decor.placed[slot])?.icon : undefined) ?? fallback;
   const centre = home ? decorById(state.decor.placed.centre)?.icon : undefined;
+  const season = home ? festiveSeason(state) : null;
   const petBusy = playing?.activity === 'petfeed' || playing?.activity === 'petplay';
 
   return (
@@ -91,6 +93,16 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
           <div className="font-display truncate text-[15px] font-black leading-tight text-ink">{title}</div>
           <div className="truncate text-xs text-ink-soft">{detail}</div>
         </button>
+
+        {season && (
+          <div className="garland pointer-events-none absolute inset-x-6 top-[88px] flex justify-between text-xl" aria-label={`${season.name} decorations`}>
+            {[...season.garland, ...season.garland].map((g, i) => (
+              <span key={i} className="garland-item" style={{ animationDelay: `${(i % 4) * 0.25}s` }} aria-hidden>
+                {g}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Floor */}
         <div className="room-floor absolute inset-x-0 bottom-0 h-[30%]" style={{ backgroundColor: room.floor }} aria-hidden />

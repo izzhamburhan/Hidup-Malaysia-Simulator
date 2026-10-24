@@ -57,6 +57,7 @@ src/engine/            pure simulation engine (no React, no DOM)
   business.ts          side hustles
   pet.ts               Oyen the cat: adopt, feed, play, daily hunger and mood
   decor.ts             home decor: buy, place, daily comfort bonus
+  festive.ts           festive seasons: which is on (nearest wins), greetings, duit raya / angpau, festive outfit unlocks
   quests.ts            starter quests: status, claim reasons, rewards
   chat.ts              chat threads: day's script (pure pick), reply effects, one reply a day
   dailyChallenge.ts    daily challenge: scenario and seed from a date, newDailyGame, dailyStatus
@@ -69,7 +70,7 @@ src/engine/            pure simulation engine (no React, no DOM)
   save.ts              versioned LocalStorage save and migrations
   simulationEngine.ts  public API: newGame, performAction, resolveEvent, listActions, runAutopilot (and helpers)
 src/data/              catalogues: universities, courses, companies, jobs, foods, vehicles, housing,
-                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats, quests
+                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats, quests, festive
 src/components/        UI components
   room/                Home room: activity.ts (action to room/animation mapping, presentation only), Room.tsx
   celebrate/           big-moment banner: celebrations.ts (pure state diff), Celebrate.tsx
@@ -107,8 +108,9 @@ SKILLS.md              index of every skill
 | Education | done: 24 institutions, 14 courses, classes, assignments, exams/GPA/CGPA, FYP, probation, graduation, PTPTN-style loan |
 | Social and feed | done: prospects, dating stages to marriage, breakups, family/friends drift, fictional feed with likes and invites |
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
-| Actions catalogue | done: 98 actions across 15 categories with availability reasons and confirmations |
+| Actions catalogue | done: 99 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 43 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| Festive seasons | done: 11 seasons on the simulated calendar (CNY, Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
 | Starter quests | done: 6 quests for a new life (eat, move, career step, chat, make it yours, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
 | Chat | done: partner, Geng Lepak (friends) and family threads on the Feed tab; 16 scripted conversations, pick one of 3 replies, real effects on trust, friends and family, one reply per thread a day |
@@ -119,12 +121,12 @@ SKILLS.md              index of every skill
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
 | Home decor | done: 16 decor items in four slots, bought from the room's Decorate button, shown in the living room and bedroom, small daily comfort bonus |
 | Pets | done: Oyen the cat (adopt from Act or a stray event), feed and play, daily hunger and mood, shown in the Home room |
-| Save and migrations | done: SAVE_VERSION 5 (v2 adds the pixel character appearance, v3 the pet, v4 home decor, v5 wardrobe unlocks), migration chain, corrupt-save quarantine, export/import |
+| Save and migrations | done: SAVE_VERSION 6 (v2 adds the pixel character appearance, v3 the pet, v4 home decor, v5 wardrobe unlocks, v6 festive outfits), migration chain, corrupt-save quarantine, export/import |
 | Public engine API (`simulationEngine.ts`) | done: performAction, resolveEvent, listActions, runAutopilot, interact, endChapter |
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 31 Vitest files, 190 tests |
+| Tests | done: 32 Vitest files, 195 tests |
 
 ## Commands
 
@@ -185,7 +187,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 ## Save and versioning
 
 - LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`. Settings live under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot, never the main life).
-- `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 5; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
+- `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 6; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
 - Any change to the shape of `GameState` bumps `SAVE_VERSION`, adds a migration from the previous version, and adds a Vitest test that migrates a fixture of the old shape.
 - A corrupt or unreadable save never crashes the app: the raw text is backed up to `hidup-malaysia:save:corrupt` and the player gets a clear message and a fresh start.
 - Full contract: `docs/contracts/save-format.md`.

@@ -1,5 +1,6 @@
 import { chatActions } from './chatActions';
 import { decorActions } from './decorActions';
+import { festiveActions } from './festiveActions';
 import { lifeActions } from './lifeActions';
 import { minigameActions } from './minigameActions';
 import { ownershipActions } from './ownershipActions';
@@ -10,7 +11,7 @@ import type { ActionDef } from './types';
 import { wardrobeActions } from './wardrobeActions';
 import { workActions } from './workActions';
 
-export const actionCatalogue: ActionDef[] = [...lifeActions, ...workActions, ...peopleActions, ...ownershipActions, ...petActions, ...decorActions, ...wardrobeActions, ...minigameActions, ...chatActions, ...questActions];
+export const actionCatalogue: ActionDef[] = [...lifeActions, ...workActions, ...peopleActions, ...ownershipActions, ...petActions, ...decorActions, ...wardrobeActions, ...minigameActions, ...chatActions, ...questActions, ...festiveActions];
 
 const byId = new Map<string, ActionDef>();
 for (const a of actionCatalogue) {

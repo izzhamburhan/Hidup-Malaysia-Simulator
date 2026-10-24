@@ -1,7 +1,7 @@
 // Pixel character appearance helpers. Appearance is cosmetic and uses its own
 // seeded generator, so it never consumes state.rng or changes simulation results.
 
-import { hairColors, hairStyles, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits, skinTones } from '../data/appearance';
+import { festiveOutfits, hairColors, hairStyles, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits, skinTones } from '../data/appearance';
 import { seedFromString } from './rng';
 import type { Appearance, GameState, Mood } from './types';
 
@@ -46,7 +46,7 @@ export function isValidAppearance(a: unknown): a is Appearance {
     inRange(x.hairColor, hairColors.length) &&
     inRange(x.outfitColor, outfitColors.length) &&
     hairStyles.some((h) => h.id === x.hair) &&
-    [...outfits, ...lockedOutfits].some((o) => o.id === x.outfit) &&
+    [...outfits, ...lockedOutfits, ...festiveOutfits].some((o) => o.id === x.outfit) &&
     [...headwears, ...lockedHeadwears].some((h) => h.id === x.headwear) &&
     typeof x.glasses === 'boolean'
   );

@@ -1,7 +1,8 @@
 // Changing your look mid-game. Purely cosmetic: appearance never feeds the simulation.
 
 import { achievements } from '../../data/achievements';
-import { headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits } from '../../data/appearance';
+import { festiveOutfits, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits } from '../../data/appearance';
+import { festiveOutfitKey } from '../festive';
 import type { GameState, Headwear, Outfit } from '../types';
 import type { ActionDef } from './types';
 
@@ -15,6 +16,8 @@ const achievementTitle = (id: string) => achievements.find((a) => a.id === id)?.
 function lockReason(s: GameState, kind: string, value: string): string | null {
   if (kind === 'outfit') {
     if (outfits.some((o) => o.id === value)) return null;
+    const festive = festiveOutfits.find((o) => o.id === value);
+    if (festive) return s.flags[festiveOutfitKey(festive.season)] !== undefined ? null : `Send wishes during ${festive.seasonName} to unlock it.`;
     const locked = lockedOutfits.find((o) => o.id === value);
     if (!locked) return 'That outfit is not in your wardrobe.';
     return s.achievements[locked.achievement] !== undefined ? null : `Unlock with the achievement "${achievementTitle(locked.achievement)}".`;

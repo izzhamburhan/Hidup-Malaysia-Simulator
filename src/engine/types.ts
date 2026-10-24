@@ -19,7 +19,7 @@ export interface Clock {
 }
 
 export type HairStyle = 'short' | 'side' | 'spiky' | 'curly' | 'long' | 'bun' | 'bald';
-export type Outfit = 'tshirt' | 'kemeja' | 'hoodie' | 'blazer' | 'baju-kurung' | 'baju-melayu' | 'jersey' | 'batik' | 'grad-gown' | 'chef' | 'suit';
+export type Outfit = 'tshirt' | 'kemeja' | 'hoodie' | 'blazer' | 'baju-kurung' | 'baju-melayu' | 'jersey' | 'batik' | 'grad-gown' | 'chef' | 'suit' | 'cheongsam' | 'kurta' | 'christmas-sweater' | 'merdeka-tee';
 export type Headwear = 'none' | 'tudung' | 'songkok' | 'cap' | 'grad-cap' | 'helmet' | 'crown';
 export type Mood = 'happy' | 'neutral' | 'tired' | 'stressed' | 'unwell';
 

@@ -217,6 +217,16 @@ body {
 }
 .cat-idle { animation: cat-idle 4s ease-in-out infinite; transform-origin: bottom center; display: inline-block; }
 
+.garland {
+  border-top: 2px dashed rgba(29, 27, 22, 0.18);
+  padding-top: 2px;
+}
+@keyframes garland-sway {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+.garland-item { display: inline-block; transform-origin: top center; animation: garland-sway 2.4s ease-in-out infinite; }
+
 @keyframes float-up {
   0% { transform: translateY(10px) scale(0.6); opacity: 0; }
   20% { opacity: 1; }
@@ -265,6 +275,7 @@ body {
   }
   .celebrate-icon,
   .cat-idle,
+  .garland-item,
   [class*='motion-'],
   [class*='travel-'],
   .held-eat,

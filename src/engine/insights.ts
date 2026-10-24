@@ -14,6 +14,7 @@ import { jobEligibility } from './career';
 import { currentHome } from './living';
 import { actionById, type ActionView } from './actions';
 import { describeAction } from './simulationEngine';
+import { festiveSeason, greetReason } from './festive';
 import type { GameState } from './types';
 
 export interface Objective {
@@ -224,6 +225,7 @@ export function quickActions(s: GameState): ActionView[] {
   const hour = s.clock.minute / 60;
   const studying = s.education.status === 'studying';
   const candidates: (ActionView | null)[] = [
+    festiveSeason(s) && !greetReason(s) ? view(s, 'festive-greet') : null,
     mealFor(s),
     s.pet && s.pet.fullness < 50 ? view(s, 'feed-pet') : null,
     s.career.job ? view(s, 'work-shift') : null,

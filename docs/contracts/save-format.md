@@ -94,6 +94,7 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 | 3 | Adds `pet` (Oyen the cat), `null` until the player adopts one. |
 | 4 | Adds `decor` (`owned` ids and `placed` by slot) for the Home room. |
 | 5 | Widens `Outfit` and `Headwear` with wardrobe unlocks; no data change. |
+| 6 | Widens `Outfit` with festive outfits (cheongsam, kurta, Christmas sweater, Merdeka tee); no data change. |
 
 ## Privacy
 
@@ -128,3 +129,10 @@ life without a pet").
 `src/data/appearance.ts`). Every version-4 look is still valid, so `migrations[4]` only sets the
 version. `isValidAppearance` accepts base and unlockable items. Test: `tests/wardrobe.test.ts`
 ("migrates a version-4 save without changing the look").
+
+## Version 6 (festive outfits)
+
+`Outfit` gains `cheongsam`, `kurta`, `christmas-sweater` and `merdeka-tee`, unlocked by sending
+wishes during that festival's season (`festiveOutfits` in `src/data/appearance.ts`, unlock flag
+`festive-outfit-<season>`). Every version-5 look is still valid, so `migrations[5]` only sets the
+version. Test: `tests/festive.test.ts` ("migrates a version-5 save unchanged").

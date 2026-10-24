@@ -127,6 +127,43 @@ function paint(a: Appearance, mood: Mood): Grid {
       set(12, 10, WHITE);
       rect(15, 6, 15, 9, '#d6d3cc');
       break;
+    case 'cheongsam': {
+      const red = '#c81e1e';
+      rect(12, 3, 17, 12, red);
+      rect(12, 2, 15, 2, red);
+      rect(12, 13, 15, 13, red);
+      rect(12, 6, 12, 9, '#e7b432');
+      set(13, 9, '#e7b432');
+      set(14, 10, '#e7b432');
+      set(15, 9, '#e7b432');
+      for (const [r, c] of [[14, 5], [16, 7], [15, 11], [17, 4], [17, 10]]) set(r, c, shade(red, 0.35));
+      break;
+    }
+    case 'kurta':
+      rect(12, 7, 16, 8, clothLight);
+      for (const r of [13, 15]) set(r, 7, '#e7b432');
+      rect(17, 3, 17, 12, shade(cloth, 0.2));
+      for (let c = 3; c <= 12; c += 2) set(17, c, '#e7b432');
+      break;
+    case 'christmas-sweater': {
+      const green = '#2f7d4f';
+      rect(12, 3, 17, 12, green);
+      rect(12, 2, 15, 2, green);
+      rect(12, 13, 15, 13, green);
+      for (let c = 3; c <= 12; c++) set(14, c, c % 2 ? '#c81e1e' : WHITE);
+      for (const [r, c] of [[12, 5], [16, 7], [16, 10], [13, 11]]) set(r, c, WHITE);
+      break;
+    }
+    case 'merdeka-tee':
+      rect(14, 2, 15, 2, skin);
+      rect(14, 13, 15, 13, skin);
+      set(12, 7, skin);
+      set(12, 8, skin);
+      for (let r = 13; r <= 17; r++) rect(r, 3, r, 12, r % 2 ? '#c81e1e' : WHITE);
+      rect(12, 3, 14, 6, '#1e3a8a');
+      set(13, 4, '#e7b432');
+      set(13, 5, '#e7b432');
+      break;
     case 'suit': {
       const jacket = '#2a2f3a';
       rect(12, 3, 17, 12, jacket);

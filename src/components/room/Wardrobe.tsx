@@ -1,5 +1,6 @@
 import { achievements } from '../../data/achievements';
-import { headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits } from '../../data/appearance';
+import { festiveOutfits, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits } from '../../data/appearance';
+import { festiveOutfitKey } from '../../engine/festive';
 import { viewAction } from '../../engine/simulationEngine';
 import type { Appearance } from '../../engine/types';
 import { useLoadedGame } from '../../hooks/useGame';
@@ -30,6 +31,12 @@ export function Wardrobe({ open, onClose }: { open: boolean; onClose: () => void
       <div className="grid grid-cols-3 gap-2">
         {outfitItems.map((o) => (
           <Tile key={o.id} label={o.label} preview={{ ...look, outfit: o.id }} active={look.outfit === o.id} lockedBy={has(o.achievement) ? undefined : titleOf(o.achievement!)} onClick={() => wear(`outfit:${o.id}`)} />
+        ))}
+      </div>
+      <SectionTitle>Festive</SectionTitle>
+      <div className="grid grid-cols-3 gap-2">
+        {festiveOutfits.map((o) => (
+          <Tile key={o.id} label={o.label} preview={{ ...look, outfit: o.id }} active={look.outfit === o.id} lockedBy={state.flags[festiveOutfitKey(o.season)] !== undefined ? undefined : `${o.seasonName} wishes`} onClick={() => wear(`outfit:${o.id}`)} />
         ))}
       </div>
       <SectionTitle>Colour</SectionTitle>

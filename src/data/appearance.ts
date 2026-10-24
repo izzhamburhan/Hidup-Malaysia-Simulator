@@ -48,3 +48,11 @@ export const lockedHeadwears: { id: Headwear; label: string; achievement: string
   { id: 'grad-cap', label: 'Mortarboard', achievement: 'graduate' },
   { id: 'crown', label: 'Crown', achievement: 'saver-10k' },
 ];
+
+/** Festive outfits: unlocked for good by sending wishes during that festival's season. */
+export const festiveOutfits: { id: Outfit; label: string; season: string; seasonName: string }[] = [
+  { id: 'cheongsam', label: 'Cheongsam', season: 'cny', seasonName: 'Chinese New Year' },
+  { id: 'merdeka-tee', label: 'Merdeka tee', season: 'merdeka', seasonName: 'Merdeka' },
+  { id: 'kurta', label: 'Kurta', season: 'deepavali', seasonName: 'Deepavali' },
+  { id: 'christmas-sweater', label: 'Christmas sweater', season: 'christmas', seasonName: 'Christmas' },
+];
