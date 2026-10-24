@@ -13,6 +13,7 @@ import { cx } from '../ui';
 import { ACTIVITIES, ROOMS, activityFor, idleRoom, type Activity } from './activity';
 import { DecorShop } from './DecorShop';
 import { Wardrobe } from './Wardrobe';
+import { Minigames } from '../minigames/Minigames';
 
 const PLAY_MS = 2600;
 const MOOD_BUBBLE: Record<Mood, string> = { happy: '😄', neutral: '', tired: '💤', stressed: '😰', unwell: '🤒' };
@@ -40,6 +41,7 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
   const [playing, setPlaying] = useState<Playing | null>(null);
   const [shop, setShop] = useState(false);
   const [wardrobe, setWardrobe] = useState(false);
+  const [games, setGames] = useState(false);
 
   useEffect(() => {
     if (!lastActivity || lastActivity.seq <= seenSeq) return;
@@ -110,7 +112,7 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
               const v = viewAction(state, 'play-pet');
               if (v) request(v, 'tile');
             }}
-            className="absolute bottom-[8%] right-[13%] z-10 flex flex-col items-center"
+            className="absolute bottom-[10%] right-[4%] z-10 flex flex-col items-center"
             aria-label={`Play with ${state.pet.name}`}
           >
             <span className="rounded-full bg-white/85 px-1.5 text-sm leading-tight shadow-sm" aria-hidden>
@@ -160,10 +162,13 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
         {home && !playing ? (
           <div className="absolute bottom-2 left-3 z-10 flex gap-1.5">
             <button type="button" onClick={() => setShop(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              🛋️ Decorate
+              🛋️ Decor
             </button>
             <button type="button" onClick={() => setWardrobe(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              👕 Wardrobe
+              👕 Style
+            </button>
+            <button type="button" onClick={() => setGames(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
+              🎮 Games
             </button>
           </div>
         ) : (
@@ -172,6 +177,7 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
       </section>
       <DecorShop open={shop} onClose={() => setShop(false)} />
       <Wardrobe open={wardrobe} onClose={() => setWardrobe(false)} />
+      <Minigames open={games} onClose={() => setGames(false)} />
     </>
   );
 }

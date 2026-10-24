@@ -1,6 +1,7 @@
 // Achievements and life challenges. Conditions are pure functions of GameState.
 import type { GameState } from '../engine/types';
 import { DECOR_SLOTS } from './decor';
+import { MINIGAMES } from './minigames';
 
 export interface Achievement {
   id: string;
@@ -53,6 +54,7 @@ export const achievements: Achievement[] = [
   { id: 'zen', title: 'Zen Mode', description: 'Stress under 15 with happiness over 70.', icon: '🧘', check: (s) => s.stats.stress < 15 && s.stats.happiness > 70 },
   { id: 'survivor', title: 'Survived Burnout', description: 'Recover from a burnout episode.', icon: '🌱', check: (s) => s.counters.burnouts > 0 && s.stats.stress < 50 },
   { id: 'year-one', title: 'One Year Older', description: 'Play through a full year.', icon: '🎂', check: (s) => s.clock.day >= 365 && age(s) > s.character.startAge },
+  { id: 'pro-gamer-kampung', title: 'Pro Gamer Kampung', description: 'Score 90 or more in every mini-game.', icon: '🕹️', check: (s) => MINIGAMES.every((g) => Number(s.flags[`mg-best-${g.id}`] ?? 0) >= 90) },
   { id: 'rumahku-syurgaku', title: 'Rumahku Syurgaku', description: 'Fill every decor spot in your place.', icon: '🏡', check: (s) => DECOR_SLOTS.every((k) => !!s.decor.placed[k]) },
   { id: 'hamba-kucing', title: 'Hamba Kucing', description: 'Have a cat for a month and keep his mood at 90 or more. You work for him now.', icon: '🐈', check: (s) => !!s.pet && s.pet.mood >= 90 && s.clock.day - s.pet.adoptedDay >= 30 },
 ];
