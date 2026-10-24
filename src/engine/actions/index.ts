@@ -5,11 +5,12 @@ import { minigameActions } from './minigameActions';
 import { ownershipActions } from './ownershipActions';
 import { peopleActions } from './peopleActions';
 import { petActions } from './petActions';
+import { questActions } from './questActions';
 import type { ActionDef } from './types';
 import { wardrobeActions } from './wardrobeActions';
 import { workActions } from './workActions';
 
-export const actionCatalogue: ActionDef[] = [...lifeActions, ...workActions, ...peopleActions, ...ownershipActions, ...petActions, ...decorActions, ...wardrobeActions, ...minigameActions, ...chatActions];
+export const actionCatalogue: ActionDef[] = [...lifeActions, ...workActions, ...peopleActions, ...ownershipActions, ...petActions, ...decorActions, ...wardrobeActions, ...minigameActions, ...chatActions, ...questActions];
 
 const byId = new Map<string, ActionDef>();
 for (const a of actionCatalogue) {

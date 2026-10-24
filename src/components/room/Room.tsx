@@ -37,7 +37,7 @@ function sky(minute: number): string {
   return '🌙';
 }
 
-export function Room({ greeting, title, detail }: { greeting: string; title: string; detail: string }) {
+export function Room({ greeting, title, detail, onGoal }: { greeting: string; title: string; detail: string; onGoal?: () => void }) {
   const { state, lastActivity, settings, request } = useLoadedGame();
   const [playing, setPlaying] = useState<Playing | null>(null);
   const [shop, setShop] = useState(false);
@@ -86,11 +86,11 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
         </div>
 
         {/* Goal */}
-        <div className="absolute left-3 right-14 top-3 rounded-2xl bg-white/80 px-3 py-2 shadow-sm backdrop-blur-sm">
+        <button type="button" onClick={onGoal} disabled={!onGoal} className="absolute left-3 right-14 top-3 rounded-2xl bg-white/80 px-3 py-2 text-left shadow-sm backdrop-blur-sm enabled:active:scale-[0.99]">
           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">{greeting}</div>
           <div className="font-display truncate text-[15px] font-black leading-tight text-ink">{title}</div>
           <div className="truncate text-xs text-ink-soft">{detail}</div>
-        </div>
+        </button>
 
         {/* Floor */}
         <div className="room-floor absolute inset-x-0 bottom-0 h-[30%]" style={{ backgroundColor: room.floor }} aria-hidden />

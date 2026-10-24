@@ -13,7 +13,8 @@ import { relationshipStatus } from '../engine/social';
 import { useLoadedGame } from '../hooks/useGame';
 import { Room } from '../components/room/Room';
 import { useT } from '../hooks/useT';
-import type { StringKey } from '../i18n';
+import { StarterQuests } from '../components/StarterQuests';
+import { questStatus } from '../engine/quests';
 import { DailyBanner } from '../components/DailyBanner';
 import { dailyStatus } from '../engine/dailyChallenge';
 import { unreadChats } from '../engine/chat';
@@ -22,12 +23,6 @@ import { Card, SectionTitle, StatBar, cx } from '../components/ui';
 import type { Tab } from './GameShell';
 
 
-const CHECKLIST: { id: Exclude<Tab, 'home' | 'goals' | 'report' | 'settings'>; icon: string; label: StringKey }[] = [
-  { id: 'act', icon: '⚡', label: 'home.try.act' },
-  { id: 'money', icon: '💰', label: 'home.try.money' },
-  { id: 'life', icon: '🧭', label: 'home.try.life' },
-  { id: 'feed', icon: '💬', label: 'home.try.feed' },
-];
 
 function greetingFor(minute: number): string {
   const h = minute / 60;
@@ -38,14 +33,21 @@ function greetingFor(minute: number): string {
 }
 
 export function Dashboard({ go }: { go: (t: Tab) => void }) {
-  const { state, request, step, autopilot, settings } = useLoadedGame();
+  const { state, request, step, autopilot } = useLoadedGame();
   const [more, setMore] = useState(false);
   const t = useT();
-  const checklistRemaining = CHECKLIST.filter((c) => !settings.visitedTabs[c.id]);
-  const showChecklist = checklistRemaining.length > 0 && state.clock.day < 7;
   const greeting = greetingFor(state.clock.minute);
   const daily = dailyStatus(state);
-  const objective = currentObjective(state);
+  const quests = questStatus(state);
+  const readyQuest = quests?.find((q) => q.done && !q.claimed);
+  const nextQuest = quests?.find((q) => !q.done && !q.claimed);
+  // While starter quests are open they are the goal: the most visible spot on screen.
+  const objective = readyQuest
+    ? { icon: '🎁', title: t('quests.ready'), detail: `${readyQuest.quest.icon} ${readyQuest.quest.title}` }
+    : nextQuest
+      ? { icon: nextQuest.quest.icon, title: `${t('quests.title')}: ${nextQuest.quest.title}`, detail: nextQuest.quest.hint }
+      : currentObjective(state);
+  const toQuests = () => document.getElementById('starter-quests')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   const primary = primaryAction(state);
   const tiles = quickActions(state).filter((t) => !primary || t.id !== primary.id || t.param !== primary.param);
   const blocked = state.events.pending.length > 0 || !!state.ending;
@@ -60,7 +62,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
       {daily && <DailyBanner status={daily} />}
 
       {/* Pou-style room: the character in the middle, animating after each action */}
-      <Room greeting={`${greeting}, ${state.character.name}`} title={`${objective.icon} ${objective.title}`} detail={objective.detail} />
+      <Room greeting={`${greeting}, ${state.character.name}`} title={`${objective.icon} ${objective.title}`} detail={objective.detail} onGoal={quests && (readyQuest || nextQuest) ? toQuests : undefined} />
 
       {/* Big round one-tap buttons, one swipeable row */}
       <div className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto px-4 pt-1">
@@ -85,16 +87,8 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
         <TimeButton disabled={blocked} onClick={() => autopilot(7)} icon={<FastForward size={18} />} label={t('home.week')} sub={t('home.week.sub')} />
       </div>
 
-      {/* New here? checklist */}
-      {showChecklist && (
-        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-          {checklistRemaining.map((c) => (
-            <Chip key={c.id} onClick={() => go(c.id)}>
-              {c.icon} {t(c.label)}
-            </Chip>
-          ))}
-        </div>
-      )}
+      {/* New life? A short guided path */}
+      <StarterQuests go={go} />
 
       {/* Inbox chips */}
       {(offers > 0 || interviews > 0 || invites > 0 || chats > 0) && (

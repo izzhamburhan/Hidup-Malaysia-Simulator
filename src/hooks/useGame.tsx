@@ -22,9 +22,6 @@ export interface Settings {
   analyticsOptOut: boolean;
   /** The first-game "how to play" overlay has been shown. */
   tutorialSeen: boolean;
-  /** Main tabs (act/money/life/feed) the player has opened at least once; drives the Home
-   * "new here? try these" checklist. UI-only, like the rest of Settings — not part of the save. */
-  visitedTabs: Record<string, true>;
   /** Synthesised sound effects after each action. */
   sound: boolean;
   /** A light phone buzz after each action, where the browser supports it. */
@@ -33,7 +30,7 @@ export interface Settings {
   language: Lang;
 }
 
-const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, visitedTabs: {}, sound: true, vibration: true, language: 'en' };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en' };
 
 /** In-game days that count as retention milestones in analytics. */
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];

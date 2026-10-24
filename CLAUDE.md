@@ -57,6 +57,7 @@ src/engine/            pure simulation engine (no React, no DOM)
   business.ts          side hustles
   pet.ts               Oyen the cat: adopt, feed, play, daily hunger and mood
   decor.ts             home decor: buy, place, daily comfort bonus
+  quests.ts            starter quests: status, claim reasons, rewards
   chat.ts              chat threads: day's script (pure pick), reply effects, one reply a day
   dailyChallenge.ts    daily challenge: scenario and seed from a date, newDailyGame, dailyStatus
   events.ts            data-driven event engine
@@ -68,7 +69,7 @@ src/engine/            pure simulation engine (no React, no DOM)
   save.ts              versioned LocalStorage save and migrations
   simulationEngine.ts  public API: newGame, performAction, resolveEvent, listActions, runAutopilot (and helpers)
 src/data/              catalogues: universities, courses, companies, jobs, foods, vehicles, housing,
-                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats
+                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats, quests
 src/components/        UI components
   room/                Home room: activity.ts (action to room/animation mapping, presentation only), Room.tsx
   celebrate/           big-moment banner: celebrations.ts (pure state diff), Celebrate.tsx
@@ -105,8 +106,9 @@ SKILLS.md              index of every skill
 | Education | done: 24 institutions, 14 courses, classes, assignments, exams/GPA/CGPA, FYP, probation, graduation, PTPTN-style loan |
 | Social and feed | done: prospects, dating stages to marriage, breakups, family/friends drift, fictional feed with likes and invites |
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
-| Actions catalogue | done: 97 actions across 15 categories with availability reasons and confirmations |
-| Achievements and endings | done: 42 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| Actions catalogue | done: 98 actions across 15 categories with availability reasons and confirmations |
+| Achievements and endings | done: 43 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| Starter quests | done: 6 quests for a new life (eat, move, career step, chat, make it yours, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
 | Chat | done: partner, Geng Lepak (friends) and family threads on the Feed tab; 16 scripted conversations, pick one of 3 replies, real effects on trust, friends and family, one reply per thread a day |
 | Bahasa Malaysia | beta: EN/BM switch on the landing screen and in Settings; menus, buttons, Home, room, daily banner and settings translated; stories, events and catalogue names still English |
 | Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot, Home banner with goal and Share |
@@ -120,7 +122,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 28 Vitest files, 182 tests |
+| Tests | done: 30 Vitest files, 187 tests |
 
 ## Commands
 

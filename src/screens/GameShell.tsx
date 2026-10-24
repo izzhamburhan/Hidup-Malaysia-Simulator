@@ -43,9 +43,6 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   const t = useT();
   const go = (t: Tab) => {
     if (t !== tab) track('tab_view', { tab: t });
-    if ((t === 'act' || t === 'money' || t === 'life' || t === 'feed') && !settings.visitedTabs[t]) {
-      setSettings({ visitedTabs: { ...settings.visitedTabs, [t]: true } });
-    }
     setTab(t);
     setMenu(false);
     window.scrollTo({ top: 0 });
