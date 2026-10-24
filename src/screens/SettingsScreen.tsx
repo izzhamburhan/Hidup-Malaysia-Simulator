@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Download, Trash2, Upload } from 'lucide-react';
 import { useLoadedGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
 import { Button, Card, Disclaimer, KeyValue, Modal, SectionTitle } from '../components/ui';
 import { PrivacyNotice } from '../components/PrivacyNotice';
 import { analyticsConfigured } from '../lib/analytics';
@@ -8,6 +9,7 @@ import { analyticsConfigured } from '../lib/analytics';
 export function SettingsScreen({ onExit }: { onExit: () => void }) {
   const { state, settings, setSettings, interact, exportSave, importSave, resetAll, lastSavedAt, saveError } = useLoadedGame();
   const [confirmReset, setConfirmReset] = useState(false);
+  const t = useT();
   const [privacy, setPrivacy] = useState(false);
   const [importText, setImportText] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -66,17 +68,30 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
         </Button>
       </Card>
 
-      <SectionTitle>Gameplay & accessibility</SectionTitle>
+      <SectionTitle>{t('settings.gameplay')}</SectionTitle>
       <Card className="space-y-3">
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold">{t('settings.language')}</span>
+            <div className="flex rounded-full bg-paper-2 p-0.5 text-xs font-bold" role="group" aria-label="Language / Bahasa">
+              {(['en', 'ms'] as const).map((l) => (
+                <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'rounded-full bg-teal px-3 py-1 text-white' : 'px-3 py-1 text-ink-soft'}>
+                  {l === 'en' ? 'English' : 'Bahasa Malaysia'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-ink-soft">{t('settings.language.hint')}</p>
+        </div>
         <Toggle
           label="Comparison anxiety"
           hint="Scrolling the feed while unhappy can raise stress."
           checked={state.flags.comparisonAnxiety !== false}
           onChange={(v) => interact('setting', 'comparisonAnxiety', v)}
         />
-        <Toggle label="Sound effects" hint="A short sound after each action." checked={settings.sound} onChange={(v) => setSettings({ sound: v })} />
-        <Toggle label="Vibration" hint="A light buzz after each action (Android phones)." checked={settings.vibration} onChange={(v) => setSettings({ vibration: v })} />
-        <Toggle label="Reduce motion" hint="Turns off animations." checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
+        <Toggle label={t('settings.sound')} hint={t('settings.sound.hint')} checked={settings.sound} onChange={(v) => setSettings({ sound: v })} />
+        <Toggle label={t('settings.vibration')} hint={t('settings.vibration.hint')} checked={settings.vibration} onChange={(v) => setSettings({ vibration: v })} />
+        <Toggle label={t('settings.motion')} hint={t('settings.motion.hint')} checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
         <Toggle label="Show 'How to play' again" hint="Replays the intro next time you open the game." checked={!settings.tutorialSeen} onChange={(v) => setSettings({ tutorialSeen: !v })} />
       </Card>
 

@@ -14,6 +14,7 @@ import { COLLECTION_KEY, DAILY_KEY, SAVE_KEY, clearSave, deserialize, emptyColle
 import type { ActionFeedback, DayReport, GameState, NewGameOptions } from '../engine/types';
 import { TRACK_ACTIONS } from '../config';
 import { initAnalytics, track } from '../lib/analytics';
+import type { Lang } from '../i18n';
 
 export interface Settings {
   reducedMotion: boolean;
@@ -28,9 +29,11 @@ export interface Settings {
   sound: boolean;
   /** A light phone buzz after each action, where the browser supports it. */
   vibration: boolean;
+  /** UI language. Bahasa Malaysia is a beta covering menus and buttons. */
+  language: Lang;
 }
 
-const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, visitedTabs: {}, sound: true, vibration: true };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, visitedTabs: {}, sound: true, vibration: true, language: 'en' };
 
 /** In-game days that count as retention milestones in analytics. */
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];

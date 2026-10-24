@@ -12,6 +12,8 @@ import type { ActionView } from '../engine/simulationEngine';
 import { relationshipStatus } from '../engine/social';
 import { useLoadedGame } from '../hooks/useGame';
 import { Room } from '../components/room/Room';
+import { useT } from '../hooks/useT';
+import type { StringKey } from '../i18n';
 import { DailyBanner } from '../components/DailyBanner';
 import { dailyStatus } from '../engine/dailyChallenge';
 
@@ -19,11 +21,11 @@ import { Card, SectionTitle, StatBar, cx } from '../components/ui';
 import type { Tab } from './GameShell';
 
 
-const CHECKLIST: { id: Exclude<Tab, 'home' | 'goals' | 'report' | 'settings'>; icon: string; label: string }[] = [
-  { id: 'act', icon: '⚡', label: 'Try Act' },
-  { id: 'money', icon: '💰', label: 'Check Money' },
-  { id: 'life', icon: '🧭', label: 'Explore Life' },
-  { id: 'feed', icon: '💬', label: 'See Feed' },
+const CHECKLIST: { id: Exclude<Tab, 'home' | 'goals' | 'report' | 'settings'>; icon: string; label: StringKey }[] = [
+  { id: 'act', icon: '⚡', label: 'home.try.act' },
+  { id: 'money', icon: '💰', label: 'home.try.money' },
+  { id: 'life', icon: '🧭', label: 'home.try.life' },
+  { id: 'feed', icon: '💬', label: 'home.try.feed' },
 ];
 
 function greetingFor(minute: number): string {
@@ -37,6 +39,7 @@ function greetingFor(minute: number): string {
 export function Dashboard({ go }: { go: (t: Tab) => void }) {
   const { state, request, step, autopilot, settings } = useLoadedGame();
   const [more, setMore] = useState(false);
+  const t = useT();
   const checklistRemaining = CHECKLIST.filter((c) => !settings.visitedTabs[c.id]);
   const showChecklist = checklistRemaining.length > 0 && state.clock.day < 7;
   const greeting = greetingFor(state.clock.minute);
@@ -66,18 +69,18 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
 
       {/* Do this next */}
       {state.flags.chapterOffered && !state.ending ? (
-        <BigButton onClick={() => go('report')} icon="📖" title="See my life report" sub="Your chapter is complete" />
+        <BigButton onClick={() => go('report')} icon="📖" title={t('home.report')} sub={t('home.report.sub')} />
       ) : primary ? (
         <BigButton onClick={() => request(primary, 'primary')} icon={primary.icon} title={primary.title} sub={meta(primary)} />
       ) : (
-        <BigButton disabled={blocked} onClick={step} icon="⏭️" title="Carry on with my day" sub="Do the next sensible thing" />
+        <BigButton disabled={blocked} onClick={step} icon="⏭️" title={t('home.carryon')} sub={t('home.carryon.sub')} />
       )}
 
       {/* Time controls */}
       <div className="grid grid-cols-3 gap-2">
-        <TimeButton disabled={blocked} onClick={step} icon={<SkipForward size={18} />} label="Next" sub="1 activity" />
-        <TimeButton disabled={blocked} onClick={() => autopilot(1)} icon={<Moon size={18} />} label="End day" sub="to tomorrow" />
-        <TimeButton disabled={blocked} onClick={() => autopilot(7)} icon={<FastForward size={18} />} label="Week" sub="on routine" />
+        <TimeButton disabled={blocked} onClick={step} icon={<SkipForward size={18} />} label={t('home.next')} sub={t('home.next.sub')} />
+        <TimeButton disabled={blocked} onClick={() => autopilot(1)} icon={<Moon size={18} />} label={t('home.endday')} sub={t('home.endday.sub')} />
+        <TimeButton disabled={blocked} onClick={() => autopilot(7)} icon={<FastForward size={18} />} label={t('home.week')} sub={t('home.week.sub')} />
       </div>
 
       {/* New here? checklist */}
@@ -85,7 +88,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
           {checklistRemaining.map((c) => (
             <Chip key={c.id} onClick={() => go(c.id)}>
-              {c.icon} {c.label}
+              {c.icon} {t(c.label)}
             </Chip>
           ))}
         </div>
@@ -94,9 +97,9 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
       {/* Inbox chips */}
       {(offers > 0 || interviews > 0 || invites > 0) && (
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-          {offers > 0 && <Chip onClick={() => go('life')}>📨 {offers} job offer{offers > 1 ? 's' : ''}</Chip>}
-          {interviews > 0 && <Chip onClick={() => go('life')}>🎤 {interviews} interview{interviews > 1 ? 's' : ''}</Chip>}
-          {invites > 0 && <Chip onClick={() => go('feed')}>💌 {invites} invite{invites > 1 ? 's' : ''}</Chip>}
+          {offers > 0 && <Chip onClick={() => go('life')}>📨 {t('home.offers', { n: offers })}</Chip>}
+          {interviews > 0 && <Chip onClick={() => go('life')}>🎤 {t('home.interviews', { n: interviews })}</Chip>}
+          {invites > 0 && <Chip onClick={() => go('feed')}>💌 {t('home.invites', { n: invites })}</Chip>}
         </div>
       )}
 
@@ -119,7 +122,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
         className="flex w-full items-center justify-center gap-1 rounded-xl py-2 text-sm font-semibold text-teal hover:bg-teal-soft"
         aria-expanded={more}
       >
-        {more ? 'Hide' : 'Show'} my life details <ChevronDown size={16} className={cx('transition', more && 'rotate-180')} />
+        {t(more ? 'home.details.hide' : 'home.details.show')} <ChevronDown size={16} className={cx('transition', more && 'rotate-180')} />
       </button>
       {more && <Details go={go} />}
     </div>

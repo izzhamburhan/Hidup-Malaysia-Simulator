@@ -12,6 +12,10 @@ export default function App() {
   const [view, setView] = useState<View>('landing');
   const current: View = view === 'game' && !state ? 'landing' : view;
 
+  useEffect(() => {
+    document.documentElement.lang = settings.language === 'ms' ? 'ms' : 'en';
+  }, [settings.language]);
+
   // Each screen starts at the top (creation is long; the game should not open scrolled down).
   useEffect(() => {
     window.scrollTo({ top: 0 });

@@ -77,6 +77,7 @@ src/main.tsx, src/App.tsx
 src/config.ts          public site config: analytics ID, feedback form URL, game URL
 src/lib/analytics.ts   privacy-first analytics (UI layer only)
 src/lib/sound.ts       synthesised sound effects and vibration (UI layer only, no audio files)
+src/i18n.ts            UI strings in English and Bahasa Malaysia (beta: menus and buttons; content stays English)
 tests/                 Vitest tests for the engine and data (tests/*.test.ts)
 mcp/hidup-sim/         local stdio MCP server exposing the engine (run with tsx)
 docs/contracts/        engine, action, event, save, data, payroll and MCP contracts
@@ -104,6 +105,7 @@ SKILLS.md              index of every skill
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
 | Actions catalogue | done: 96 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 42 achievements, 10 challenges, 10 endings, life report, share card |
+| Bahasa Malaysia | beta: EN/BM switch on the landing screen and in Settings; menus, buttons, Home, room, daily banner and settings translated; stories, events and catalogue names still English |
 | Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot, Home banner with goal and Share |
 | Ending collection | done: endings found across all lives (own LocalStorage key), Goals gallery with hints, "new ending found" on the Report |
 | Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day) |
@@ -115,7 +117,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 25 Vitest files, 173 tests |
+| Tests | done: 26 Vitest files, 175 tests |
 
 ## Commands
 

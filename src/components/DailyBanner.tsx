@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GAME_URL } from '../config';
 import type { DailyStatus } from '../engine/dailyChallenge';
 import { useLoadedGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
 import { track } from '../lib/analytics';
 import { Button, cx } from './ui';
 
@@ -9,6 +10,7 @@ import { Button, cx } from './ui';
 export function DailyBanner({ status }: { status: DailyStatus }) {
   const { exitDaily } = useLoadedGame();
   const [msg, setMsg] = useState<string | null>(null);
+  const t = useT();
   const { def, day, won, finished, date } = status;
 
   const share = async () => {
@@ -34,17 +36,17 @@ export function DailyBanner({ status }: { status: DailyStatus }) {
           {def.icon}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a5a00]">🗓️ Daily challenge · day {finished ? 7 : day + 1}/7</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a5a00]">🗓️ {t('daily.label', { d: finished ? 7 : day + 1 })}</div>
           <div className="font-bold leading-tight">{def.title}</div>
           <div className="text-xs text-ink-soft">{def.goal}</div>
         </div>
-        <span className={cx('shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold', won ? 'bg-leaf text-white' : 'bg-white text-ink-soft')}>{won ? '✅ Goal met' : finished ? '❌ Missed' : '⏳ Going'}</span>
+        <span className={cx('shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold', won ? 'bg-leaf text-white' : 'bg-white text-ink-soft')}>{t(won ? 'daily.won' : finished ? 'daily.missed' : 'daily.going')}</span>
       </div>
       {finished && (
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <Button onClick={share}>Share result</Button>
+          <Button onClick={share}>{t('daily.share')}</Button>
           <Button variant="secondary" onClick={exitDaily}>
-            Back to my life
+            {t('daily.back')}
           </Button>
         </div>
       )}

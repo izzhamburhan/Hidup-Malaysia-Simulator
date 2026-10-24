@@ -4,6 +4,8 @@ import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { useLoadedGame } from '../hooks/useGame';
 import { useGameSounds } from '../hooks/useGameSounds';
+import { useT } from '../hooks/useT';
+import type { StringKey } from '../i18n';
 import { Celebrate } from '../components/celebrate/Celebrate';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
@@ -23,12 +25,12 @@ import { SettingsScreen } from './SettingsScreen';
 
 export type Tab = 'home' | 'act' | 'money' | 'life' | 'feed' | 'goals' | 'report' | 'settings';
 
-const NAV: { id: Tab; label: string; icon: typeof Home }[] = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'act', label: 'Act', icon: Zap },
-  { id: 'money', label: 'Money', icon: Wallet },
-  { id: 'life', label: 'Life', icon: Compass },
-  { id: 'feed', label: 'Feed', icon: MessageCircle },
+const NAV: { id: Tab; label: StringKey; icon: typeof Home }[] = [
+  { id: 'home', label: 'nav.home', icon: Home },
+  { id: 'act', label: 'nav.act', icon: Zap },
+  { id: 'money', label: 'nav.money', icon: Wallet },
+  { id: 'life', label: 'nav.life', icon: Compass },
+  { id: 'feed', label: 'nav.feed', icon: MessageCircle },
 ];
 
 export function GameShell({ onExit }: { onExit: () => void }) {
@@ -38,6 +40,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   const [tutorial, setTutorial] = useState(!settings.tutorialSeen);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   useGameSounds();
+  const t = useT();
   const go = (t: Tab) => {
     if (t !== tab) track('tab_view', { tab: t });
     if ((t === 'act' || t === 'money' || t === 'life' || t === 'feed') && !settings.visitedTabs[t]) {
@@ -64,7 +67,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
             <div className="font-display whitespace-nowrap text-2xl font-black leading-tight tabular-nums">{formatTime(state.clock.minute)}</div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft">Wallet</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft">{t('hud.wallet')}</div>
             <div className={cx('font-display whitespace-nowrap text-base font-black tabular-nums', state.finance.cash < 100 ? 'text-hibiscus' : 'text-teal')}>{formatRM(state.finance.cash, 2)}</div>
           </div>
           <button type="button" onClick={() => setMenu(true)} className="rounded-xl border border-ink/10 bg-white p-2" aria-label="Open menu">
@@ -72,10 +75,10 @@ export function GameShell({ onExit }: { onExit: () => void }) {
           </button>
         </div>
         <div className="mt-2 grid grid-cols-4 gap-2">
-          <MiniMeter label="⚡ Energy" value={state.stats.energy} />
-          <MiniMeter label="😣 Stress" value={state.stats.stress} invert />
-          <MiniMeter label="🙂 Mood" value={state.stats.happiness} />
-          <MiniMeter label="🍽️ Full" value={state.stats.satiety} />
+          <MiniMeter label={`⚡ ${t('hud.energy')}`} value={state.stats.energy} />
+          <MiniMeter label={`😣 ${t('hud.stress')}`} value={state.stats.stress} invert />
+          <MiniMeter label={`🙂 ${t('hud.mood')}`} value={state.stats.happiness} />
+          <MiniMeter label={`🍽️ ${t('hud.full')}`} value={state.stats.satiety} />
         </div>
       </header>
 
@@ -101,7 +104,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
               className={cx('relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold', tab === id ? 'text-teal' : 'text-ink-soft')}
             >
               <Icon size={22} strokeWidth={tab === id ? 2.5 : 2} />
-              {label}
+              {t(label)}
               {id === 'feed' && unseenInvites > 0 && <span className="absolute right-[30%] top-1.5 h-2 w-2 rounded-full bg-hibiscus" />}
               {tab === id && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-teal" />}
             </button>
@@ -109,14 +112,14 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         </div>
       </nav>
 
-      <Modal open={menu} onClose={() => setMenu(false)} title="Menu">
+      <Modal open={menu} onClose={() => setMenu(false)} title={t('menu.title')}>
         <div className="grid grid-cols-2 gap-2">
-          <MenuItem icon={<Trophy size={20} />} label="Goals & achievements" onClick={() => go('goals')} />
-          <MenuItem icon={<BookOpen size={20} />} label="Life report" onClick={() => go('report')} highlight={!!state.flags.chapterOffered && !state.ending} />
-          <MenuItem icon={<SettingsIcon size={20} />} label="Settings & saves" onClick={() => go('settings')} />
+          <MenuItem icon={<Trophy size={20} />} label={t('menu.goals')} onClick={() => go('goals')} />
+          <MenuItem icon={<BookOpen size={20} />} label={t('menu.report')} onClick={() => go('report')} highlight={!!state.flags.chapterOffered && !state.ending} />
+          <MenuItem icon={<SettingsIcon size={20} />} label={t('menu.settings')} onClick={() => go('settings')} />
           <MenuItem
             icon={<HelpCircle size={20} />}
-            label="How to play"
+            label={t('menu.howto')}
             onClick={() => {
               setMenu(false);
               setTutorial(true);
@@ -125,17 +128,17 @@ export function GameShell({ onExit }: { onExit: () => void }) {
           {feedbackAvailable() && (
             <MenuItem
               icon={<MessageSquareHeart size={20} />}
-              label="Give feedback"
+              label={t('menu.feedback')}
               onClick={() => {
                 setMenu(false);
                 setFeedbackOpen(true);
               }}
             />
           )}
-          <MenuItem icon={<LogOut size={20} />} label="Main menu" onClick={onExit} />
+          <MenuItem icon={<LogOut size={20} />} label={t('menu.main')} onClick={onExit} />
         </div>
         <p className="mt-4 flex items-center gap-1 text-xs text-ink-soft">
-          <Sparkles size={12} /> Autosaves after every action.
+          <Sparkles size={12} /> {t('menu.autosave')}
         </p>
       </Modal>
 

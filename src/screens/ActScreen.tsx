@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { listActions, type ActionView } from '../engine/simulationEngine';
 import type { ActionCategory } from '../engine/actions';
 import { useLoadedGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
 import { ActionCard, VariantRow } from '../components/ActionCard';
 import { EmptyState, SectionTitle, Tabs } from '../components/ui';
 
@@ -32,6 +33,7 @@ export function ActScreen() {
   // greyed-out locked actions. Still a toggle: nothing is removed, just hidden to start.
   const [onlyAvailable, setOnlyAvailable] = useState(true);
   const views = useMemo(() => listActions(state), [state]);
+  const t = useT();
   const present = new Set(views.map((v) => v.category));
   const tabs = GROUPS.filter((g) => g.id === 'all' || present.has(g.id as ActionCategory));
 
@@ -50,7 +52,7 @@ export function ActScreen() {
       <Tabs tabs={tabs} value={group} onChange={setGroup} />
       <label className="mt-3 flex items-center gap-2 text-sm text-ink-soft">
         <input type="checkbox" checked={onlyAvailable} onChange={(e) => setOnlyAvailable(e.target.checked)} className="accent-teal" />
-        Only show what I can do right now
+        {t('act.onlyAvailable')}
       </label>
       {rows.length === 0 && <div className="mt-4"><EmptyState icon="⏳" title="Nothing available right now">Try waiting an hour, or check a different category.</EmptyState></div>}
       {categories.map((cat) => (

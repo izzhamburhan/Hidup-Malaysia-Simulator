@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Play, Plus, ShieldCheck } from 'lucide-react';
 import { useGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
 import { Button, Modal } from '../components/ui';
 import { formatDate } from '../engine/calendar';
 import { formatRM } from '../engine/core';
@@ -19,7 +20,8 @@ const FEATURES = [
 ];
 
 export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onContinue: () => void; onDaily: () => void }) {
-  const { state, boot, daily, playDaily, slot } = useGame();
+  const { state, boot, daily, playDaily, slot, settings, setSettings } = useGame();
+  const t = useT();
   const today = daily();
   const main = slot === 'main' ? state : null;
   const [confirmNew, setConfirmNew] = useState(false);
@@ -29,6 +31,13 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
     <main className="mx-auto flex min-h-screen max-w-lg flex-col px-4 pb-8 pt-6">
       <div className="relative overflow-hidden rounded-3xl bg-teal px-5 pb-0 pt-8 text-white shadow-lg">
         <div className="songket absolute inset-0 opacity-40" aria-hidden />
+        <div className="absolute right-3 top-3 z-10 flex rounded-full bg-white/15 p-0.5 text-[11px] font-bold" role="group" aria-label="Language / Bahasa">
+          {(['en', 'ms'] as const).map((l) => (
+            <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'rounded-full bg-white px-2.5 py-0.5 text-teal' : 'px-2.5 py-0.5 text-white/80'}>
+              {l === 'en' ? 'EN' : 'BM'}
+            </button>
+          ))}
+        </div>
         <div className="relative">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gold">Life simulator · Malaysia</p>
           <h1 className="font-display mt-2 text-5xl font-black leading-[0.95] tracking-tight">
@@ -36,7 +45,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
             <br />
             MALAYSIA
           </h1>
-          <p className="mt-3 max-w-xs text-sm text-white/85">Can you build the life you want in Malaysia? Salary masuk, salary keluar — every choice counts.</p>
+          <p className="mt-3 max-w-xs text-sm text-white/85">{t('land.tagline')}</p>
         </div>
         <Skyline />
       </div>
@@ -52,9 +61,9 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
         >
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-3xl">{today.icon}</span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a5a00]">🗓️ Today's challenge · 7 days</span>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a5a00]">🗓️ {t('land.daily')}</span>
             <span className="block font-bold leading-tight">{today.title}</span>
-            <span className="block text-xs text-ink-soft">{today.saved ? `Continue: day ${Math.min(7, today.saved.clock.day) + 1} of 7` : today.goal}</span>
+            <span className="block text-xs text-ink-soft">{today.saved ? t('land.daily.continue', { n: Math.min(7, today.saved.clock.day) + 1 }) : today.goal}</span>
           </span>
           <span className="text-xl font-black text-[#7a5a00]" aria-hidden>
             ▶
@@ -73,7 +82,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
               </span>
             </span>
             <span className="flex-1">
-              <span className="block font-bold">Continue {main.character.name}'s life</span>
+              <span className="block font-bold">{t('land.continue', { name: main.character.name })}</span>
               <span className="block text-xs text-ink-soft">
                 Day {main.clock.day + 1} · {formatDate(main)} · {formatRM(main.finance.cash)} · {main.mode === 'chaotic' ? 'Chaotic' : 'Realistic'}
               </span>
@@ -81,7 +90,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
           </button>
         )}
         <Button className="w-full py-3.5 text-base" variant={main ? 'secondary' : 'primary'} onClick={() => (main ? setConfirmNew(true) : onNew())}>
-          <Plus size={18} /> Start a new life
+          <Plus size={18} /> {t('land.new')}
         </Button>
         {boot?.status === 'corrupt' && (
           <p className="rounded-xl bg-hibiscus-soft p-3 text-sm text-hibiscus">

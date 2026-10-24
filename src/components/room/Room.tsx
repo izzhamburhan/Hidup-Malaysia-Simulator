@@ -8,6 +8,7 @@ import type { Mood } from '../../engine/types';
 import { decorById } from '../../data/decor';
 import { viewAction } from '../../engine/simulationEngine';
 import { useLoadedGame } from '../../hooks/useGame';
+import { useT } from '../../hooks/useT';
 import { PixelAvatar } from '../PixelAvatar';
 import { cx } from '../ui';
 import { ACTIVITIES, ROOMS, activityFor, idleRoom, type Activity } from './activity';
@@ -40,6 +41,7 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
   const { state, lastActivity, settings, request } = useLoadedGame();
   const [playing, setPlaying] = useState<Playing | null>(null);
   const [shop, setShop] = useState(false);
+  const t = useT();
   const [wardrobe, setWardrobe] = useState(false);
   const [games, setGames] = useState(false);
 
@@ -162,13 +164,13 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
         {home && !playing ? (
           <div className="absolute bottom-2 left-3 z-10 flex gap-1.5">
             <button type="button" onClick={() => setShop(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              🛋️ Decor
+              🛋️ {t('room.decor')}
             </button>
             <button type="button" onClick={() => setWardrobe(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              👕 Style
+              👕 {t('room.style')}
             </button>
             <button type="button" onClick={() => setGames(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              🎮 Games
+              🎮 {t('room.games')}
             </button>
           </div>
         ) : (
