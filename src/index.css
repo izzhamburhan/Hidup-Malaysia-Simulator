@@ -210,6 +210,13 @@ body {
   from { transform: translateY(0) rotate(0); }
   to { transform: translateY(4%) rotate(-4deg); }
 }
+@keyframes cat-idle {
+  0%, 85%, 100% { transform: rotate(0); }
+  90% { transform: rotate(-6deg); }
+  95% { transform: rotate(4deg); }
+}
+.cat-idle { animation: cat-idle 4s ease-in-out infinite; transform-origin: bottom center; display: inline-block; }
+
 @keyframes float-up {
   0% { transform: translateY(10px) scale(0.6); opacity: 0; }
   20% { opacity: 1; }
@@ -257,6 +264,7 @@ body {
     display: none;
   }
   .celebrate-icon,
+  .cat-idle,
   [class*='motion-'],
   [class*='travel-'],
   .held-eat,

@@ -40,6 +40,8 @@ export const migrations: Record<number, Migration> = {
     const appearance = isValidAppearance(character.appearance) ? character.appearance : randomAppearance(seed);
     return { ...s, character: { ...character, appearance }, version: 2 };
   },
+  // 2 -> 3: pets. Existing lives start without one.
+  2: (s) => ({ ...s, pet: s.pet ?? null, version: 3 }),
 };
 
 export function migrate(raw: Record<string, unknown>): GameState {

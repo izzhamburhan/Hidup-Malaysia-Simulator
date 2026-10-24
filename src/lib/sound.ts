@@ -72,6 +72,15 @@ export const SOUNDS: Record<Activity, Note[]> = {
   move: seq([300, 250, 200], 0.12, 0.12, 'triangle', 0.18),
   civic: seq([523, 659, 784, 1047], 0.09, 0.14, 'triangle', 0.14),
   build: seq([330, 330, 392], 0.15, 0.05, 'square', 0.09),
+  petfeed: [
+    ...seq([300, 280, 300], 0.09, 0.04, 'square', 0.07),
+    { freq: 700, at: 0.32, dur: 0.18, wave: 'sine', slide: 950, gain: 0.12 },
+    { freq: 950, at: 0.5, dur: 0.22, wave: 'sine', slide: 600, gain: 0.1 },
+  ],
+  petplay: [
+    { freq: 650, at: 0, dur: 0.16, wave: 'sine', slide: 1000, gain: 0.13 },
+    { freq: 1000, at: 0.16, dur: 0.24, wave: 'sine', slide: 560, gain: 0.11 },
+  ],
 };
 
 export const ERROR_SOUND: Note[] = [

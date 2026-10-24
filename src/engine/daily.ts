@@ -10,6 +10,7 @@ import { processMonthStart, processNewYear, runPayroll } from './economy';
 import { processScheduledEvents, queueEvent } from './events';
 import { dailyRelationships, generateFeedPosts } from './social';
 import { staffDay } from './business';
+import { petDayEnd } from './pet';
 import type { GameState } from './types';
 
 export const BASE_DAILY_BURN = 1900;
@@ -42,6 +43,8 @@ export function processDayEnd(state: GameState): void {
   if (food.caloriesIn < 1100 && meals < 2) applyStats(state, { health: -1.5, happiness: -1 });
   if (food.caloriesIn > 3300) applyStats(state, { health: -1 });
   if (food.water >= 6) applyStats(state, { health: 0.6 });
+
+  petDayEnd(state);
 
   // Fitness slowly fades without exercise; health follows lifestyle.
   if (!state.today.exercised) {

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { foodById } from '../../data/foods';
 import { moodOf } from '../../engine/appearance';
 import type { Mood } from '../../engine/types';
+import { listActions } from '../../engine/simulationEngine';
 import { useLoadedGame } from '../../hooks/useGame';
 import { PixelAvatar } from '../PixelAvatar';
 import { cx } from '../ui';
@@ -32,7 +33,7 @@ function sky(minute: number): string {
 }
 
 export function Room({ greeting, title, detail }: { greeting: string; title: string; detail: string }) {
-  const { state, lastActivity, settings } = useLoadedGame();
+  const { state, lastActivity, settings, request } = useLoadedGame();
   const [playing, setPlaying] = useState<Playing | null>(null);
 
   useEffect(() => {
@@ -59,6 +60,7 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
   const motion = def?.motion ?? 'idle';
   const held = playing?.held ?? def?.held;
   const travels = motion === 'run' || motion === 'walk';
+  const petBusy = playing?.activity === 'petfeed' || playing?.activity === 'petplay';
 
   return (
     <section className={cx('relative h-[290px] overflow-hidden rounded-3xl bg-gradient-to-b shadow-md transition-colors duration-500', room.wall)} aria-label={`${state.character.name} in the ${room.label.toLowerCase()}`}>
@@ -85,6 +87,27 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
       <div className="absolute bottom-[22%] right-3 text-5xl" aria-hidden>
         {room.decor[1]}
       </div>
+
+      {/* Oyen */}
+      {state.pet && (
+        <button
+          type="button"
+          onClick={() => {
+            const v = listActions(state).find((a) => a.id === 'play-pet');
+            if (v) request(v, 'tile');
+          }}
+          className="absolute bottom-[8%] right-[13%] z-10 flex flex-col items-center"
+          aria-label={`Play with ${state.pet.name}`}
+        >
+          <span className="rounded-full bg-white/85 px-1.5 text-sm leading-tight shadow-sm" aria-hidden>
+            {state.pet.fullness < 30 ? '🍽️' : state.pet.mood < 40 ? '😾' : state.pet.mood >= 80 ? '💕' : '😺'}
+          </span>
+          <span className={cx('inline-block text-[44px] leading-none', petBusy ? 'motion-hop' : 'cat-idle')} aria-hidden>
+            🐈
+          </span>
+          <span className="mt-0.5 rounded-full bg-black/30 px-1.5 text-[9px] font-bold uppercase tracking-wider text-white">{state.pet.name}</span>
+        </button>
+      )}
 
       {/* Character */}
       <div className="absolute bottom-[12%] left-1/2 w-[140px] -translate-x-1/2">

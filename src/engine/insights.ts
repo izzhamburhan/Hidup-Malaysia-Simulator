@@ -225,6 +225,7 @@ export function quickActions(s: GameState): ActionView[] {
   const studying = s.education.status === 'studying';
   const candidates: (ActionView | null)[] = [
     mealFor(s),
+    s.pet && s.pet.fullness < 50 ? view(s, 'feed-pet') : null,
     s.career.job ? view(s, 'work-shift') : null,
     studying ? view(s, 'attend-class') : null,
     studying ? view(s, 'study', '2') : null,

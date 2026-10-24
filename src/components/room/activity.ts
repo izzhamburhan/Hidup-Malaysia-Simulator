@@ -36,7 +36,7 @@ export const ROOMS: Record<RoomId, RoomDef> = {
 export type Activity =
   | 'idle' | 'sleep' | 'chill' | 'drink' | 'eat' | 'run' | 'workout' | 'stretch' | 'sport' | 'work' | 'study' | 'read'
   | 'admin' | 'phone' | 'social' | 'love' | 'sad' | 'family' | 'play' | 'outing' | 'travel' | 'money' | 'clean'
-  | 'move' | 'civic' | 'build';
+  | 'move' | 'civic' | 'build' | 'petfeed' | 'petplay';
 
 export interface ActivityDef {
   room: RoomId;
@@ -75,6 +75,8 @@ export const ACTIVITIES: Record<Activity, ActivityDef> = {
   move: { room: 'street', motion: 'walk', held: '📦', float: ['🏠'], bubble: 'Pindah rumah!' },
   civic: { room: 'street', motion: 'cheer', held: '🧤', float: ['🤝', '✨'], bubble: 'Gotong-royong' },
   build: { room: 'street', motion: 'type', held: '🛠️', float: ['🚀', '🪙'], bubble: 'Hustle mode' },
+  petfeed: { room: 'kitchen', motion: 'nod', held: '🐟', float: ['😻', '✨'], bubble: 'Makan, Oyen!' },
+  petplay: { room: 'livingroom', motion: 'hop', held: '🧶', float: ['🐾', '💕'], bubble: 'Meow!' },
 };
 
 const BY_ID: Record<string, Activity> = {
@@ -89,6 +91,7 @@ const BY_ID: Record<string, Activity> = {
   'balik-kampung': 'travel', 'family-time': 'family', 'give-parents': 'money', 'parent-allowance': 'money',
   'move-home': 'move', 'clean-house': 'clean', 'buy-property': 'money', 'sell-property': 'money',
   'buy-vehicle': 'travel', 'sell-vehicle': 'money', 'service-vehicle': 'travel',
+  'adopt-cat': 'petplay', 'feed-pet': 'petfeed', 'play-pet': 'petplay',
   'gotong-royong': 'civic', volunteer: 'civic', 'start-hustle': 'build', 'work-hustle': 'build', 'hire-staff': 'build',
 };
 

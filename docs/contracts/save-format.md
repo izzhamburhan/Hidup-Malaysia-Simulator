@@ -88,6 +88,8 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 | --- | --- |
 | 0 | Pre-release saves without `state.version` or `events.scheduled`; migrated to 1. |
 | 1 | Initial save format. |
+| 2 | Adds `character.appearance` (pixel characters). |
+| 3 | Adds `pet` (Oyen the cat), `null` until the player adopts one. |
 
 ## Privacy
 
@@ -101,3 +103,10 @@ personal data beyond that name, no analytics, nothing sent anywhere.
 `randomAppearance(state.seed)`; a save that already holds a valid appearance keeps it.
 Appearance is cosmetic and never feeds the simulation. Test: `tests/save.test.ts`
 ("migrates version-1 saves by adding a pixel character appearance").
+
+## Version 3 (pets)
+
+`migrations[2]` upgrades a version-2 save to version 3 by adding `pet: null` (`Pet` in
+`src/engine/types.ts`). Existing lives start without a cat; the player can adopt one from the
+Act screen or the `stray-oyen` event. Test: `tests/pet.test.ts` ("migrates a version-2 save to a
+life without a pet").

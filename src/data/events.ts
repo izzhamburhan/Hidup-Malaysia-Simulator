@@ -10,6 +10,8 @@ import type { GameState, SkillKey } from '../engine/types';
 import { addDebt, addSkills, applyStats, clamp, earn, formatRM, log, round2, spend } from '../engine/core';
 import { jobEligibility, resolveInterview } from '../engine/career';
 import { breakUp, deepTalk, meetSomeone } from '../engine/social';
+import { adoptPet } from '../engine/pet';
+import { PET } from './pets';
 import { chance, pick, randInt } from '../engine/rng';
 import { companies } from './companies';
 import { jobById, jobs } from './jobs';
@@ -1966,6 +1968,28 @@ export const events: GameEventDef[] = [
     choices: [
       { id: 'eat', label: 'Abandon all work and eat', outcomes: [{ text: 'Two plates, a nap-inducing afternoon, zero regrets.', effect: { friends: 3, stats: { satiety: 40, happiness: 6, energy: -6 }, minutes: 60 } }] },
       { id: 'tapau', label: 'Tapau and keep working', outcomes: [{ text: 'Efficient. Your boss notices your dedication (and your container).', effect: { performance: 2, stats: { satiety: 30 } } }] },
+    ],
+  },
+  {
+    id: 'stray-oyen',
+    title: 'A ginger visitor',
+    icon: '🐈',
+    category: 'housing',
+    trigger: 'random',
+    contexts: ['home', 'commute'],
+    weight: 3,
+    cooldownDays: 20,
+    when: (s) => !s.pet,
+    text: 'A chubby ginger cat follows you all the way home and sits at your door, meowing like he pays rent. The neighbours call him Oyen.',
+    choices: [
+      {
+        id: 'adopt',
+        label: 'Take him in (vet check)',
+        hint: 'He will need food every day.',
+        cost: PET.adoptionFee,
+        outcomes: [{ text: 'Oyen walks in like he owns the place. He does now.', apply: (s) => void adoptPet(s) }],
+      },
+      { id: 'bye', label: 'Give him some water and say bye', outcomes: [{ text: 'He drinks, judges you, and saunters off. You might see him again.', effect: { stats: { happiness: 2 } } }] },
     ],
   },
   {

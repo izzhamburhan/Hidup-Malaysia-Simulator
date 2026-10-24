@@ -297,6 +297,19 @@ export interface LogEntry {
   text: string;
 }
 
+export interface Pet {
+  name: string;
+  species: 'cat';
+  adoptedDay: number;
+  /** 0 starving to 100 stuffed. */
+  fullness: number;
+  /** 0 sulking to 100 purring. */
+  mood: number;
+  lastFedDay: number;
+  lastPlayedDay: number;
+  timesFed: number;
+}
+
 export interface PendingEvent {
   eventId: string;
   params?: Record<string, string | number>;
@@ -409,6 +422,7 @@ export interface GameState {
   flags: Record<string, number | boolean | string>;
   memories: string[];
   communityReputation: number;
+  pet: Pet | null;
   ending: Ending | null;
 }
 
