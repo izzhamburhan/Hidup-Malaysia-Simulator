@@ -297,6 +297,8 @@ export interface LogEntry {
   text: string;
 }
 
+export type DecorSlot = 'wall' | 'left' | 'right' | 'centre';
+
 export interface Pet {
   name: string;
   species: 'cat';
@@ -423,6 +425,7 @@ export interface GameState {
   memories: string[];
   communityReputation: number;
   pet: Pet | null;
+  decor: { owned: string[]; placed: Partial<Record<DecorSlot, string>> };
   ending: Ending | null;
 }
 

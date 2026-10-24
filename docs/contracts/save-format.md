@@ -90,6 +90,7 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 | 1 | Initial save format. |
 | 2 | Adds `character.appearance` (pixel characters). |
 | 3 | Adds `pet` (Oyen the cat), `null` until the player adopts one. |
+| 4 | Adds `decor` (`owned` ids and `placed` by slot) for the Home room. |
 
 ## Privacy
 
@@ -110,3 +111,9 @@ Appearance is cosmetic and never feeds the simulation. Test: `tests/save.test.ts
 `src/engine/types.ts`). Existing lives start without a cat; the player can adopt one from the
 Act screen or the `stray-oyen` event. Test: `tests/pet.test.ts` ("migrates a version-2 save to a
 life without a pet").
+
+## Version 4 (home decor)
+
+`migrations[3]` upgrades a version-3 save to version 4 by adding `decor: { owned: [], placed: {} }`.
+`placed` maps a `DecorSlot` (`wall`, `left`, `right`, `centre`) to an owned id from
+`src/data/decor.ts`. Test: `tests/decor.test.ts` ("migrates a version-3 save to empty decor").

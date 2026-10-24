@@ -11,6 +11,7 @@ import { processScheduledEvents, queueEvent } from './events';
 import { dailyRelationships, generateFeedPosts } from './social';
 import { staffDay } from './business';
 import { petDayEnd } from './pet';
+import { decorDayEnd } from './decor';
 import type { GameState } from './types';
 
 export const BASE_DAILY_BURN = 1900;
@@ -45,6 +46,7 @@ export function processDayEnd(state: GameState): void {
   if (food.water >= 6) applyStats(state, { health: 0.6 });
 
   petDayEnd(state);
+  decorDayEnd(state);
 
   // Fitness slowly fades without exercise; health follows lifestyle.
   if (!state.today.exercised) {

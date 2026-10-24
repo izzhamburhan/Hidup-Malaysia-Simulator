@@ -21,8 +21,7 @@ describe('Oyen the cat', () => {
     old.version = 2;
     delete old.pet;
     const migrated = migrate(old);
-    expect(SAVE_VERSION).toBe(3);
-    expect(migrated.version).toBe(3);
+    expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.pet).toBeNull();
   });
 

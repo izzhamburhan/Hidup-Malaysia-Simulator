@@ -42,6 +42,8 @@ export const migrations: Record<number, Migration> = {
   },
   // 2 -> 3: pets. Existing lives start without one.
   2: (s) => ({ ...s, pet: s.pet ?? null, version: 3 }),
+  // 3 -> 4: home decor. Existing lives start with a bare room.
+  3: (s) => ({ ...s, decor: s.decor ?? { owned: [], placed: {} }, version: 4 }),
 };
 
 export function migrate(raw: Record<string, unknown>): GameState {
