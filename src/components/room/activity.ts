@@ -93,6 +93,7 @@ const BY_ID: Record<string, Activity> = {
   'balik-kampung': 'travel', 'family-time': 'family', 'give-parents': 'money', 'parent-allowance': 'money',
   'move-home': 'move', 'clean-house': 'clean', 'buy-property': 'money', 'sell-property': 'money',
   'buy-vehicle': 'travel', 'sell-vehicle': 'money', 'service-vehicle': 'travel',
+  'chat-reply': 'phone',
   'change-outfit': 'dressup', 'play-minigame': 'play',
   'buy-decor': 'decorate', 'place-decor': 'decorate',
   'adopt-cat': 'petplay', 'feed-pet': 'petfeed', 'play-pet': 'petplay',

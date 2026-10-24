@@ -1,7 +1,12 @@
 import { Heart } from 'lucide-react';
 import { formatTime } from '../engine/calendar';
 import { viewAction } from '../engine/simulationEngine';
+import { useState } from 'react';
 import { useLoadedGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
+import { ChatSheet } from '../components/ChatSheet';
+import { chatScriptFor, chatText, chatThreads } from '../engine/chat';
+import type { ChatThreadId } from '../data/chats';
 import { NpcAvatar, PixelAvatar } from '../components/PixelAvatar';
 import { ActionCard } from '../components/ActionCard';
 import { Card, Disclaimer, EmptyState, Pill, cx } from '../components/ui';
@@ -11,8 +16,28 @@ const AVATAR_COLORS = ['bg-teal', 'bg-hibiscus', 'bg-gold', 'bg-leaf', 'bg-sky',
 export function FeedScreen() {
   const { state, interact } = useLoadedGame();
   const scroll = viewAction(state, 'scroll-feed');
+  const t = useT();
+  const [open, setOpen] = useState<ChatThreadId | null>(null);
   return (
     <div>
+      <h2 className="font-display text-xl font-black">💬 {t('chat.title')}</h2>
+      <p className="text-xs text-ink-soft">{t('chat.hint')}</p>
+      <Card className="mt-2 mb-4 divide-y divide-ink/5 p-0">
+        {chatThreads(state).map((th) => {
+          const preview = chatScriptFor(state, th.id)?.opener.at(-1);
+          return (
+            <button key={th.id} type="button" onClick={() => setOpen(th.id)} className="flex w-full items-center gap-3 px-3 py-2.5 text-left active:bg-paper-2">
+              {th.partnerName ? <NpcAvatar name={th.partnerName} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-paper-2 text-2xl">{th.icon}</span>}
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold leading-tight">{th.title}</span>
+                <span className="block truncate text-xs text-ink-soft">{preview ? chatText(state, preview).replace(th.id === 'partner' ? /^[^:]{1,24}: / : /^$/, '') : ''}</span>
+              </span>
+              {th.repliedToday ? <span className="text-[10px] font-semibold text-ink-soft">✓ {t('chat.replied')}</span> : <span className="rounded-full bg-hibiscus px-2 py-0.5 text-[10px] font-bold text-white">{t('chat.new')}</span>}
+            </button>
+          );
+        })}
+      </Card>
+      <ChatSheet thread={open} onClose={() => setOpen(null)} />
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl font-black">Kecoh 📣</h2>
         <Pill tone="gold">Fictional feed</Pill>

@@ -16,6 +16,7 @@ import { useT } from '../hooks/useT';
 import type { StringKey } from '../i18n';
 import { DailyBanner } from '../components/DailyBanner';
 import { dailyStatus } from '../engine/dailyChallenge';
+import { unreadChats } from '../engine/chat';
 
 import { Card, SectionTitle, StatBar, cx } from '../components/ui';
 import type { Tab } from './GameShell';
@@ -52,6 +53,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
   const offers = state.career.applications.filter((a) => a.status === 'offer').length;
   const interviews = state.career.applications.filter((a) => a.status === 'interview').length;
   const invites = state.feed.filter((p) => p.invite && !p.invite.used).length;
+  const chats = unreadChats(state);
 
   return (
     <div className="space-y-3">
@@ -95,10 +97,11 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
       )}
 
       {/* Inbox chips */}
-      {(offers > 0 || interviews > 0 || invites > 0) && (
+      {(offers > 0 || interviews > 0 || invites > 0 || chats > 0) && (
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
           {offers > 0 && <Chip onClick={() => go('life')}>📨 {t('home.offers', { n: offers })}</Chip>}
           {interviews > 0 && <Chip onClick={() => go('life')}>🎤 {t('home.interviews', { n: interviews })}</Chip>}
+          {chats > 0 && <Chip onClick={() => go('feed')}>💬 {t('home.chats', { n: chats })}</Chip>}
           {invites > 0 && <Chip onClick={() => go('feed')}>💌 {t('home.invites', { n: invites })}</Chip>}
         </div>
       )}
