@@ -77,6 +77,7 @@ export const SOUNDS: Record<Activity, Note[]> = {
     { freq: 700, at: 0.32, dur: 0.18, wave: 'sine', slide: 950, gain: 0.12 },
     { freq: 950, at: 0.5, dur: 0.22, wave: 'sine', slide: 600, gain: 0.1 },
   ],
+  dressup: seq([880, 1175, 1568], 0.06, 0.1, 'sine', 0.1),
   decorate: [...seq([330, 392], 0.12, 0.05, 'square', 0.08), ...seq([784, 988, 1175], 0.08, 0.12, 'sine', 0.12).map((n) => ({ ...n, at: n.at + 0.3 }))],
   petplay: [
     { freq: 650, at: 0, dur: 0.16, wave: 'sine', slide: 1000, gain: 0.13 },

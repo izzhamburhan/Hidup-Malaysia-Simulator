@@ -19,8 +19,8 @@ export interface Clock {
 }
 
 export type HairStyle = 'short' | 'side' | 'spiky' | 'curly' | 'long' | 'bun' | 'bald';
-export type Outfit = 'tshirt' | 'kemeja' | 'hoodie' | 'blazer' | 'baju-kurung' | 'baju-melayu';
-export type Headwear = 'none' | 'tudung' | 'songkok' | 'cap';
+export type Outfit = 'tshirt' | 'kemeja' | 'hoodie' | 'blazer' | 'baju-kurung' | 'baju-melayu' | 'jersey' | 'batik' | 'grad-gown' | 'chef' | 'suit';
+export type Headwear = 'none' | 'tudung' | 'songkok' | 'cap' | 'grad-cap' | 'helmet' | 'crown';
 export type Mood = 'happy' | 'neutral' | 'tired' | 'stressed' | 'unwell';
 
 /** Cosmetic pixel-character look. Indexes point into src/data/appearance.ts palettes. */

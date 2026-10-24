@@ -91,6 +91,7 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 | 2 | Adds `character.appearance` (pixel characters). |
 | 3 | Adds `pet` (Oyen the cat), `null` until the player adopts one. |
 | 4 | Adds `decor` (`owned` ids and `placed` by slot) for the Home room. |
+| 5 | Widens `Outfit` and `Headwear` with wardrobe unlocks; no data change. |
 
 ## Privacy
 
@@ -117,3 +118,11 @@ life without a pet").
 `migrations[3]` upgrades a version-3 save to version 4 by adding `decor: { owned: [], placed: {} }`.
 `placed` maps a `DecorSlot` (`wall`, `left`, `right`, `centre`) to an owned id from
 `src/data/decor.ts`. Test: `tests/decor.test.ts` ("migrates a version-3 save to empty decor").
+
+## Version 5 (wardrobe)
+
+`Outfit` gains `jersey`, `batik`, `grad-gown`, `chef`, `suit`, and `Headwear` gains `grad-cap`,
+`helmet`, `crown`, unlocked by achievements (`lockedOutfits` / `lockedHeadwears` in
+`src/data/appearance.ts`). Every version-4 look is still valid, so `migrations[4]` only sets the
+version. `isValidAppearance` accepts base and unlockable items. Test: `tests/wardrobe.test.ts`
+("migrates a version-4 save without changing the look").

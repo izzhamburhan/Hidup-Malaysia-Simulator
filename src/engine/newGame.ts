@@ -15,7 +15,7 @@ import { isValidAppearance, randomAppearance } from './appearance';
 import { generateFeedPosts } from './social';
 import type { GameState, NewGameOptions, Skills } from './types';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 export const START_DATE = '2027-01-04';
 export const START_MINUTE = 7 * 60;
 

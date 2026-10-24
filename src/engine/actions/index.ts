@@ -4,9 +4,10 @@ import { ownershipActions } from './ownershipActions';
 import { peopleActions } from './peopleActions';
 import { petActions } from './petActions';
 import type { ActionDef } from './types';
+import { wardrobeActions } from './wardrobeActions';
 import { workActions } from './workActions';
 
-export const actionCatalogue: ActionDef[] = [...lifeActions, ...workActions, ...peopleActions, ...ownershipActions, ...petActions, ...decorActions];
+export const actionCatalogue: ActionDef[] = [...lifeActions, ...workActions, ...peopleActions, ...ownershipActions, ...petActions, ...decorActions, ...wardrobeActions];
 
 const byId = new Map<string, ActionDef>();
 for (const a of actionCatalogue) {

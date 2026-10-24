@@ -33,3 +33,18 @@ export const headwears: { id: Headwear; label: string; weight: number }[] = [
   { id: 'songkok', label: 'Songkok', weight: 8 },
   { id: 'cap', label: 'Cap', weight: 12 },
 ];
+
+/** Wardrobe items earned through achievements. Never offered at creation or by randomAppearance. */
+export const lockedOutfits: { id: Outfit; label: string; achievement: string }[] = [
+  { id: 'jersey', label: 'Football jersey', achievement: 'fit' },
+  { id: 'batik', label: 'Batik shirt', achievement: 'community' },
+  { id: 'chef', label: 'Chef apron', achievement: 'hustler' },
+  { id: 'suit', label: 'Sharp suit', achievement: 'promoted' },
+  { id: 'grad-gown', label: 'Graduation gown', achievement: 'graduate' },
+];
+
+export const lockedHeadwears: { id: Headwear; label: string; achievement: string }[] = [
+  { id: 'helmet', label: 'Bike helmet', achievement: 'wheels' },
+  { id: 'grad-cap', label: 'Mortarboard', achievement: 'graduate' },
+  { id: 'crown', label: 'Crown', achievement: 'saver-10k' },
+];

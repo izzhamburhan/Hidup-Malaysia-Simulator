@@ -44,6 +44,8 @@ export const migrations: Record<number, Migration> = {
   2: (s) => ({ ...s, pet: s.pet ?? null, version: 3 }),
   // 3 -> 4: home decor. Existing lives start with a bare room.
   3: (s) => ({ ...s, decor: s.decor ?? { owned: [], placed: {} }, version: 4 }),
+  // 4 -> 5: wardrobe. Outfit and Headwear gained unlockable values; every old look is still valid.
+  4: (s) => ({ ...s, version: 5 }),
 };
 
 export function migrate(raw: Record<string, unknown>): GameState {

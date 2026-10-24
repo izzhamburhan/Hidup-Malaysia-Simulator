@@ -12,6 +12,7 @@ import { PixelAvatar } from '../PixelAvatar';
 import { cx } from '../ui';
 import { ACTIVITIES, ROOMS, activityFor, idleRoom, type Activity } from './activity';
 import { DecorShop } from './DecorShop';
+import { Wardrobe } from './Wardrobe';
 
 const PLAY_MS = 2600;
 const MOOD_BUBBLE: Record<Mood, string> = { happy: '😄', neutral: '', tired: '💤', stressed: '😰', unwell: '🤒' };
@@ -38,6 +39,7 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
   const { state, lastActivity, settings, request } = useLoadedGame();
   const [playing, setPlaying] = useState<Playing | null>(null);
   const [shop, setShop] = useState(false);
+  const [wardrobe, setWardrobe] = useState(false);
 
   useEffect(() => {
     if (!lastActivity || lastActivity.seq <= seenSeq) return;
@@ -156,14 +158,20 @@ export function Room({ greeting, title, detail }: { greeting: string; title: str
         <div className={cx('pointer-events-none absolute inset-0 bg-[#0b1230] transition-opacity duration-700', motion === 'sleep' ? 'opacity-45' : 'opacity-0')} aria-hidden />
 
         {home && !playing ? (
-          <button type="button" onClick={() => setShop(true)} className="absolute bottom-2 left-3 z-10 rounded-full bg-black/35 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm active:scale-95">
-            {room.label} · 🛋️ Decorate
-          </button>
+          <div className="absolute bottom-2 left-3 z-10 flex gap-1.5">
+            <button type="button" onClick={() => setShop(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
+              🛋️ Decorate
+            </button>
+            <button type="button" onClick={() => setWardrobe(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
+              👕 Wardrobe
+            </button>
+          </div>
         ) : (
           <div className="absolute bottom-2 left-3 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{room.label}</div>
         )}
       </section>
       <DecorShop open={shop} onClose={() => setShop(false)} />
+      <Wardrobe open={wardrobe} onClose={() => setWardrobe(false)} />
     </>
   );
 }

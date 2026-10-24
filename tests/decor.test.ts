@@ -17,8 +17,7 @@ describe('decor shop', () => {
     old.version = 3;
     delete old.decor;
     const m = migrate(old);
-    expect(SAVE_VERSION).toBe(4);
-    expect(m.version).toBe(4);
+    expect(m.version).toBe(SAVE_VERSION);
     expect(m.decor).toEqual({ owned: [], placed: {} });
   });
 

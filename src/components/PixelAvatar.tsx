@@ -94,6 +94,50 @@ function paint(a: Appearance, mood: Mood): Grid {
       for (let c = 3; c <= 12; c += 2) set(16, c, shade('#e7b432', -0.35));
       for (let c = 4; c <= 12; c += 2) set(17, c, shade('#e7b432', -0.35));
       break;
+    case 'jersey':
+      rect(14, 2, 15, 2, skin);
+      rect(14, 13, 15, 13, skin);
+      rect(12, 5, 16, 5, WHITE);
+      rect(12, 10, 16, 10, WHITE);
+      rect(12, 7, 12, 8, WHITE);
+      rect(14, 7, 14, 8, WHITE);
+      set(15, 8, WHITE);
+      set(16, 7, WHITE);
+      break;
+    case 'batik':
+      rect(12, 7, 12, 8, clothDark);
+      for (let r = 12; r <= 16; r++) for (let c = 3; c <= 12; c++) {
+        if ((r + c) % 4 === 0) set(r, c, clothLight);
+        else if ((r * 3 + c) % 7 === 0) set(r, c, '#e7b432');
+      }
+      break;
+    case 'grad-gown': {
+      const gown = '#26304a';
+      rect(12, 2, 17, 13, gown);
+      rect(12, 5, 17, 5, '#e7b432');
+      rect(12, 10, 17, 10, '#e7b432');
+      rect(12, 7, 12, 8, WHITE);
+      set(16, 2, skin);
+      set(16, 13, skin);
+      break;
+    }
+    case 'chef':
+      rect(13, 4, 17, 11, WHITE);
+      set(12, 5, WHITE);
+      set(12, 10, WHITE);
+      rect(15, 6, 15, 9, '#d6d3cc');
+      break;
+    case 'suit': {
+      const jacket = '#2a2f3a';
+      rect(12, 3, 17, 12, jacket);
+      rect(12, 2, 15, 2, jacket);
+      rect(12, 13, 15, 13, jacket);
+      rect(12, 6, 17, 9, WHITE);
+      rect(13, 7, 16, 8, '#b91c1c');
+      set(12, 7, '#b91c1c');
+      set(12, 8, '#b91c1c');
+      break;
+    }
   }
 
   // Neck and head.
@@ -170,6 +214,24 @@ function paint(a: Appearance, mood: Mood): Grid {
     rect(1, 4, 3, 11, capColor);
     rect(3, 9, 3, 14, shade(capColor, -0.2));
     set(1, 7, shade(capColor, 0.3));
+  } else if (a.headwear === 'grad-cap') {
+    rect(0, 2, 1, 13, '#1f2937');
+    rect(2, 4, 2, 11, '#111827');
+    set(1, 12, '#e7b432');
+    set(2, 13, '#e7b432');
+    set(3, 13, '#e7b432');
+  } else if (a.headwear === 'helmet') {
+    const shell = outfitColors[(a.outfitColor + 4) % outfitColors.length];
+    rect(0, 3, 4, 12, shell);
+    rect(4, 4, 4, 11, '#9fd6f2');
+    set(1, 6, shade(shell, 0.4));
+    set(1, 7, shade(shell, 0.4));
+  } else if (a.headwear === 'crown') {
+    rect(1, 4, 2, 11, '#e7b432');
+    for (const c of [4, 6, 9, 11]) set(0, c, '#e7b432');
+    set(2, 7, '#c2410c');
+    set(2, 8, '#2563a8');
+    set(1, 5, shade('#e7b432', 0.4));
   }
 
   // Face: eyes, mouth, mood details. Darker skin tones get a lighter mouth for contrast.
