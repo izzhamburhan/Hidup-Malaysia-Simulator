@@ -14,6 +14,7 @@ import { useLoadedGame } from '../hooks/useGame';
 import { Room } from '../components/room/Room';
 import { useT } from '../hooks/useT';
 import { StarterQuests } from '../components/StarterQuests';
+import { InstallBanner } from '../components/InstallBanner';
 import { questStatus } from '../engine/quests';
 import { DailyBanner } from '../components/DailyBanner';
 import { dailyStatus } from '../engine/dailyChallenge';
@@ -89,6 +90,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
 
       {/* New life? A short guided path */}
       <StarterQuests go={go} />
+      <InstallBanner day={state.clock.day} />
 
       {/* Inbox chips */}
       {(offers > 0 || interviews > 0 || invites > 0 || chats > 0) && (

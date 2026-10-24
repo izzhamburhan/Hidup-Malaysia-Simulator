@@ -5,6 +5,7 @@
 import { ANALYTICS_DOMAINS, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from '../config';
 
 export type EventName =
+  | 'install'
   | 'game_start'
   | 'action'
   | 'event_choice'
@@ -22,7 +23,7 @@ type Value = string | number | boolean;
 export type EventData = Partial<Record<FieldName, Value>>;
 
 const EVENTS = new Set<EventName>([
-  'game_start', 'action', 'event_choice', 'routine', 'tab_view', 'day_reached', 'chapter_end', 'share', 'tutorial', 'feedback', 'save_import', 'reset',
+  'game_start', 'action', 'event_choice', 'routine', 'tab_view', 'day_reached', 'chapter_end', 'share', 'tutorial', 'feedback', 'save_import', 'reset', 'install',
 ]);
 
 const FIELDS = ['mode', 'stage', 'background', 'id', 'category', 'source', 'days', 'tab', 'day', 'ending', 'rating', 'topic', 'step', 'ok'] as const;

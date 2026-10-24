@@ -29,11 +29,12 @@ localhost. Umami also enforces `data-domains`.
 | `tab_view` | `tab` | Tab change |
 | `day_reached` | `day`, `mode` | In-game day 1, 3, 7, 14, 30, 60, 90, 180, 365 |
 | `chapter_end` | `ending`, `day` | Ending locked in |
-| `share` | `source` (`native`, `clipboard`), `ending` | Result shared |
+| `share` | `source` (`native`, `clipboard`, `image`, `image_download`, `daily`, `daily_clipboard`), `ending` | Result shared |
 | `tutorial` | `step`, `ok` | Tutorial finished or skipped |
 | `feedback` | `rating` (1 to 4) or `topic` | Quick feedback |
 | `save_import` | `ok` | Backup imported |
 | `reset` | none | All data reset |
+| `install` | `source` (`banner`, `settings`, or with `_ios` for the iPhone steps), `ok` | Add to Home Screen offered or accepted |
 
 `sanitizeEvent` drops any other event or field, keeps numbers and booleans, and reduces
 strings to at most 40 safe characters. Never add a field carrying the character name, free

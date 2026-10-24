@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download, Trash2, Upload } from 'lucide-react';
 import { useLoadedGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
+import { IosInstallHelp, useInstall } from '../components/InstallBanner';
 import { Button, Card, Disclaimer, KeyValue, Modal, SectionTitle } from '../components/ui';
 import { PrivacyNotice } from '../components/PrivacyNotice';
 import { analyticsConfigured } from '../lib/analytics';
@@ -10,6 +11,7 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
   const { state, settings, setSettings, interact, exportSave, importSave, resetAll, lastSavedAt, saveError } = useLoadedGame();
   const [confirmReset, setConfirmReset] = useState(false);
   const t = useT();
+  const inst = useInstall();
   const [privacy, setPrivacy] = useState(false);
   const [importText, setImportText] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -67,6 +69,19 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
           <Upload size={16} /> Import (replaces current life)
         </Button>
       </Card>
+
+      {!inst.standalone && (inst.canPrompt || inst.ios) && (
+        <>
+          <SectionTitle>📲 {t('settings.install')}</SectionTitle>
+          <Card>
+            <p className="mb-2 text-xs text-ink-soft">{t('settings.install.hint')}</p>
+            <Button className="w-full" onClick={() => inst.install('settings')}>
+              {t('install.button')}
+            </Button>
+          </Card>
+          <IosInstallHelp open={inst.iosHelp} onClose={inst.closeIosHelp} />
+        </>
+      )}
 
       <SectionTitle>{t('settings.gameplay')}</SectionTitle>
       <Card className="space-y-3">
