@@ -3,6 +3,7 @@ import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles
 import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { useLoadedGame } from '../hooks/useGame';
+import { useGameSounds } from '../hooks/useGameSounds';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
 import { ConfirmModal, DayReportModal, EventModal, FeedbackToast } from '../components/Overlays';
@@ -35,6 +36,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   const [menu, setMenu] = useState(false);
   const [tutorial, setTutorial] = useState(!settings.tutorialSeen);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  useGameSounds();
   const go = (t: Tab) => {
     if (t !== tab) track('tab_view', { tab: t });
     if ((t === 'act' || t === 'money' || t === 'life' || t === 'feed') && !settings.visitedTabs[t]) {

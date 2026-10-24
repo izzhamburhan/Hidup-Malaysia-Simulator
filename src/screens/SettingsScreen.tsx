@@ -74,6 +74,8 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
           checked={state.flags.comparisonAnxiety !== false}
           onChange={(v) => interact('setting', 'comparisonAnxiety', v)}
         />
+        <Toggle label="Sound effects" hint="A short sound after each action." checked={settings.sound} onChange={(v) => setSettings({ sound: v })} />
+        <Toggle label="Vibration" hint="A light buzz after each action (Android phones)." checked={settings.vibration} onChange={(v) => setSettings({ vibration: v })} />
         <Toggle label="Reduce motion" hint="Turns off animations." checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
         <Toggle label="Show 'How to play' again" hint="Replays the intro next time you open the game." checked={!settings.tutorialSeen} onChange={(v) => setSettings({ tutorialSeen: !v })} />
       </Card>
