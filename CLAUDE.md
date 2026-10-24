@@ -175,6 +175,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 - **Payroll is a SIMPLIFIED SIMULATION** of EPF/KWSP, SOCSO/PERKESO, EIS and PCB/LHDN. Rates live in `src/data/statutory.ts` with links to the official sources. A payslip always shows `STATUTORY_DISCLAIMER` and is never presented as official. See `docs/contracts/payroll.md`.
 - **Holiday dates are a simulated calendar.** Lunar and Islamic festivals are pinned to fixed dates in `src/data/holidays.ts`; they are not the real calendar.
 - **Humour and politics.** Humour is original, friendly and recognisably Malaysian. No defamation of real people. Politics appears only through fictional parties and politicians in the fictional town of Seri Harapan. No ethnic or religious stereotypes. Being single, never marrying, never buying a house and every ending are valid outcomes, not failures.
+- **Halal-friendly.** No pig or pork, alcohol or gambling imagery anywhere (emoji included); `tests/content.test.ts` enforces the emoji list.
 - **Privacy.** Store only what the game needs, and only locally. No accounts, ads, tracking cookies, paid APIs or real social media in v1. The only analytics allowed is the cookie-free, opt-out, allow-listed kind in `docs/contracts/analytics.md`.
 
 ## Save and versioning

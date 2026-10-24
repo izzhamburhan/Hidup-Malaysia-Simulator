@@ -114,6 +114,7 @@ Live: https://hidupmalaysia.com/ (custom domain on Cloudflare Registrar; DNS: fo
 ## Data honesty
 
 Real universities and companies are catalogue names only: no implied vacancies, rankings, fees, salaries or practices. No real logos or brand marks: organisations show a neutral initials badge (`OrgBadge`) in the game palette. Salaries, tuition, prices, rents and vehicle costs are FICTIONAL GAME ESTIMATES and labelled so. Calories are rough estimates, not medical or nutrition advice. Payroll (EPF/KWSP, SOCSO/PERKESO, EIS, PCB/LHDN) is a SIMPLIFIED SIMULATION with rates and official links in `src/data/statutory.ts`; a payslip is never presented as official. Holiday dates are a simulated calendar. Humour is original, friendly and recognisably Malaysian; no defamation of real people; politics only via fictional parties and politicians in the fictional town of Seri Harapan; no ethnic or religious stereotypes; being single and every ending are valid outcomes.
+No pig or pork, alcohol or gambling imagery anywhere (emoji included); `tests/content.test.ts` enforces the emoji list.
 
 ## Save format
 

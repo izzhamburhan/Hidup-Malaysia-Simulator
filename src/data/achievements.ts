@@ -18,7 +18,7 @@ export const achievements: Achievement[] = [
   { id: 'first-day', title: 'Hari Pertama', description: 'Survive your first day.', icon: '🌅', check: (s) => s.clock.day >= 1 },
   { id: 'first-week', title: 'Seminggu Dah', description: 'Make it through a full week.', icon: '📅', check: (s) => s.clock.day >= 7 },
   { id: 'first-salary', title: 'Gaji Masuk!', description: 'Receive your first payslip.', icon: '💰', check: (s) => s.finance.payslips.length > 0 },
-  { id: 'saver-1k', title: 'Tabung Pertama', description: 'Have RM1,000 in savings.', icon: '🐷', check: (s) => s.finance.savings >= 1000 },
+  { id: 'saver-1k', title: 'Tabung Pertama', description: 'Have RM1,000 in savings.', icon: '🪙', check: (s) => s.finance.savings >= 1000 },
   { id: 'saver-10k', title: 'Five Figures', description: 'Have RM10,000 in savings.', icon: '🏦', check: (s) => s.finance.savings >= 10000 },
   { id: 'emergency-3', title: 'Rainy Day Ready', description: 'Emergency fund of RM5,000 or more.', icon: '☂️', check: (s) => s.finance.emergencyFund >= 5000 },
   { id: 'debt-free', title: 'Bebas Hutang', description: 'Clear a loan completely.', icon: '🕊️', check: (s) => s.counters.debtsCleared > 0 },

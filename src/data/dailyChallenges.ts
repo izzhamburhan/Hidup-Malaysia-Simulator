@@ -60,7 +60,7 @@ export const DAILY_CHALLENGES: DailyChallenge[] = [
   {
     id: 'saver-week',
     title: 'Jimat Cermat',
-    icon: '🐷',
+    icon: '💰',
     blurb: 'Payday was yesterday. How much of it survives the week?',
     goal: 'Grow your net worth by RM300.',
     options: { backgroundId: 'middle', lifeStage: 'working', startAge: 26, homeState: 'Penang', jobId: 'swe' },

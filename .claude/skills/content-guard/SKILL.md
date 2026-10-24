@@ -32,6 +32,7 @@ and the risk. The facts live in `CLAUDE.md` (Data honesty, Adding content),
 - No defamation, mockery or impersonation of real people, brands or institutions. A real company may be an employer; it is never the butt of a joke or shown behaving badly.
 - Politics only through fictional parties and fictional politicians in the fictional town of Seri Harapan. No real parties, politicians, or current controversies.
 - No ethnic or religious stereotypes, and no jokes about race, religion, disability, or appearance. Festivals are celebrated warmly and respectfully.
+- No pig or pork, alcohol or gambling imagery anywhere (emoji included); `tests/content.test.ts` enforces the emoji list.
 - Being single, not marrying, renting forever, not owning a car, and every ending are valid outcomes, never framed as failure.
 - Mental health and debt are handled kindly: no shaming, and serious states point to rest or help, not punchlines.
 - Copy is clear plain English; Malay and Manglish phrases are welcome where natural.
