@@ -8,7 +8,9 @@ import {
   type ActionView,
 } from '../engine/simulationEngine';
 import { actionById } from '../engine/actions';
-import { COLLECTION_KEY, clearSave, deserialize, emptyCollection, loadCollection, loadGame, recordEnding, saveCollection, saveGame, SETTINGS_KEY, type EndingCollection, type LoadResult } from '../engine/save';
+import { dailyForDate, newDailyGame } from '../engine/dailyChallenge';
+import { randomAppearance } from '../engine/appearance';
+import { COLLECTION_KEY, DAILY_KEY, SAVE_KEY, clearSave, deserialize, emptyCollection, loadCollection, loadGame, recordEnding, saveCollection, saveGame, SETTINGS_KEY, type EndingCollection, type LoadResult } from '../engine/save';
 import type { ActionFeedback, DayReport, GameState, NewGameOptions } from '../engine/types';
 import { TRACK_ACTIONS } from '../config';
 import { initAnalytics, track } from '../lib/analytics';
@@ -34,6 +36,14 @@ const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];
 
 export type ActionSource = 'primary' | 'tile' | 'list';
+
+/** Today's date as YYYY-MM-DD in the player's own time zone: the daily challenge key. */
+export function todayKey(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export type Slot = 'main' | 'daily';
 
 /** The last thing the player did, for the Home room animation. UI-only, never saved. */
 export interface LastActivity {
@@ -71,6 +81,12 @@ interface GameApi {
   lastActivity: LastActivity | null;
   /** Endings found across every life. */
   collection: EndingCollection;
+  /** Which save slot the live game belongs to. */
+  slot: Slot;
+  /** Today's daily challenge, and today's run if one is saved. */
+  daily: () => { key: string; title: string; icon: string; blurb: string; goal: string; saved: GameState | null };
+  playDaily: () => void;
+  exitDaily: () => void;
   start: (options: NewGameOptions) => void;
   act: (actionId: string, param?: string, source?: ActionSource) => ActionFeedback;
   request: (view: ActionView, source?: ActionSource) => void;
@@ -111,6 +127,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return store ? loadCollection(store) : emptyCollection();
   });
   const played = useCallback((id: string, param?: string) => setLastActivity((p) => ({ id, param, seq: (p?.seq ?? 0) + 1 })), []);
+  const [slot, setSlot] = useState<Slot>('main');
+  const slotRef = useRef<Slot>('main');
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -128,7 +146,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       return;
     }
     const now = new Date().toISOString();
-    const ok = saveGame(store, state, now);
+    const ok = saveGame(store, state, now, slotRef.current === 'daily' ? DAILY_KEY : SAVE_KEY);
     setSaveError(!ok);
     if (ok) setLastSavedAt(now);
   }, [state]);
@@ -183,7 +201,47 @@ export function GameProvider({ children }: { children: ReactNode }) {
       settings,
       lastActivity,
       collection,
+      slot,
+      daily: () => {
+        const key = todayKey();
+        const { def } = dailyForDate(key);
+        const store = storage();
+        const res = store ? loadGame(store, DAILY_KEY) : null;
+        const saved = res?.status === 'ok' && res.state.flags['daily-date'] === key ? res.state : null;
+        return { key, title: def.title, icon: def.icon, blurb: def.blurb, goal: def.goal, saved };
+      },
+      playDaily: () => {
+        const key = todayKey();
+        const store = storage();
+        const res = store ? loadGame(store, DAILY_KEY) : null;
+        let s = res?.status === 'ok' && res.state.flags['daily-date'] === key ? res.state : null;
+        if (!s) {
+          const main = slotRef.current === 'main' ? stateRef.current : null;
+          s = newDailyGame(key, main?.character.name ?? 'Kamu', main?.character.appearance ?? randomAppearance(dailyForDate(key).seed));
+          s.createdAt = new Date().toISOString();
+          track('game_start', { mode: 'daily', stage: s.character.lifeStage, background: s.character.backgroundId });
+        }
+        slotRef.current = 'daily';
+        setSlot('daily');
+        stateRef.current = s;
+        setState(s);
+        setFeedback(null);
+        setDayReport(null);
+      },
+      exitDaily: () => {
+        const store = storage();
+        const res = store ? loadGame(store) : null;
+        const main = res?.status === 'ok' ? res.state : null;
+        slotRef.current = 'main';
+        setSlot('main');
+        stateRef.current = main;
+        setState(main);
+        setFeedback(null);
+        setDayReport(null);
+      },
       start: (options) => {
+        slotRef.current = 'main';
+        setSlot('main');
         const seed = options.seed ?? (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
         const s = engineNewGame({ ...options, seed });
         s.createdAt = new Date().toISOString();
@@ -262,6 +320,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dismissFeedback: () => setFeedback(null),
       dismissDayReport: () => setDayReport(null),
       quit: () => {
+        slotRef.current = 'main';
+        setSlot('main');
         stateRef.current = null;
         setState(null);
         setFeedback(null);
@@ -274,6 +334,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           try {
             store.removeItem(SETTINGS_KEY);
             store.removeItem(COLLECTION_KEY);
+            store.removeItem(DAILY_KEY);
           } catch {
             /* ignore */
           }
@@ -289,6 +350,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const res = deserialize(text.trim());
         track('save_import', { ok: res.status === 'ok' });
         if (res.status !== 'ok') return res.status === 'corrupt' ? `Import failed: ${res.error}` : 'Nothing to import.';
+        slotRef.current = 'main';
+        setSlot('main');
         stateRef.current = res.state;
         setState(res.state);
         setFeedback(null);
@@ -310,7 +373,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
       },
     }),
-    [state, boot, feedback, dayReport, confirmFor, lastSavedAt, saveError, settings, lastActivity, collection, act, request, commit, played],
+    [state, boot, feedback, dayReport, confirmFor, lastSavedAt, saveError, settings, lastActivity, collection, slot, act, request, commit, played],
   );
 
   return <GameContext.Provider value={api}>{children}</GameContext.Provider>;

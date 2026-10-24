@@ -12,6 +12,8 @@ import type { ActionView } from '../engine/simulationEngine';
 import { relationshipStatus } from '../engine/social';
 import { useLoadedGame } from '../hooks/useGame';
 import { Room } from '../components/room/Room';
+import { DailyBanner } from '../components/DailyBanner';
+import { dailyStatus } from '../engine/dailyChallenge';
 
 import { Card, SectionTitle, StatBar, cx } from '../components/ui';
 import type { Tab } from './GameShell';
@@ -38,6 +40,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
   const checklistRemaining = CHECKLIST.filter((c) => !settings.visitedTabs[c.id]);
   const showChecklist = checklistRemaining.length > 0 && state.clock.day < 7;
   const greeting = greetingFor(state.clock.minute);
+  const daily = dailyStatus(state);
   const objective = currentObjective(state);
   const primary = primaryAction(state);
   const tiles = quickActions(state).filter((t) => !primary || t.id !== primary.id || t.param !== primary.param);
@@ -49,6 +52,8 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
 
   return (
     <div className="space-y-3">
+      {daily && <DailyBanner status={daily} />}
+
       {/* Pou-style room: the character in the middle, animating after each action */}
       <Room greeting={`${greeting}, ${state.character.name}`} title={`${objective.icon} ${objective.title}`} detail={objective.detail} />
 

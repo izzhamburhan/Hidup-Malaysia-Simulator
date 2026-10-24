@@ -11,6 +11,8 @@ export const CORRUPT_KEY = 'hidup-malaysia:save:corrupt';
 export const SETTINGS_KEY = 'hidup-malaysia:settings';
 /** Endings found across every life. Lives outside the save so a new life keeps it. */
 export const COLLECTION_KEY = 'hidup-malaysia:collection';
+/** Today's daily-challenge run, kept apart so it never replaces the main life. */
+export const DAILY_KEY = 'hidup-malaysia:daily';
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -121,9 +123,9 @@ export function deserialize(text: string): LoadResult {
   }
 }
 
-export function saveGame(storage: StorageLike, state: GameState, savedAt: string): boolean {
+export function saveGame(storage: StorageLike, state: GameState, savedAt: string, key = SAVE_KEY): boolean {
   try {
-    storage.setItem(SAVE_KEY, serialize(state, savedAt));
+    storage.setItem(key, serialize(state, savedAt));
     return true;
   } catch {
     return false;
@@ -131,10 +133,10 @@ export function saveGame(storage: StorageLike, state: GameState, savedAt: string
 }
 
 /** Load the save. A corrupt save is moved aside (never silently deleted) and reported. */
-export function loadGame(storage: StorageLike): LoadResult {
+export function loadGame(storage: StorageLike, key = SAVE_KEY): LoadResult {
   let text: string | null = null;
   try {
-    text = storage.getItem(SAVE_KEY);
+    text = storage.getItem(key);
   } catch {
     return { status: 'empty' };
   }
@@ -143,7 +145,7 @@ export function loadGame(storage: StorageLike): LoadResult {
   if (result.status === 'corrupt') {
     try {
       storage.setItem(CORRUPT_KEY, text);
-      storage.removeItem(SAVE_KEY);
+      storage.removeItem(key);
     } catch {
       /* storage unavailable: nothing else to do */
     }

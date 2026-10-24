@@ -18,8 +18,10 @@ const FEATURES = [
   ['🚗', 'Myvi loans, tolls & traffic jams'],
 ];
 
-export function Landing({ onNew, onContinue }: { onNew: () => void; onContinue: () => void }) {
-  const { state, boot } = useGame();
+export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onContinue: () => void; onDaily: () => void }) {
+  const { state, boot, daily, playDaily, slot } = useGame();
+  const today = daily();
+  const main = slot === 'main' ? state : null;
   const [confirmNew, setConfirmNew] = useState(false);
   const [privacy, setPrivacy] = useState(false);
 
@@ -40,27 +42,45 @@ export function Landing({ onNew, onContinue }: { onNew: () => void; onContinue: 
       </div>
 
       <div className="mt-5 space-y-3">
-        {state && (
+        <button
+          type="button"
+          onClick={() => {
+            playDaily();
+            onDaily();
+          }}
+          className="flex w-full items-center gap-3 rounded-2xl border-2 border-gold bg-gold-soft p-3 text-left shadow-sm active:scale-[0.99]"
+        >
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-3xl">{today.icon}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a5a00]">🗓️ Today's challenge · 7 days</span>
+            <span className="block font-bold leading-tight">{today.title}</span>
+            <span className="block text-xs text-ink-soft">{today.saved ? `Continue: day ${Math.min(7, today.saved.clock.day) + 1} of 7` : today.goal}</span>
+          </span>
+          <span className="text-xl font-black text-[#7a5a00]" aria-hidden>
+            ▶
+          </span>
+        </button>
+        {main && (
           <button
             type="button"
             onClick={onContinue}
             className="anim-pop flex w-full items-center gap-3 rounded-2xl border-2 border-teal bg-white p-4 text-left shadow-sm transition hover:bg-teal-soft"
           >
             <span className="relative flex h-14 w-12 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-teal-soft">
-              <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={44} />
+              <PixelAvatar appearance={main.character.appearance} mood={moodOf(main)} size={44} />
               <span className="absolute bottom-0.5 right-0.5 rounded-full bg-teal p-0.5 text-white">
                 <Play size={10} />
               </span>
             </span>
             <span className="flex-1">
-              <span className="block font-bold">Continue {state.character.name}'s life</span>
+              <span className="block font-bold">Continue {main.character.name}'s life</span>
               <span className="block text-xs text-ink-soft">
-                Day {state.clock.day + 1} · {formatDate(state)} · {formatRM(state.finance.cash)} · {state.mode === 'chaotic' ? 'Chaotic' : 'Realistic'}
+                Day {main.clock.day + 1} · {formatDate(main)} · {formatRM(main.finance.cash)} · {main.mode === 'chaotic' ? 'Chaotic' : 'Realistic'}
               </span>
             </span>
           </button>
         )}
-        <Button className="w-full py-3.5 text-base" variant={state ? 'secondary' : 'primary'} onClick={() => (state ? setConfirmNew(true) : onNew())}>
+        <Button className="w-full py-3.5 text-base" variant={main ? 'secondary' : 'primary'} onClick={() => (main ? setConfirmNew(true) : onNew())}>
           <Plus size={18} /> Start a new life
         </Button>
         {boot?.status === 'corrupt' && (
@@ -111,7 +131,7 @@ export function Landing({ onNew, onContinue }: { onNew: () => void; onContinue: 
           </>
         }
       >
-        <p className="text-sm text-ink-soft">Starting a new game will replace {state?.character.name}'s saved life on this device once you create the new character. You can export a backup in Settings first.</p>
+        <p className="text-sm text-ink-soft">Starting a new game will replace {main?.character.name}'s saved life on this device once you create the new character. You can export a backup in Settings first.</p>
       </Modal>
     </main>
   );

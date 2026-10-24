@@ -37,7 +37,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 
 ## Layout
 
-`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `pet.ts` (Oyen the cat), `decor.ts` (home decor), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor). `src/components/` and `src/screens/` UI (`src/components/room/`: the Home room and its action-to-animation mapping; `src/components/celebrate/`: big-moment banner from a pure state diff; `src/components/minigames/`: the three mini-games and their pure scoring; both presentation only); `src/main.tsx`, `src/App.tsx`. `src/config.ts` public site config (analytics ID, feedback form, game URL); `src/lib/analytics.ts` privacy-first analytics (UI layer only); `src/lib/sound.ts` synthesised sound effects and vibration (UI layer only). `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/plans/` one TDD plan per non-trivial change (`<slug>.md`); `docs/specs/` design specs, only when the developer asks for one. `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
+`src/engine/` pure simulation engine: `types.ts`, `rng.ts` (seeded mulberry32, `state.rng`), `calendar.ts`, `core.ts` (money and stat helpers), `time.ts` (`advanceTime`, the only way the clock moves), `daily.ts`, `economy.ts`, `payroll.ts`, `living.ts`, `career.ts`, `education.ts`, `social.ts`, `holidays.ts`, `business.ts` (side hustles), `pet.ts` (Oyen the cat), `dailyChallenge.ts` (daily scenarios), `decor.ts` (home decor), `events.ts`, `actions/` (catalogue by domain), `progression.ts` (achievements and challenges), `endings.ts`, `newGame.ts` (`newGame`, `SAVE_VERSION`), `save.ts`, and `simulationEngine.ts` (public API: `newGame`, `performAction`, `resolveEvent`, `listActions`, `runAutopilot`). `src/data/` catalogues (universities, courses, companies, jobs, foods, vehicles, housing, lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames). `src/components/` and `src/screens/` UI (`src/components/room/`: the Home room and its action-to-animation mapping; `src/components/celebrate/`: big-moment banner from a pure state diff; `src/components/minigames/`: the three mini-games and their pure scoring; both presentation only); `src/main.tsx`, `src/App.tsx`. `src/config.ts` public site config (analytics ID, feedback form, game URL); `src/lib/analytics.ts` privacy-first analytics (UI layer only); `src/lib/sound.ts` synthesised sound effects and vibration (UI layer only). `tests/` Vitest tests. `mcp/hidup-sim/` local stdio MCP server. `docs/contracts/` contracts; `docs/plans/` one TDD plan per non-trivial change (`<slug>.md`); `docs/specs/` design specs, only when the developer asks for one. `scripts/` skill sync and parity (Node `.mjs`). `playbook.md` the process. `SKILLS.md` skill index. `.codex/skills/` and `.claude/skills/` skills. `.claude/agents/` role agents (`hm-scout`, `hm-implementer`, `hm-reviewer`). `.github/` CI and PR template. `.mcp.json` registers `hidup-sim`.
 
 ## Status
 
@@ -52,6 +52,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Events | done: 97 events (random + scheduled), modes, contexts, cooldowns, follow-ups, safety net |
 | Actions catalogue | done: 96 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 42 achievements, 10 challenges, 10 endings, life report, share card |
+| Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot, Home banner with goal and Share |
 | Ending collection | done: endings found across all lives (own LocalStorage key), Goals gallery with hints, "new ending found" on the Report |
 | Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day) |
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
@@ -62,7 +63,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 24 Vitest files, 167 tests |
+| Tests | done: 25 Vitest files, 173 tests |
 
 ## Commands
 
@@ -114,7 +115,7 @@ Real universities and companies are catalogue names only: no implied vacancies, 
 
 ## Save format
 
-LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`; settings under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; corrupt saves are copied to `hidup-malaysia:save:corrupt`. `SAVE_VERSION` is currently 2 (v2 adds the pixel character appearance). Contract: `docs/contracts/save-format.md`.
+LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`; settings under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot); corrupt saves are copied to `hidup-malaysia:save:corrupt`. `SAVE_VERSION` is currently 2 (v2 adds the pixel character appearance). Contract: `docs/contracts/save-format.md`.
 
 ## MCP server
 
