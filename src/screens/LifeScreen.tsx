@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { companyById, industryLabels } from '../data/companies';
 import { courseById, courses } from '../data/courses';
 import { foods, portions } from '../data/foods';
@@ -6,7 +6,8 @@ import { housingOptions, properties } from '../data/housing';
 import { jobById } from '../data/jobs';
 import { gyms, hustleDefById, hustleDefs, shopItems } from '../data/lifestyle';
 import { universities, universityById } from '../data/universities';
-import { transportModes, vehicles } from '../data/vehicles';
+import { transportModes, vehicleById, vehicles } from '../data/vehicles';
+import { VehicleSprite } from '../components/VehicleSprite';
 import { formatDate, formatDuration } from '../engine/calendar';
 import { scheduleLabel, jobEligibility } from '../engine/career';
 import { formatRM, SKILL_KEYS } from '../engine/core';
@@ -78,10 +79,10 @@ function CategoryActions({ ids }: { ids: string[] }) {
   );
 }
 
-function V({ id, param, label }: { id: string; param?: string; label?: string }) {
+function V({ id, param, label, art }: { id: string; param?: string; label?: string; art?: ReactNode }) {
   const { state } = useLoadedGame();
   const view = viewAction(state, id, param);
-  return view ? <ActionCard view={view} label={label} /> : null;
+  return view ? <ActionCard view={view} label={label} art={art} /> : null;
 }
 
 // ---------------- Career ----------------
@@ -531,10 +532,17 @@ function HomeTab() {
 function TransportTab() {
   const { state } = useLoadedGame();
   const t = state.transport;
+  const owned = vehicleById(t.vehicleId);
   return (
     <div>
       <SectionTitle>Getting around</SectionTitle>
       <Card>
+        {owned && (
+          <div className="mb-2 flex items-center gap-3 rounded-xl bg-paper-2 p-2">
+            <VehicleSprite shape={owned.shape} color={owned.color} size={88} title={owned.name} />
+            <span className="text-sm font-bold">{owned.name}</span>
+          </div>
+        )}
         <KeyValue label="Commute mode" value={transportModes.find((m) => m.mode === t.mode)?.label} strong />
         <KeyValue label="One-way commute" value={formatDuration(commuteMinutes(state))} />
         <KeyValue label="Driving licence" value={t.hasLicence ? `Valid until day ${(t.licenceExpiryDay ?? 0) + 1}` : 'None'} />
@@ -553,7 +561,7 @@ function TransportTab() {
       <SectionTitle>Vehicle showroom</SectionTitle>
       <div className="grid gap-2">
         {vehicles.map((v) => (
-          <V key={v.id} id="buy-vehicle" param={v.id} label={`${v.icon} ${v.name} — ${formatRM(v.price)}`} />
+          <V key={v.id} id="buy-vehicle" param={v.id} label={`${v.name} — ${formatRM(v.price)}`} art={<VehicleSprite shape={v.shape} color={v.color} size={48} />} />
         ))}
       </div>
       <Disclaimer>Vehicle prices, loans, insurance and road tax are fictional game estimates, not dealer or official figures.</Disclaimer>

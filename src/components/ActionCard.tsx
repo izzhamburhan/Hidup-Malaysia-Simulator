@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Clock, Lock, Zap } from 'lucide-react';
 import { formatDuration } from '../engine/calendar';
 import { formatRM } from '../engine/core';
@@ -5,7 +6,7 @@ import type { ActionView } from '../engine/simulationEngine';
 import { useGame } from '../hooks/useGame';
 import { cx } from './ui';
 
-export function ActionCard({ view, compact = false, label }: { view: ActionView; compact?: boolean; label?: string }) {
+export function ActionCard({ view, compact = false, label, art }: { view: ActionView; compact?: boolean; label?: string; art?: ReactNode }) {
   const { request } = useGame();
   return (
     <button
@@ -18,7 +19,7 @@ export function ActionCard({ view, compact = false, label }: { view: ActionView;
         view.available ? 'border-ink/10 hover:border-teal/50 hover:shadow-sm active:scale-[0.99]' : 'border-ink/5 bg-white/60',
       )}
     >
-      <span className={cx('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl', view.available ? 'bg-paper-2' : 'bg-paper-2/60 grayscale')}>{view.icon}</span>
+      <span className={cx('flex h-10 shrink-0 items-center justify-center rounded-xl text-xl', art ? 'w-14' : 'w-10', view.available ? 'bg-paper-2' : cx('bg-paper-2/60', art ? 'opacity-80' : 'grayscale'))}>{art ?? view.icon}</span>
       <span className="min-w-0 flex-1">
         <span className={cx('block text-sm font-semibold leading-tight', !view.available && 'text-ink-soft')}>{label ?? view.title}</span>
         {!compact && view.description && <span className="mt-0.5 block text-xs leading-snug text-ink-soft">{view.description}</span>}

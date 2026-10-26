@@ -95,6 +95,7 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 | 4 | Adds `decor` (`owned` ids and `placed` by slot) for the Home room. |
 | 5 | Widens `Outfit` and `Headwear` with wardrobe unlocks; no data change. |
 | 6 | Widens `Outfit` with festive outfits (cheongsam, kurta, Christmas sweater, Merdeka tee); no data change. |
+| 7 | Adds `character.gender` (`'male' | 'female' | null`); older lives get `null`. |
 
 ## Privacy
 
@@ -136,3 +137,11 @@ version. `isValidAppearance` accepts base and unlockable items. Test: `tests/war
 wishes during that festival's season (`festiveOutfits` in `src/data/appearance.ts`, unlock flag
 `festive-outfit-<season>`). Every version-5 look is still valid, so `migrations[5]` only sets the
 version. Test: `tests/festive.test.ts` ("migrates a version-5 save unchanged").
+
+## Version 7 (gender)
+
+`Character` gains `gender: Gender | null` (`Gender = 'male' | 'female'`), chosen at character
+creation. It is cosmetic: `randomAppearance(seed, gender)` uses it for the starting look only, and
+nothing in the simulation reads it. `migrations[6]` keeps a valid stored value and otherwise sets
+`null`; it never guesses a gender from the look. Test: `tests/save.test.ts` ("migrates a v6 save
+to v7 with gender not set").

@@ -62,6 +62,7 @@ src/engine/            pure simulation engine (no React, no DOM)
   chat.ts              chat threads: day's script (pure pick), reply effects, one reply a day
   dailyChallenge.ts    daily challenge: scenario and seed from a date, newDailyGame, dailyStatus
   events.ts            data-driven event engine
+  actionGames.ts       action mini-game bonus: score tier scales the ACTION_GAMES bonus (never cash)
   actions/             action catalogue by domain (types.ts, lifeActions, workActions, peopleActions, ownershipActions)
   progression.ts       achievement and challenge checks
   appearance.ts        cosmetic pixel-character looks and moods (own generator, never state.rng)
@@ -74,7 +75,8 @@ src/data/              catalogues: universities, courses, companies, jobs, foods
 src/components/        UI components
   room/                Home room: activity.ts (action to room/animation mapping, presentation only), Room.tsx
   celebrate/           big-moment banner: celebrations.ts (pure state diff), Celebrate.tsx
-  minigames/           Kejar Bas, Teh Tarik, Ingat Order; scoring.ts (pure, 0-100)
+  minigames/           Games.tsx (tap race, teh tarik, memory, timing bar, quick maths, pick a reply), the Games picker, ActionGame.tsx (game before an action); scoring.ts (pure, 0-100)
+  VehicleSprite.tsx    pixel-art vehicle body shapes painted per model (no logos)
 src/screens/           screens
 src/main.tsx, src/App.tsx
 src/config.ts          public site config: analytics ID, feedback form URL, game URL
@@ -103,7 +105,7 @@ SKILLS.md              index of every skill
 | --- | --- |
 | Engine core (types, rng, calendar, core, time, daily) | done: seeded RNG, shared clock, passive needs, day/month/year processing |
 | Economy and payroll | done: monthly commitments, overdue debt, payslips (EPF/SOCSO/EIS/PCB simplified), EPF dividend, tax year + e-filing event |
-| Living (housing, transport) | done: 6 rentals incl. campus hostel, 3 properties with DSR check, 5 commute modes, 8 vehicles with loans |
+| Living (housing, transport) | done: 6 rentals incl. campus hostel, 3 properties with DSR check, 5 commute modes, 13 vehicles with loans, each drawn as a pixel-art body shape in its own colour (no logos or photos) |
 | Career | done: weekly job board, applications, interview event, offers/negotiation, shifts, overtime, leave, reviews, promotions |
 | Education | done: 24 institutions, 14 courses, classes, assignments, exams/GPA/CGPA, FYP, probation, graduation, PTPTN-style loan |
 | Social and feed | done: prospects, dating stages to marriage, breakups, family/friends drift, fictional feed with likes and invites |
@@ -116,18 +118,19 @@ SKILLS.md              index of every skill
 | Starter quests | done: 6 quests for a new life (eat, move, career step, chat, make it yours, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
 | Chat | done: partner, Geng Lepak (friends) and family threads on the Feed tab; 16 scripted conversations, pick one of 3 replies, real effects on trust, friends and family, one reply per thread a day |
 | Bahasa Malaysia | beta: EN/BM switch on the landing screen and in Settings; menus, buttons, Home, room, daily banner and settings translated; stories, events and catalogue names still English |
-| Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot, Home banner with goal and Share |
+| Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot; a slim strip on the landing page opens an explainer sheet with Start/Continue; a compact in-run banner with goal, "My life" exit and Share |
 | Ending collection | done: endings found across all lives (own LocalStorage key), Goals gallery with hints, "new ending found" on the Report |
-| Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day) |
+| Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day). Action games: 23 everyday actions (run, workout, gym, sports, work, overtime, hustle, mamak, classes, study, assignment, FYP, self-study, CV, apply, interview, friend, partner and family chats) open a 5-10 second game first (tap race, timing bar, memory, pour, quick maths, pick a reply); the score adds a small capped bonus through `performAction` options, Skip does the action as normal, and Settings can turn them off |
+| Gender | done: male or female at character creation (save v7); sets the starting look only, every look stays open to everyone, nothing in the simulation reads it |
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
 | Home decor | done: 16 decor items in four slots, bought from the room's Decorate button, shown in the living room and bedroom, small daily comfort bonus |
 | Pets | done: Oyen the cat (adopt from Act or a stray event), feed and play, daily hunger and mood, shown in the Home room |
-| Save and migrations | done: SAVE_VERSION 6 (v2 adds the pixel character appearance, v3 the pet, v4 home decor, v5 wardrobe unlocks, v6 festive outfits), migration chain, corrupt-save quarantine, export/import |
+| Save and migrations | done: SAVE_VERSION 7 (v2 adds the pixel character appearance, v3 the pet, v4 home decor, v5 wardrobe unlocks, v6 festive outfits, v7 gender), migration chain, corrupt-save quarantine, export/import |
 | Public engine API (`simulationEngine.ts`) | done: performAction, resolveEvent, listActions, runAutopilot, interact, endChapter |
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
-| UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
+| UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 33 Vitest files, 199 tests |
+| Tests | done: 34 Vitest files, 219 tests |
 
 ## Commands
 
@@ -189,7 +192,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 ## Save and versioning
 
 - LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`. Settings live under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot, never the main life).
-- `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 6; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
+- `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 7; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
 - Any change to the shape of `GameState` bumps `SAVE_VERSION`, adds a migration from the previous version, and adds a Vitest test that migrates a fixture of the old shape.
 - A corrupt or unreadable save never crashes the app: the raw text is backed up to `hidup-malaysia:save:corrupt` and the player gets a clear message and a fresh start.
 - Full contract: `docs/contracts/save-format.md`.

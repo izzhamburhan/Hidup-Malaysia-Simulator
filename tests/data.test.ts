@@ -4,7 +4,7 @@ import { courses } from '../src/data/courses';
 import { companies } from '../src/data/companies';
 import { jobs } from '../src/data/jobs';
 import { foods } from '../src/data/foods';
-import { vehicles } from '../src/data/vehicles';
+import { VEHICLE_SHAPES, vehicles } from '../src/data/vehicles';
 import { housingOptions, properties } from '../src/data/housing';
 import { hustleDefs, shopItems } from '../src/data/lifestyle';
 import { backgrounds, lifeStages } from '../src/data/backgrounds';
@@ -86,6 +86,12 @@ describe('data catalogues', () => {
       expect(f.price).toBeGreaterThanOrEqual(0);
     }
     for (const v of vehicles) expect(v.downPaymentRate).toBeGreaterThan(0);
+    for (const v of vehicles) {
+      // Drawn as a generic pixel body shape in a paint colour: never a logo or photo.
+      expect(VEHICLE_SHAPES, v.id).toContain(v.shape);
+      expect(v.color, v.id).toMatch(/^#[0-9a-f]{6}$/);
+      expect(v.kind === 'motorcycle', v.id).toBe(v.shape === 'scooter' || v.shape === 'motorbike');
+    }
     for (const h of holidays) {
       expect(h.month).toBeGreaterThanOrEqual(1);
       expect(h.month).toBeLessThanOrEqual(12);

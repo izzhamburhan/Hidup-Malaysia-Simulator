@@ -65,6 +65,11 @@ interface ActionView {
 6. **Feedback deltas are computed, not written.** `performAction` diffs the state before and after; `run` returns only narrative lines.
 7. **Content in catalogues.** Prices, names and item lists come from `src/data/`. Short narrative lines may live in the action file; reusable or long text belongs in a catalogue.
 8. **Pure checks.** `visible`, `available`, `confirm`, `variants` and the `Dyn` functions never mutate state or draw from the rng.
+9. **Action games are optional data.** An action may have an entry in `ACTION_GAMES`
+   (`src/data/minigames.ts`): a game kind and theme, an intro line, and a small bonus. The UI offers
+   the game before the action (Settings can turn it off; Skip always does the action as normal) and
+   passes the 0-100 score to `performAction` as `options.gameScore`. The bonus is applied by the
+   engine (`engine-api.md`), never cash, and never for sleep, money, home or transport actions.
 
 ## Tests
 

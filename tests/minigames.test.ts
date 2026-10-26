@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { achievements } from '../src/data/achievements';
 import { MINIGAMES, MINIGAME_REWARDED_PER_DAY } from '../src/data/minigames';
-import { busScore, orderScore, pourScore } from '../src/components/minigames/scoring';
+import { busScore, mathScore, orderScore, pickScore, pourScore, timingScore } from '../src/components/minigames/scoring';
 import { performAction } from '../src/engine/simulationEngine';
 import { makeGame } from './helpers';
 
@@ -73,5 +73,26 @@ describe('mini-game scoring', () => {
     expect(orderScore(['a', 'b', 'c', 'd'], ['a', 'b', 'c', 'd'])).toBe(100);
     expect(orderScore(['a', 'b', 'c', 'd'], ['a', 'x', 'c', 'y'])).toBe(50);
     expect(orderScore(['a', 'b'], [])).toBe(0);
+  });
+  it('timing: inside the zone is perfect, far outside is zero', () => {
+    expect(timingScore([0.5, 0.55, 0.45], 0.5, 0.08)).toBe(100);
+    expect(timingScore([0, 1, 0], 0.5, 0.08)).toBe(0);
+    const near = timingScore([0.65, 0.5, 0.5], 0.5, 0.08);
+    expect(near).toBeGreaterThan(60);
+    expect(near).toBeLessThan(100);
+    expect(timingScore([], 0.5, 0.08)).toBe(0);
+  });
+  it('math: right answers toward the target, wrong ones cost half', () => {
+    expect(mathScore(6, 0, 6)).toBe(100);
+    expect(mathScore(9, 0, 6)).toBe(100);
+    expect(mathScore(3, 0, 6)).toBe(50);
+    expect(mathScore(3, 2, 6)).toBe(33);
+    expect(mathScore(0, 5, 6)).toBe(0);
+  });
+  it('pick: share of best replies', () => {
+    expect(pickScore(3, 3)).toBe(100);
+    expect(pickScore(2, 3)).toBe(67);
+    expect(pickScore(0, 3)).toBe(0);
+    expect(pickScore(0, 0)).toBe(0);
   });
 });
