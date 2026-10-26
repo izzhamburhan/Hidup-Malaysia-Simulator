@@ -141,7 +141,8 @@ version. Test: `tests/festive.test.ts` ("migrates a version-5 save unchanged").
 ## Version 7 (gender)
 
 `Character` gains `gender: Gender | null` (`Gender = 'male' | 'female'`), chosen at character
-creation. It is cosmetic: `randomAppearance(seed, gender)` uses it for the starting look only, and
-nothing in the simulation reads it. `migrations[6]` keeps a valid stored value and otherwise sets
+creation. It is cosmetic: `randomAppearance(seed, gender)` uses it for the starting look, the editor
+and wardrobe hide the other gender's traditional items (`suitsGender`), and `change-outfit` refuses
+them. A life with `null` sees everything. Nothing else in the simulation reads it. `migrations[6]` keeps a valid stored value and otherwise sets
 `null`; it never guesses a gender from the look. Test: `tests/save.test.ts` ("migrates a v6 save
 to v7 with gender not set").
