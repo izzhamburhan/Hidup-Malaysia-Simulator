@@ -58,6 +58,21 @@ export const festiveOutfits: { id: Outfit; label: string; season: string; season
 ];
 
 /**
+ * Items that belong to one gender are hidden from the other in the editor and wardrobe.
+ * Everything else is shared. A life with no gender set (started before v7) sees everything.
+ */
+const exclusive: Record<Gender, { hair: string[]; outfit: string[]; headwear: string[] }> = {
+  male: { hair: ['spiky', 'bald'], outfit: ['baju-melayu'], headwear: ['songkok'] },
+  female: { hair: ['long', 'bun'], outfit: ['baju-kurung', 'cheongsam'], headwear: ['tudung'] },
+};
+
+export function suitsGender(gender: Gender | null | undefined, kind: 'hair' | 'outfit' | 'headwear', id: string): boolean {
+  if (gender !== 'male' && gender !== 'female') return true;
+  const other: Gender = gender === 'male' ? 'female' : 'male';
+  return !exclusive[other][kind].includes(id);
+}
+
+/**
  * Starting look for a chosen gender at character creation. Only the first roll uses it: every
  * hair style, outfit and headwear above stays free to pick for anyone in the editor.
  */

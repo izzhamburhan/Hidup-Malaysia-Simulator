@@ -61,7 +61,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot; a slim strip on the landing page opens an explainer sheet with Start/Continue; a compact in-run banner with goal, "My life" exit and Share |
 | Ending collection | done: endings found across all lives (own LocalStorage key), Goals gallery with hints, "new ending found" on the Report |
 | Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day). Action games: 23 everyday actions (run, workout, gym, sports, work, overtime, hustle, mamak, classes, study, assignment, FYP, self-study, CV, apply, interview, friend, partner and family chats) open a 5-10 second game first (tap race, timing bar, memory, pour, quick maths, pick a reply); the score adds a small capped bonus through `performAction` options, Skip does the action as normal, and Settings can turn them off |
-| Gender | done: male or female at character creation (save v7); sets the starting look only, every look stays open to everyone, nothing in the simulation reads it |
+| Gender | done: male or female at character creation (save v7); sets the starting look and hides the other gender's traditional wear (tudung, baju kurung, cheongsam, songkok, baju Melayu; `suitsGender` in `src/data/appearance.ts`, enforced by the change-outfit action); nothing else in the simulation reads it |
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
 | Home decor | done: 16 decor items in four slots, bought from the room's Decorate button, shown in the living room and bedroom, small daily comfort bonus |
 | Pets | done: Oyen the cat (adopt from Act or a stray event), feed and play, daily hunger and mood, shown in the Home room |
@@ -70,7 +70,7 @@ Skills live in `.codex/skills/` with Claude twins in `.claude/skills/`. The Clau
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 34 Vitest files, 219 tests |
+| Tests | done: 34 Vitest files, 221 tests |
 
 ## Commands
 

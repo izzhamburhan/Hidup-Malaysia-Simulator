@@ -33,9 +33,9 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
   const [startSemester, setStartSemester] = useState(1);
   const [jobId, setJobId] = useState('swe');
   const [chapterYears, setChapterYears] = useState(1);
-  const [appearance, setAppearance] = useState<Appearance>(() => randomAppearance(Math.floor(Math.random() * 1e9)));
+  const [appearance, setAppearance] = useState<Appearance>(() => randomAppearance(Math.floor(Math.random() * 1e9), 'male'));
   const [previewMood, setPreviewMood] = useState<Mood>('happy');
-  const [gender, setGender] = useState<Gender | null>(null);
+  const [gender, setGender] = useState<Gender>('male');
   const t = useT();
 
   const pickGender = (g: Gender) => {
@@ -68,7 +68,7 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
       jobId,
       chapterYears,
       appearance,
-      gender: gender ?? undefined,
+      gender,
     });
     onDone();
   };
@@ -107,7 +107,7 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
       <Disclaimer>{t('create.gender.hint')}</Disclaimer>
 
       <SectionTitle>Your character</SectionTitle>
-      <AvatarEditor value={appearance} onChange={setAppearance} preview={previewMood} onPreview={setPreviewMood} />
+      <AvatarEditor gender={gender} value={appearance} onChange={setAppearance} preview={previewMood} onPreview={setPreviewMood} />
 
       <SectionTitle>Name</SectionTitle>
       <div className="flex gap-2">

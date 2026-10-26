@@ -1,5 +1,5 @@
 import { achievements } from '../../data/achievements';
-import { festiveOutfits, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits } from '../../data/appearance';
+import { festiveOutfits, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits, suitsGender } from '../../data/appearance';
 import { festiveOutfitKey } from '../../engine/festive';
 import { viewAction } from '../../engine/simulationEngine';
 import type { Appearance } from '../../engine/types';
@@ -19,8 +19,10 @@ export function Wardrobe({ open, onClose }: { open: boolean; onClose: () => void
     if (v?.available) request(v, 'list');
   };
 
-  const outfitItems = [...outfits.map((o) => ({ ...o, achievement: undefined as string | undefined })), ...lockedOutfits];
-  const headItems = [...headwears.map((h) => ({ id: h.id, label: h.label, achievement: undefined as string | undefined })), ...lockedHeadwears];
+  const gender = state.character.gender;
+  const outfitItems = [...outfits.map((o) => ({ ...o, achievement: undefined as string | undefined })), ...lockedOutfits].filter((o) => suitsGender(gender, 'outfit', o.id));
+  const headItems = [...headwears.map((h) => ({ id: h.id, label: h.label, achievement: undefined as string | undefined })), ...lockedHeadwears].filter((h) => suitsGender(gender, 'headwear', h.id));
+  const festiveItems = festiveOutfits.filter((o) => suitsGender(gender, 'outfit', o.id));
 
   return (
     <Modal open={open} onClose={onClose} title="👕 Wardrobe">
@@ -35,7 +37,7 @@ export function Wardrobe({ open, onClose }: { open: boolean; onClose: () => void
       </div>
       <SectionTitle>Festive</SectionTitle>
       <div className="grid grid-cols-3 gap-2">
-        {festiveOutfits.map((o) => (
+        {festiveItems.map((o) => (
           <Tile key={o.id} label={o.label} preview={{ ...look, outfit: o.id }} active={look.outfit === o.id} lockedBy={state.flags[festiveOutfitKey(o.season)] !== undefined ? undefined : `${o.seasonName} wishes`} onClick={() => wear(`outfit:${o.id}`)} />
         ))}
       </div>

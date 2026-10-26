@@ -91,7 +91,7 @@ const en = {
   'create.gender': 'Gender',
   'create.male': 'Male',
   'create.female': 'Female',
-  'create.gender.hint': 'Sets your starting look only. Every hair style, outfit and headwear stays open to everyone.',
+  'create.gender.hint': 'Sets your starting look and which traditional outfits and headwear you can pick. It changes nothing else in the game.',
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -184,7 +184,7 @@ const ms: Record<StringKey, string> = {
   'create.gender': 'Jantina',
   'create.male': 'Lelaki',
   'create.female': 'Perempuan',
-  'create.gender.hint': 'Hanya menetapkan rupa permulaan. Semua gaya rambut, pakaian dan tudung atau topi terbuka untuk semua.',
+  'create.gender.hint': 'Menetapkan rupa permulaan serta pakaian tradisional dan penutup kepala yang boleh dipilih. Tiada perkara lain dalam permainan berubah.',
 };
 
 export const STRINGS: Record<Lang, Record<StringKey, string>> = { en, ms };

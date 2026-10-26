@@ -1,7 +1,7 @@
 // Changing your look mid-game. Purely cosmetic: appearance never feeds the simulation.
 
 import { achievements } from '../../data/achievements';
-import { festiveOutfits, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits } from '../../data/appearance';
+import { festiveOutfits, headwears, suitsGender, lockedHeadwears, lockedOutfits, outfitColors, outfits } from '../../data/appearance';
 import { festiveOutfitKey } from '../festive';
 import type { GameState, Headwear, Outfit } from '../types';
 import type { ActionDef } from './types';
@@ -13,7 +13,11 @@ function parse(p: string | undefined): [string, string] {
 
 const achievementTitle = (id: string) => achievements.find((a) => a.id === id)?.title ?? id;
 
+const NOT_FOR_YOU = 'Not available for your character.';
+
 function lockReason(s: GameState, kind: string, value: string): string | null {
+  const gender = s.character.gender;
+  if ((kind === 'outfit' || kind === 'headwear') && !suitsGender(gender, kind, value)) return NOT_FOR_YOU;
   if (kind === 'outfit') {
     if (outfits.some((o) => o.id === value)) return null;
     const festive = festiveOutfits.find((o) => o.id === value);

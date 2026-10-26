@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { achievements } from '../src/data/achievements';
-import { lockedHeadwears, lockedOutfits } from '../src/data/appearance';
+import { hairStyles, headwears, lockedHeadwears, lockedOutfits, outfits, suitsGender } from '../src/data/appearance';
 import { isValidAppearance, randomAppearance } from '../src/engine/appearance';
 import { migrate } from '../src/engine/save';
 import { SAVE_VERSION, performAction } from '../src/engine/simulationEngine';
@@ -59,5 +59,36 @@ describe('wardrobe', () => {
       const r = randomAppearance(seed);
       expect(locked.has(r.outfit) || locked.has(r.headwear), String(seed)).toBe(false);
     }
+  });
+
+  it("hides the other gender's traditional wear, and shows everything when no gender is set", () => {
+    const pick = (g: 'male' | 'female' | null) => ({
+      hair: hairStyles.filter((h) => suitsGender(g, 'hair', h.id)).map((h) => h.id),
+      outfit: outfits.filter((o) => suitsGender(g, 'outfit', o.id)).map((o) => o.id),
+      headwear: headwears.filter((h) => suitsGender(g, 'headwear', h.id)).map((h) => h.id),
+    });
+    expect(pick('male').headwear).not.toContain('tudung');
+    expect(pick('male').outfit).not.toContain('baju-kurung');
+    expect(pick('male').outfit).toContain('baju-melayu');
+    expect(pick('male').headwear).toContain('songkok');
+    expect(pick('female').headwear).not.toContain('songkok');
+    expect(pick('female').outfit).not.toContain('baju-melayu');
+    expect(pick('female').outfit).toContain('baju-kurung');
+    expect(pick('female').headwear).toContain('tudung');
+    expect(pick(null).outfit).toEqual(outfits.map((o) => o.id));
+    expect(pick(null).headwear).toEqual(headwears.map((h) => h.id));
+  });
+
+  it("refuses the other gender's items in the wardrobe action, with a reason", () => {
+    const m = makeGame({ gender: 'male' });
+    const r = performAction(m, 'change-outfit', 'headwear:tudung');
+    expect(r.feedback.ok).toBe(false);
+    expect(r.feedback.error).toMatch(/not available/i);
+    expect(performAction(m, 'change-outfit', 'outfit:baju-kurung').feedback.ok).toBe(false);
+    expect(performAction(m, 'change-outfit', 'headwear:songkok').feedback.ok).toBe(true);
+    const f = makeGame({ gender: 'female' });
+    expect(performAction(f, 'change-outfit', 'headwear:tudung').feedback.ok).toBe(true);
+    expect(performAction(f, 'change-outfit', 'headwear:songkok').feedback.ok).toBe(false);
+    expect(performAction(makeGame(), 'change-outfit', 'headwear:tudung').feedback.ok).toBe(true);
   });
 });
