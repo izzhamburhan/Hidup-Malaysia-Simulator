@@ -15,7 +15,7 @@ import { isValidAppearance, randomAppearance } from './appearance';
 import { generateFeedPosts } from './social';
 import type { GameState, NewGameOptions, Skills } from './types';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 export const START_DATE = '2027-01-04';
 export const START_MINUTE = 7 * 60;
 
@@ -30,7 +30,7 @@ export function emptyState(): GameState {
     mode: 'realistic',
     startDate: START_DATE,
     chapterDays: 365,
-    character: { name: 'Player', appearance: { skin: 1, hair: 'short', hairColor: 0, outfit: 'tshirt', outfitColor: 0, headwear: 'none', glasses: false }, startAge: 23, homeState: 'Selangor', backgroundId: 'middle', lifeStage: 'fresh_grad' },
+    character: { name: 'Player', gender: null, appearance: { skin: 1, hair: 'short', hairColor: 0, outfit: 'tshirt', outfitColor: 0, headwear: 'none', glasses: false }, startAge: 23, homeState: 'Selangor', backgroundId: 'middle', lifeStage: 'fresh_grad' },
     clock: { day: 0, minute: START_MINUTE },
     stats: { energy: 80, health: 75, fitness: 40, stress: 25, happiness: 60, reputation: 50, satiety: 55 },
     skills,
@@ -103,7 +103,8 @@ export function newGame(options: NewGameOptions): GameState {
   const [lo, hi] = stage.ageRange;
   s.character = {
     name: options.name.trim().slice(0, 24) || 'Ali',
-    appearance: isValidAppearance(options.appearance) ? { ...options.appearance } : randomAppearance(s.seed),
+    gender: options.gender === 'male' || options.gender === 'female' ? options.gender : null,
+    appearance: isValidAppearance(options.appearance) ? { ...options.appearance } : randomAppearance(s.seed, options.gender),
     startAge: Math.min(hi, Math.max(lo, Math.round(options.startAge || stage.defaultAge))),
     homeState: options.homeState,
     backgroundId: bg.id,

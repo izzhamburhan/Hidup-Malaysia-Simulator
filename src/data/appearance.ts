@@ -1,6 +1,6 @@
 // Pixel character options. Purely cosmetic: appearance never affects gameplay.
 // Options are inclusive and free to mix; none is tied to background, stats or outcomes.
-import type { Headwear, HairStyle, Outfit } from '../engine/types';
+import type { Gender, Headwear, HairStyle, Outfit } from '../engine/types';
 
 export const skinTones = ['#f9d9bf', '#efc09a', '#d9a274', '#b97d52', '#8f5a35', '#64391f'];
 
@@ -56,3 +56,28 @@ export const festiveOutfits: { id: Outfit; label: string; season: string; season
   { id: 'kurta', label: 'Kurta', season: 'deepavali', seasonName: 'Deepavali' },
   { id: 'christmas-sweater', label: 'Christmas sweater', season: 'christmas', seasonName: 'Christmas' },
 ];
+
+/**
+ * Starting look for a chosen gender at character creation. Only the first roll uses it: every
+ * hair style, outfit and headwear above stays free to pick for anyone in the editor.
+ */
+export const genderLooks: Record<Gender, { hair: HairStyle[]; outfits: Outfit[]; headwear: { id: Headwear; weight: number }[] }> = {
+  male: {
+    hair: ['short', 'side', 'spiky', 'curly', 'bald'],
+    outfits: ['tshirt', 'kemeja', 'hoodie', 'blazer', 'baju-melayu'],
+    headwear: [
+      { id: 'none', weight: 70 },
+      { id: 'songkok', weight: 12 },
+      { id: 'cap', weight: 18 },
+    ],
+  },
+  female: {
+    hair: ['long', 'bun', 'short', 'curly', 'side'],
+    outfits: ['tshirt', 'kemeja', 'hoodie', 'blazer', 'baju-kurung'],
+    headwear: [
+      { id: 'none', weight: 62 },
+      { id: 'tudung', weight: 28 },
+      { id: 'cap', weight: 10 },
+    ],
+  },
+};

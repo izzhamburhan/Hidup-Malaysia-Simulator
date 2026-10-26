@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play, Plus, ShieldCheck } from 'lucide-react';
+import { Info, Play, Plus, ShieldCheck } from 'lucide-react';
 import { useGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
 import { Button, Modal } from '../components/ui';
@@ -26,6 +26,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
   const main = slot === 'main' ? state : null;
   const [confirmNew, setConfirmNew] = useState(false);
   const [privacy, setPrivacy] = useState(false);
+  const [dailyInfo, setDailyInfo] = useState(false);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col px-4 pb-8 pt-6">
@@ -51,24 +52,6 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
       </div>
 
       <div className="mt-5 space-y-3">
-        <button
-          type="button"
-          onClick={() => {
-            playDaily();
-            onDaily();
-          }}
-          className="flex w-full items-center gap-3 rounded-2xl border-2 border-gold bg-gold-soft p-3 text-left shadow-sm active:scale-[0.99]"
-        >
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-3xl">{today.icon}</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a5a00]">🗓️ {t('land.daily')}</span>
-            <span className="block font-bold leading-tight">{today.title}</span>
-            <span className="block text-xs text-ink-soft">{today.saved ? t('land.daily.continue', { n: Math.min(7, today.saved.clock.day) + 1 }) : today.goal}</span>
-          </span>
-          <span className="text-xl font-black text-[#7a5a00]" aria-hidden>
-            ▶
-          </span>
-        </button>
         {main && (
           <button
             type="button"
@@ -97,13 +80,30 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
             Your previous save could not be read ({boot.error}). It was set aside safely; you can start a new life.
           </p>
         )}
+        <button
+          type="button"
+          onClick={() => setDailyInfo(true)}
+          className="flex min-h-[44px] w-full items-center gap-2 rounded-full border border-gold/70 bg-gold-soft px-3 py-1.5 text-left text-sm active:scale-[0.99]"
+          aria-label={`${t('land.daily.short')}: ${today.title}`}
+        >
+          <span className="text-lg" aria-hidden>
+            {today.icon}
+          </span>
+          <span className="min-w-0 flex-1 truncate">
+            <span className="font-bold text-[#7a5a00]">{t('land.daily.short')}:</span> <span className="font-semibold">{today.title}</span>
+            {today.saved && <span className="text-ink-soft"> · {t('land.daily.continue', { n: Math.min(7, today.saved.clock.day) + 1 })}</span>}
+          </span>
+          <Info size={16} className="shrink-0 text-[#7a5a00]" aria-hidden />
+        </button>
       </div>
 
-      <section className="mt-6 grid grid-cols-2 gap-2">
+      <section className="mt-5 grid grid-cols-2 gap-1.5">
         {FEATURES.map(([icon, text]) => (
-          <div key={text} className="rounded-2xl bg-white p-3 text-sm shadow-sm">
-            <div className="text-xl">{icon}</div>
-            <div className="mt-1 font-medium leading-snug">{text}</div>
+          <div key={text} className="flex items-center gap-2 rounded-xl bg-white px-2.5 py-2 text-xs shadow-sm">
+            <span className="text-base" aria-hidden>
+              {icon}
+            </span>
+            <span className="font-medium leading-snug">{text}</span>
           </div>
         ))}
       </section>
@@ -124,6 +124,40 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
         </p>
       </footer>
       <PrivacyNotice open={privacy} onClose={() => setPrivacy(false)} />
+
+      <Modal
+        open={dailyInfo}
+        onClose={() => setDailyInfo(false)}
+        title={
+          <span className="flex items-center gap-2">
+            <span className="text-2xl">{today.icon}</span>
+            {today.title}
+          </span>
+        }
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDailyInfo(false)}>
+              Not now
+            </Button>
+            <Button
+              onClick={() => {
+                setDailyInfo(false);
+                playDaily();
+                onDaily();
+              }}
+            >
+              <Play size={16} /> {t(today.saved ? 'land.daily.resume' : 'land.daily.start')}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm">{today.blurb}</p>
+        <div className="mt-3 rounded-2xl bg-gold-soft p-3 text-sm">
+          <span className="font-bold text-[#7a5a00]">{t('land.daily.goal')}:</span> {today.goal}
+        </div>
+        <p className="mt-3 text-xs text-ink-soft">🗓️ {t('land.daily.what')}</p>
+        {today.saved && <p className="mt-1 text-xs font-semibold text-teal">{t('land.daily.continue', { n: Math.min(7, today.saved.clock.day) + 1 })}</p>}
+      </Modal>
 
       <Modal
         open={confirmNew}

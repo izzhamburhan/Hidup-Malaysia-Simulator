@@ -6,12 +6,13 @@ import { jobs } from '../data/jobs';
 import { homeStates } from '../data/lifestyle';
 import { universities } from '../data/universities';
 import { formatRM } from '../engine/core';
-import type { Appearance, GameMode, LifeStage, Mood } from '../engine/types';
+import type { Appearance, GameMode, Gender, LifeStage, Mood } from '../engine/types';
 import { randomAppearance } from '../engine/appearance';
 import { AvatarEditor } from '../components/AvatarEditor';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { StateFlag } from '../components/StateFlag';
 import { useGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
 import { Button, Card, Disclaimer, SectionTitle, cx } from '../components/ui';
 
 const NAMES = ['Aiman', 'Mei Ling', 'Kumar', 'Nurul', 'Jason', 'Siti', 'Arif', 'Kavya', 'Hakim', 'Wei Jie'];
@@ -34,6 +35,13 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
   const [chapterYears, setChapterYears] = useState(1);
   const [appearance, setAppearance] = useState<Appearance>(() => randomAppearance(Math.floor(Math.random() * 1e9)));
   const [previewMood, setPreviewMood] = useState<Mood>('happy');
+  const [gender, setGender] = useState<Gender | null>(null);
+  const t = useT();
+
+  const pickGender = (g: Gender) => {
+    setGender(g);
+    setAppearance(randomAppearance(Math.floor(Math.random() * 1e9), g));
+  };
 
   const uni = universities.find((u) => u.id === universityId)!;
   const uniCourses = useMemo(() => courses.filter((c) => uni.fields.includes(c.field)), [uni]);
@@ -60,6 +68,7 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
       jobId,
       chapterYears,
       appearance,
+      gender: gender ?? undefined,
     });
     onDone();
   };
@@ -71,6 +80,31 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
       </button>
       <h1 className="font-display text-3xl font-black">Create your life</h1>
       <p className="text-sm text-ink-soft">Backgrounds change your starting point, not your destiny.</p>
+
+      <SectionTitle>{t('create.gender')}</SectionTitle>
+      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('create.gender')}>
+        {(
+          [
+            ['male', '👨', t('create.male')],
+            ['female', '👩', t('create.female')],
+          ] as const
+        ).map(([id, icon, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={gender === id}
+            onClick={() => pickGender(id)}
+            className={cx('flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border-2 p-3 font-bold transition', gender === id ? 'border-teal bg-teal-soft' : 'border-transparent bg-white')}
+          >
+            <span className="text-2xl" aria-hidden>
+              {icon}
+            </span>
+            {label}
+          </button>
+        ))}
+      </div>
+      <Disclaimer>{t('create.gender.hint')}</Disclaimer>
 
       <SectionTitle>Your character</SectionTitle>
       <AvatarEditor value={appearance} onChange={setAppearance} preview={previewMood} onPreview={setPreviewMood} />
@@ -276,6 +310,7 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
               {bg.icon} {stageDef.name}, {age}
             </div>
             <div className="truncate">
+              {gender ? `${t(gender === 'male' ? 'create.male' : 'create.female')} · ` : ''}
               {mode === 'chaotic' ? 'Chaotic' : 'Realistic'} · {homeState}
             </div>
           </div>

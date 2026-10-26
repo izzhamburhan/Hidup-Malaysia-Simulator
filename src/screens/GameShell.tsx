@@ -12,6 +12,7 @@ import { StateFlag } from '../components/StateFlag';
 import { moodOf } from '../engine/appearance';
 import { ConfirmModal, DayReportModal, EventModal, FeedbackToast } from '../components/Overlays';
 import { Modal, cx } from '../components/ui';
+import { ActionGame } from '../components/minigames/ActionGame';
 import { Tutorial } from '../components/Tutorial';
 import { FeedbackSheet, feedbackAvailable } from '../components/FeedbackSheet';
 import { track } from '../lib/analytics';
@@ -153,6 +154,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
       <Celebrate />
       <EventModal />
       <ConfirmModal />
+      <ActionGame />
       <DayReportModal />
       <FeedbackToast />
     </div>

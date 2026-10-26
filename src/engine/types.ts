@@ -21,6 +21,7 @@ export interface Clock {
 export type HairStyle = 'short' | 'side' | 'spiky' | 'curly' | 'long' | 'bun' | 'bald';
 export type Outfit = 'tshirt' | 'kemeja' | 'hoodie' | 'blazer' | 'baju-kurung' | 'baju-melayu' | 'jersey' | 'batik' | 'grad-gown' | 'chef' | 'suit' | 'cheongsam' | 'kurta' | 'christmas-sweater' | 'merdeka-tee';
 export type Headwear = 'none' | 'tudung' | 'songkok' | 'cap' | 'grad-cap' | 'helmet' | 'crown';
+export type Gender = 'male' | 'female';
 export type Mood = 'happy' | 'neutral' | 'tired' | 'stressed' | 'unwell';
 
 /** Cosmetic pixel-character look. Indexes point into src/data/appearance.ts palettes. */
@@ -36,6 +37,8 @@ export interface Appearance {
 
 export interface Character {
   name: string;
+  /** Chosen at creation; null for lives started before v7. Cosmetic: sets the default look only. */
+  gender: Gender | null;
   appearance: Appearance;
   startAge: number;
   homeState: string;
@@ -470,4 +473,5 @@ export interface NewGameOptions {
   chapterYears?: number;
   seed?: number;
   appearance?: Appearance;
+  gender?: Gender;
 }

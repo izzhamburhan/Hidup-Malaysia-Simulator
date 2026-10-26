@@ -5,6 +5,7 @@
 
 import { foodById } from '../data/foods';
 import { actionById, actionCatalogue, dyn, type ActionDef, type ActionView } from './actions';
+import { applyActionGame } from './actionGames';
 import { canAfford, formatRM, log, netWorth, round2, totalDebt, SKILL_KEYS } from './core';
 import { isClassDay } from './education';
 import { isWorkday, onLeave } from './career';
@@ -116,10 +117,11 @@ export function listActions(state: GameState): ActionView[] {
   return out;
 }
 
-/** Mutates the draft. Shared by performAction and autopilot. */
-function execute(draft: GameState, def: ActionDef, param?: string): string[] {
+/** Mutates the draft. Shared by performAction and autopilot (which never passes a game score). */
+function execute(draft: GameState, def: ActionDef, param?: string, gameScore?: number): string[] {
   const minutes = dyn(def.minutes, draft, param, 0);
   const lines = def.run(draft, param) ?? [];
+  lines.push(...applyActionGame(draft, def.id, param, gameScore));
   advanceTime(draft, minutes, { asleep: def.asleep });
   draft.counters.actions += 1;
   if (!def.asleep) rollRandomEvent(draft, def.contexts ?? [], minutes);
@@ -146,14 +148,19 @@ function postProcess(draft: GameState): string[] {
   return lines;
 }
 
-export function performAction(state: GameState, actionId: string, param?: string): EngineResult {
+export interface PerformOptions {
+  /** 0-100 score from the action's mini-game (src/data/minigames.ts ACTION_GAMES). */
+  gameScore?: number;
+}
+
+export function performAction(state: GameState, actionId: string, param?: string, options: PerformOptions = {}): EngineResult {
   const def = actionById(actionId);
   if (!def) return fail(state, actionId, 'Unknown action.');
   const view = describeAction(state, def, param);
   if (!view.available) return fail(state, view.title, view.reason ?? 'Not available.');
   const draft = structuredClone(state);
   const before = snapshot(draft);
-  const lines = execute(draft, def, param);
+  const lines = execute(draft, def, param, options.gameScore);
   const feedback: ActionFeedback = { ok: true, title: `${def.icon} ${view.title}`, lines, deltas: diff(before, draft) };
   return { state: draft, feedback };
 }

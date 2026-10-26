@@ -1,9 +1,9 @@
 // Pixel character appearance helpers. Appearance is cosmetic and uses its own
 // seeded generator, so it never consumes state.rng or changes simulation results.
 
-import { festiveOutfits, hairColors, hairStyles, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits, skinTones } from '../data/appearance';
+import { festiveOutfits, genderLooks, hairColors, hairStyles, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits, skinTones } from '../data/appearance';
 import { seedFromString } from './rng';
-import type { Appearance, GameState, Mood } from './types';
+import type { Appearance, GameState, Gender, Mood } from './types';
 
 function generator(seed: number): () => number {
   let a = seed >>> 0 || 1;
@@ -15,9 +15,24 @@ function generator(seed: number): () => number {
   };
 }
 
-export function randomAppearance(seed: number): Appearance {
+/** Without a gender the result is the long-standing one (NPC faces depend on it). */
+export function randomAppearance(seed: number, gender?: Gender | null): Appearance {
   const r = generator(seed ^ 0x9e3779b9);
   const idx = (n: number) => Math.floor(r() * n);
+  if (gender === 'male' || gender === 'female') {
+    const pool = genderLooks[gender];
+    const total = pool.headwear.reduce((s, h) => s + h.weight, 0);
+    let roll = r() * total;
+    return {
+      skin: idx(skinTones.length),
+      hair: pool.hair[idx(pool.hair.length)],
+      hairColor: idx(hairColors.length),
+      outfit: pool.outfits[idx(pool.outfits.length)],
+      outfitColor: idx(outfitColors.length),
+      headwear: pool.headwear.find((h) => (roll -= h.weight) < 0)?.id ?? 'none',
+      glasses: r() < 0.25,
+    };
+  }
   const total = headwears.reduce((s, h) => s + h.weight, 0);
   let roll = r() * total;
   const headwear = headwears.find((h) => (roll -= h.weight) < 0)?.id ?? 'none';

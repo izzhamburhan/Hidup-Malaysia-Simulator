@@ -65,6 +65,18 @@ describe('save system', () => {
     expect(migrate(JSON.parse(JSON.stringify(old))).character.appearance).toEqual(migrated.character.appearance);
   });
 
+  it('migrates a v6 save to v7 with gender not set', () => {
+    const old = JSON.parse(JSON.stringify(makeGame()));
+    old.version = 6;
+    delete old.character.gender;
+    const look = old.character.appearance;
+    const migrated = migrate(old);
+    expect(SAVE_VERSION).toBe(7);
+    expect(migrated.version).toBe(7);
+    expect(migrated.character.gender).toBeNull();
+    expect(migrated.character.appearance).toEqual(look);
+  });
+
   it('refuses saves from a newer version', () => {
     const s = JSON.parse(JSON.stringify(makeGame()));
     s.version = SAVE_VERSION + 1;

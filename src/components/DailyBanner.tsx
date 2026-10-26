@@ -30,17 +30,23 @@ export function DailyBanner({ status }: { status: DailyStatus }) {
   };
 
   return (
-    <section className="rounded-2xl border-2 border-gold bg-gold-soft p-3">
+    <section className="rounded-2xl border border-gold/70 bg-gold-soft px-3 py-2">
       <div className="flex items-center gap-2">
-        <span className="text-2xl" aria-hidden>
+        <span className="text-lg" aria-hidden>
           {def.icon}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a5a00]">🗓️ {t('daily.label', { d: finished ? 7 : day + 1 })}</div>
-          <div className="font-bold leading-tight">{def.title}</div>
-          <div className="text-xs text-ink-soft">{def.goal}</div>
+          <div className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a5a00]">
+            {t('daily.label', { d: finished ? 7 : day + 1 })} · {def.title}
+          </div>
+          <div className="truncate text-xs text-ink-soft">{def.goal}</div>
         </div>
-        <span className={cx('shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold', won ? 'bg-leaf text-white' : 'bg-white text-ink-soft')}>{t(won ? 'daily.won' : finished ? 'daily.missed' : 'daily.going')}</span>
+        <span className={cx('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold', won ? 'bg-leaf text-white' : 'bg-white text-ink-soft')}>{t(won ? 'daily.won' : finished ? 'daily.missed' : 'daily.going')}</span>
+        {!finished && (
+          <button type="button" onClick={exitDaily} className="min-h-[36px] shrink-0 rounded-full bg-white px-2.5 text-[11px] font-bold text-teal shadow-sm active:scale-95">
+            {t('daily.exit')}
+          </button>
+        )}
       </div>
       {finished && (
         <div className="mt-2 grid grid-cols-2 gap-2">

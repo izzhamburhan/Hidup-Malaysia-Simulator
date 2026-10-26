@@ -53,6 +53,12 @@ export const migrations: Record<number, Migration> = {
   4: (s) => ({ ...s, version: 5 }),
   // 5 -> 6: festive outfits widened Outfit; every old look is still valid.
   5: (s) => ({ ...s, version: 6 }),
+  // 6 -> 7: gender at character creation. Older lives never chose one, so it stays unset.
+  6: (s) => {
+    const character = (s.character ?? {}) as Record<string, unknown>;
+    const gender = character.gender === 'male' || character.gender === 'female' ? character.gender : null;
+    return { ...s, character: { ...character, gender }, version: 7 };
+  },
 };
 
 export function migrate(raw: Record<string, unknown>): GameState {

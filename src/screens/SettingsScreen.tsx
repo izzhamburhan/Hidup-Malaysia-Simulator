@@ -106,6 +106,7 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
           checked={state.flags.comparisonAnxiety !== false}
           onChange={(v) => interact('setting', 'comparisonAnxiety', v)}
         />
+        <Toggle label={t('settings.actionGames')} hint={t('settings.actionGames.hint')} checked={settings.actionGames} onChange={(v) => setSettings({ actionGames: v })} />
         <Toggle label={t('settings.sound')} hint={t('settings.sound.hint')} checked={settings.sound} onChange={(v) => setSettings({ sound: v })} />
         <Toggle label={t('settings.vibration')} hint={t('settings.vibration.hint')} checked={settings.vibration} onChange={(v) => setSettings({ vibration: v })} />
         <Toggle label={t('settings.motion')} hint={t('settings.motion.hint')} checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />

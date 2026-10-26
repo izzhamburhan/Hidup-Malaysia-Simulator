@@ -8,6 +8,7 @@ import {
   type ActionView,
 } from '../engine/simulationEngine';
 import { actionById } from '../engine/actions';
+import { actionGameFor } from '../engine/actionGames';
 import { dailyForDate, newDailyGame } from '../engine/dailyChallenge';
 import { randomAppearance } from '../engine/appearance';
 import { COLLECTION_KEY, DAILY_KEY, SAVE_KEY, clearSave, deserialize, emptyCollection, loadCollection, loadGame, recordEnding, saveCollection, saveGame, SETTINGS_KEY, type EndingCollection, type LoadResult } from '../engine/save';
@@ -30,9 +31,11 @@ export interface Settings {
   language: Lang;
   /** The player tapped "Not now" on the Add to Home Screen card. */
   installDismissed: boolean;
+  /** Offer a quick mini-game before everyday actions (always skippable). */
+  actionGames: boolean;
 }
 
-const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true };
 
 /** In-game days that count as retention milestones in analytics. */
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];
@@ -77,6 +80,8 @@ interface GameApi {
   feedback: ActionFeedback | null;
   dayReport: DayReport | null;
   confirmFor: ActionView | null;
+  /** An action waiting on its mini-game (play it, or skip to do the action as normal). */
+  gameFor: ActionView | null;
   lastSavedAt: string | null;
   saveError: boolean;
   settings: Settings;
@@ -90,10 +95,13 @@ interface GameApi {
   playDaily: () => void;
   exitDaily: () => void;
   start: (options: NewGameOptions) => void;
-  act: (actionId: string, param?: string, source?: ActionSource) => ActionFeedback;
+  act: (actionId: string, param?: string, source?: ActionSource, gameScore?: number) => ActionFeedback;
   request: (view: ActionView, source?: ActionSource) => void;
   confirmPending: () => void;
   cancelPending: () => void;
+  /** Finish the pending action game: with a score for the bonus, or none when skipped. */
+  finishGame: (score?: number) => void;
+  cancelGame: () => void;
   choose: (choiceId: string) => void;
   autopilot: (days: number) => void;
   step: () => void;
@@ -120,6 +128,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
   const [dayReport, setDayReport] = useState<DayReport | null>(null);
   const [confirmFor, setConfirmFor] = useState<{ view: ActionView; source: ActionSource } | null>(null);
+  const [gameFor, setGameFor] = useState<{ view: ActionView; source: ActionSource } | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(boot.status === 'ok' ? boot.savedAt : null);
   const [saveError, setSaveError] = useState(false);
   const [settings, setSettingsState] = useState<Settings>(loadSettings);
@@ -165,10 +174,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const act = useCallback(
-    (actionId: string, param?: string, source: ActionSource = 'list') => {
+    (actionId: string, param?: string, source: ActionSource = 'list', gameScore?: number) => {
       const current = stateRef.current;
       if (!current) return { ok: false, title: '', lines: [], deltas: [], error: 'No game loaded.' };
-      const result = performAction(current, actionId, param);
+      const result = performAction(current, actionId, param, { gameScore });
       if (result.feedback.ok) {
         commit(result.state, result.feedback);
         played(actionId, param);
@@ -186,9 +195,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (view.confirm) setConfirmFor({ view, source });
+      else if (settings.actionGames && actionGameFor(view.id)) setGameFor({ view, source });
       else act(view.id, view.param, source);
     },
-    [act],
+    [act, settings.actionGames],
   );
 
   const api: GameApi = useMemo(
@@ -198,6 +208,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       feedback,
       dayReport,
       confirmFor: confirmFor?.view ?? null,
+      gameFor: gameFor?.view ?? null,
       lastSavedAt,
       saveError,
       settings,
@@ -219,7 +230,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         let s = res?.status === 'ok' && res.state.flags['daily-date'] === key ? res.state : null;
         if (!s) {
           const main = slotRef.current === 'main' ? stateRef.current : null;
-          s = newDailyGame(key, main?.character.name ?? 'Kamu', main?.character.appearance ?? randomAppearance(dailyForDate(key).seed));
+          s = newDailyGame(key, main?.character.name ?? 'Kamu', main?.character.appearance ?? randomAppearance(dailyForDate(key).seed), undefined, main?.character.gender);
           s.createdAt = new Date().toISOString();
           track('game_start', { mode: 'daily', stage: s.character.lifeStage, background: s.character.backgroundId });
         }
@@ -256,10 +267,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       act,
       request,
       confirmPending: () => {
-        if (confirmFor) act(confirmFor.view.id, confirmFor.view.param, confirmFor.source);
+        if (confirmFor && settings.actionGames && actionGameFor(confirmFor.view.id)) setGameFor(confirmFor);
+        else if (confirmFor) act(confirmFor.view.id, confirmFor.view.param, confirmFor.source);
         setConfirmFor(null);
       },
       cancelPending: () => setConfirmFor(null),
+      finishGame: (score) => {
+        if (gameFor) act(gameFor.view.id, gameFor.view.param, gameFor.source, score);
+        setGameFor(null);
+      },
+      cancelGame: () => setGameFor(null),
       choose: (choiceId) => {
         const current = stateRef.current;
         if (!current) return;
@@ -375,7 +392,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
       },
     }),
-    [state, boot, feedback, dayReport, confirmFor, lastSavedAt, saveError, settings, lastActivity, collection, slot, act, request, commit, played],
+    [state, boot, feedback, dayReport, confirmFor, gameFor, lastSavedAt, saveError, settings, lastActivity, collection, slot, act, request, commit, played],
   );
 
   return <GameContext.Provider value={api}>{children}</GameContext.Provider>;

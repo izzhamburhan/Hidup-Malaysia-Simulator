@@ -80,6 +80,18 @@ const en = {
   'settings.vibration.hint': 'A light buzz after each action (Android phones).',
   'settings.motion': 'Reduce motion',
   'settings.motion.hint': 'Turns off animations.',
+  'settings.actionGames': 'Mini-games on actions',
+  'settings.actionGames.hint': 'A quick game before runs, work, study and chats for a small bonus. Always skippable.',
+  'land.daily.short': "Today's challenge",
+  'land.daily.what': 'A separate 7-day run with its own save, the same for every player today. Your main life is not touched.',
+  'land.daily.goal': 'Goal',
+  'land.daily.start': 'Start challenge',
+  'land.daily.resume': 'Continue challenge',
+  'daily.exit': 'My life',
+  'create.gender': 'Gender',
+  'create.male': 'Male',
+  'create.female': 'Female',
+  'create.gender.hint': 'Sets your starting look only. Every hair style, outfit and headwear stays open to everyone.',
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -161,6 +173,18 @@ const ms: Record<StringKey, string> = {
   'settings.vibration.hint': 'Getaran ringan selepas setiap tindakan (telefon Android).',
   'settings.motion': 'Kurangkan animasi',
   'settings.motion.hint': 'Matikan animasi.',
+  'settings.actionGames': 'Permainan mini pada tindakan',
+  'settings.actionGames.hint': 'Permainan pantas sebelum berlari, kerja, belajar dan sembang untuk bonus kecil. Boleh langkau bila-bila masa.',
+  'land.daily.short': 'Cabaran hari ini',
+  'land.daily.what': 'Permainan 7 hari yang berasingan dengan simpanan sendiri, sama untuk semua pemain hari ini. Hidup utama anda tidak terjejas.',
+  'land.daily.goal': 'Matlamat',
+  'land.daily.start': 'Mula cabaran',
+  'land.daily.resume': 'Sambung cabaran',
+  'daily.exit': 'Hidup saya',
+  'create.gender': 'Jantina',
+  'create.male': 'Lelaki',
+  'create.female': 'Perempuan',
+  'create.gender.hint': 'Hanya menetapkan rupa permulaan. Semua gaya rambut, pakaian dan tudung atau topi terbuka untuk semua.',
 };
 
 export const STRINGS: Record<Lang, Record<StringKey, string>> = { en, ms };

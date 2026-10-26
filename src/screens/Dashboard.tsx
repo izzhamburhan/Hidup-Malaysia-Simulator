@@ -1,6 +1,6 @@
 // The play screen: everything needed for a normal day is one tap away.
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ChevronDown, FastForward, Moon, SkipForward } from 'lucide-react';
 import { companyById } from '../data/companies';
 import { vehicleById, transportModeInfo } from '../data/vehicles';
@@ -12,6 +12,7 @@ import type { ActionView } from '../engine/simulationEngine';
 import { relationshipStatus } from '../engine/social';
 import { useLoadedGame } from '../hooks/useGame';
 import { Room } from '../components/room/Room';
+import { VehicleSprite } from '../components/VehicleSprite';
 import { useT } from '../hooks/useT';
 import { StarterQuests } from '../components/StarterQuests';
 import { InstallBanner } from '../components/InstallBanner';
@@ -232,7 +233,7 @@ function Details({ go }: { go: (t: Tab) => void }) {
         />
         <Snap icon={home.icon} label="Home" value={home.name} sub={home.rent ? `${formatRM(home.rent)}/mo` : home.owned ? 'Owned' : 'Rent-free'} onClick={() => go('life')} />
         <Snap
-          icon={vehicle?.icon ?? transportModeInfo(state.transport.mode).icon}
+          icon={vehicle ? <VehicleSprite shape={vehicle.shape} color={vehicle.color} size={22} /> : transportModeInfo(state.transport.mode).icon}
           label="Commute · love"
           value={vehicle?.name ?? transportModeInfo(state.transport.mode).label}
           sub={relationshipStatus(state)}
@@ -259,7 +260,7 @@ function Details({ go }: { go: (t: Tab) => void }) {
   );
 }
 
-function Snap({ icon, label, value, sub, onClick }: { icon: string; label: string; value: string; sub?: string; onClick: () => void }) {
+function Snap({ icon, label, value, sub, onClick }: { icon: ReactNode; label: string; value: string; sub?: string; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className="rounded-2xl border border-ink/10 bg-white p-3 text-left transition hover:border-teal/40">
       <div className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-soft">

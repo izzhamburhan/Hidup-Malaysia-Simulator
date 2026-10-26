@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { genderLooks } from '../src/data/appearance';
 import { appearanceFromName, isValidAppearance, moodOf, randomAppearance } from '../src/engine/appearance';
 import { makeGame } from './helpers';
 
@@ -33,6 +34,31 @@ describe('pixel character appearance', () => {
     const bad = { ...randomAppearance(1), hair: 'mohawk-of-doom' } as never;
     expect(isValidAppearance(bad)).toBe(false);
     expect(isValidAppearance(makeGame({ appearance: bad }).character.appearance)).toBe(true);
+  });
+
+  it('an ungendered look is unchanged (NPC faces and migrated lives keep their look)', () => {
+    expect(randomAppearance(42)).toEqual({ skin: 5, hair: 'bun', hairColor: 3, outfit: 'baju-kurung', outfitColor: 7, headwear: 'none', glasses: false });
+    expect(randomAppearance(7)).toEqual({ skin: 2, hair: 'long', hairColor: 0, outfit: 'kemeja', outfitColor: 1, headwear: 'cap', glasses: false });
+    expect(randomAppearance(42, undefined)).toEqual(randomAppearance(42));
+  });
+
+  it("a gendered look draws from that gender's default pool and stays valid", () => {
+    for (const gender of ['male', 'female'] as const) {
+      const pool = genderLooks[gender];
+      for (let seed = 1; seed < 80; seed++) {
+        const a = randomAppearance(seed, gender);
+        expect(isValidAppearance(a)).toBe(true);
+        expect(pool.hair).toContain(a.hair);
+        expect(pool.outfits).toContain(a.outfit);
+        expect(pool.headwear.map((h) => h.id)).toContain(a.headwear);
+      }
+    }
+  });
+
+  it('newGame stores the chosen gender, or null when none is given', () => {
+    expect(makeGame({ gender: 'female' }).character.gender).toBe('female');
+    expect(makeGame({ gender: 'male' }).character.gender).toBe('male');
+    expect(makeGame().character.gender).toBeNull();
   });
 
   it('mood follows stats', () => {

@@ -11,7 +11,7 @@ interface EngineResult { state: GameState; feedback: ActionFeedback }
 interface AutopilotResult extends EngineResult { daysSimulated: number; interrupted: boolean }
 
 newGame(options: NewGameOptions): GameState                       // from newGame.ts, re-exported
-performAction(state: GameState, actionId: string, param?: string): EngineResult
+performAction(state: GameState, actionId: string, param?: string, options?: { gameScore?: number }): EngineResult
 resolveEvent(state: GameState, choiceId: string): EngineResult
 listActions(state: GameState): ActionView[]
 runAutopilot(state: GameState, days: number): AutopilotResult
@@ -38,7 +38,7 @@ in `src/engine/events.ts` (`event-contract.md`).
 - Applies the background and life stage from `src/data/backgrounds.ts`, and enrols or employs
   the character when the options say so.
 
-### `performAction(state, actionId, param?)`
+### `performAction(state, actionId, param?, options?)`
 
 1. Look up the action; unknown id returns `ok: false`, "Unknown action."
 2. `describeAction` decides availability. The action is refused, with the **same** input state
@@ -46,6 +46,12 @@ in `src/engine/events.ts` (`event-contract.md`).
    is not visible, `available(state, param)` returns a reason, or `cost` is unaffordable.
 3. `structuredClone` the state; all work happens on the draft. Snapshot it.
 4. `run(draft, param)` mutates the draft through `core.ts` helpers and domain modules.
+   Then, when `options.gameScore` is an integer 0 to 100 and the action has an entry in
+   `ACTION_GAMES` (`src/data/minigames.ts`), `applyActionGame` (`src/engine/actionGames.ts`) adds
+   that entry's bonus scaled by tier (0-29 none, 30-59 a third, 60-89 two thirds, 90-100 full)
+   and the feedback line `Mini-game: <score>`. Bonuses go through clamped helpers and never give
+   cash. No score, an invalid score, or an action without a game leaves the result exactly as
+   without `options`. Autopilot and the routine step never pass a score.
 5. `advanceTime(draft, minutes, { asleep })`; `counters.actions` increments.
 6. Unless the action is asleep, roll a random event for its contexts and minutes (`rollRandomEvent`).
 7. If energy is at or below 0 (and the action was not sleep), the player passes out:

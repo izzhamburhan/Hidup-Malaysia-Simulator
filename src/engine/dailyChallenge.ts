@@ -5,7 +5,7 @@ import { DAILY_CHALLENGES, dailyChallengeById, type DailyChallenge } from '../da
 import { netWorth } from './core';
 import { newGame } from './newGame';
 import { seedFromString } from './rng';
-import type { Appearance, GameState } from './types';
+import type { Appearance, GameState, Gender } from './types';
 
 export const DAILY_DAYS = 7;
 
@@ -15,10 +15,10 @@ export function dailyForDate(dateKey: string): { def: DailyChallenge; seed: numb
 }
 
 /** `challengeId` overrides the date's pick (used by tests). */
-export function newDailyGame(dateKey: string, name: string, appearance: Appearance, challengeId?: string): GameState {
+export function newDailyGame(dateKey: string, name: string, appearance: Appearance, challengeId?: string, gender?: Gender | null): GameState {
   const picked = dailyForDate(dateKey);
   const def = dailyChallengeById(challengeId) ?? picked.def;
-  const s = newGame({ ...def.options, name, appearance, mode: 'realistic', seed: picked.seed, chapterYears: DAILY_DAYS / 365 });
+  const s = newGame({ ...def.options, name, appearance, gender: gender ?? undefined, mode: 'realistic', seed: picked.seed, chapterYears: DAILY_DAYS / 365 });
   s.chapterDays = DAILY_DAYS;
   def.setup?.(s);
   s.flags['daily-id'] = def.id;

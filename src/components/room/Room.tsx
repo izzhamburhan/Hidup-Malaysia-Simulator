@@ -173,22 +173,24 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
         {/* Lights down while sleeping */}
         <div className={cx('pointer-events-none absolute inset-0 bg-[#0b1230] transition-opacity duration-700', motion === 'sleep' ? 'opacity-45' : 'opacity-0')} aria-hidden />
 
-        {home && !playing ? (
-          <div className="absolute bottom-2 left-3 z-10 flex gap-1.5">
-            <button type="button" onClick={() => setShop(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              🛋️ {t('room.decor')}
-            </button>
-            <button type="button" onClick={() => setWardrobe(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              👕 {t('room.style')}
-            </button>
-            <button type="button" onClick={() => setGames(true)} className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink shadow-sm active:scale-95">
-              🎮 {t('room.games')}
-            </button>
-          </div>
-        ) : (
-          <div className="absolute bottom-2 left-3 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{room.label}</div>
-        )}
+        <div className="absolute bottom-2 left-3 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{room.label}</div>
       </section>
+      <div className="mt-2 grid grid-cols-3 gap-2" role="toolbar" aria-label="Room">
+        {(
+          [
+            ['🛋️', t('room.decor'), () => setShop(true), 'bg-gold-soft border-gold/60'],
+            ['👕', t('room.style'), () => setWardrobe(true), 'bg-teal-soft border-teal/30'],
+            ['🎮', t('room.games'), () => setGames(true), 'bg-hibiscus-soft border-hibiscus/30'],
+          ] as const
+        ).map(([icon, label, open, tone]) => (
+          <button key={label} type="button" onClick={open} className={cx('flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border-2 px-2 text-sm font-black text-ink shadow-sm active:scale-95', tone)}>
+            <span className="text-xl" aria-hidden>
+              {icon}
+            </span>
+            {label}
+          </button>
+        ))}
+      </div>
       <DecorShop open={shop} onClose={() => setShop(false)} />
       <Wardrobe open={wardrobe} onClose={() => setWardrobe(false)} />
       <Minigames open={games} onClose={() => setGames(false)} />
