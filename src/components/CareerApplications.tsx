@@ -63,7 +63,7 @@ export function CareerApplications() {
                     <span className="text-xs font-bold tabular-nums">{salaryLabel(a)}</span>
                   </div>
                 </div>
-                <Button className="hit-44 h-9 shrink-0 px-3.5" onClick={() => setRespondId(a.id)} aria-label={`Respond to offer from ${companyById(a.companyId)?.name ?? 'employer'}`}>
+                <Button className="hit-44 h-8 shrink-0 px-3 text-[13px]" onClick={() => setRespondId(a.id)} aria-label={`Respond to offer from ${companyById(a.companyId)?.name ?? 'employer'}`}>
                   Respond
                   <ChevronRight size={16} aria-hidden />
                 </Button>

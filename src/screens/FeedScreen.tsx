@@ -85,7 +85,7 @@ export function FeedScreen() {
                       onClick={() => interact('invite', p.id)}
                       className={cx(
                         'rounded-full px-3 py-1 text-xs font-semibold',
-                        'hit-44 h-9 rounded-full px-3.5 text-sm font-semibold',
+                        'hit-44 h-8 rounded-full px-3 text-[13px] font-semibold',
                         p.invite.used ? 'bg-paper-2 text-ink-soft' : 'bg-teal text-white hover:bg-teal-2 disabled:bg-teal/40',
                       )}
                     >
