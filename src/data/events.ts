@@ -11,6 +11,7 @@ import { addDebt, addSkills, applyStats, clamp, earn, formatRM, log, round2, spe
 import { jobEligibility, resolveInterview } from '../engine/career';
 import { breakUp, deepTalk, meetSomeone } from '../engine/social';
 import { adoptPet } from '../engine/pet';
+import { monthIndex } from '../engine/calendar';
 import { festiveSeason } from '../engine/festive';
 import { isLongDistance } from '../engine/geography';
 import { PET } from './pets';
@@ -49,6 +50,24 @@ function sawFriends(s: GameState): void {
 
 function communityAct(s: GameState): void {
   s.counters.communityActs += 1;
+}
+
+const EAST_COAST_STATES = ['Kelantan', 'Terengganu', 'Pahang'];
+const LOW_LYING_STATES = ['Perlis', 'Kedah', 'Perak', 'Johor', 'Sabah', 'Sarawak'];
+const MONSOON_MONTHS = [10, 11, 0]; // November, December, January (fictional calendar)
+
+/** Relative weight of a flood at home: east coast in the monsoon is likeliest, rare elsewhere. */
+function floodRisk(s: GameState): number {
+  const monsoon = MONSOON_MONTHS.includes(monthIndex(s));
+  if (EAST_COAST_STATES.includes(s.location.state)) return monsoon ? 6 : 0.4;
+  if (LOW_LYING_STATES.includes(s.location.state)) return monsoon ? 2 : 0.15;
+  return monsoon ? 0.3 : 0.05;
+}
+
+/** Flood damage never pushes cash below zero: pay what the wallet holds, up to `amount`. */
+function floodDamage(s: GameState, amount: number): string | void {
+  const paid = spend(s, Math.min(s.finance.cash, amount), 'flood damage');
+  if (paid > 0) return `Replacing what got wet cost ${formatRM(paid)}.`;
 }
 
 /** One day of pay for the current job (game rule: monthly salary / 26). */
@@ -2357,6 +2376,155 @@ export const events: GameEventDef[] = [
     choices: [
       { id: 'calm', label: 'Signal, wave, and ride home at the speed limit', outcomes: [{ text: 'They zoom off. You arrive home safely, groceries intact. The real winner.', effect: { stats: { stress: -1, happiness: 2 } } }] },
       { id: 'detour', label: 'Take a different road to avoid them', outcomes: [{ text: 'A longer route, but quiet and safe. Also, you discover a new burger stall.', effect: { minutes: 15, cash: -8, stats: { satiety: 20 } } }] },
+    ],
+  },
+
+  // ===================== Banjir at home (housing) =====================
+  // Rare outside the fictional monsoon (November to January); likeliest for the east coast.
+  {
+    id: 'banjir-rising',
+    title: 'The water is rising',
+    icon: '🌊',
+    category: 'housing',
+    trigger: 'random',
+    contexts: ['home', 'night', 'family'],
+    weight: floodRisk,
+    cooldownDays: 45,
+    text: 'It has rained for two days straight. The drain outside is full, the lane has turned into a slow brown river, and the neighbourhood group chat is sharing water levels and kind offers of help. Nothing has come inside yet, but it might tonight.',
+    choices: [
+      {
+        id: 'upstairs',
+        label: 'Move important things upstairs',
+        hint: 'A little for plastic sheets and boxes.',
+        cost: 20,
+        outcomes: [
+          { weight: 3, text: 'Documents, charger and the good blanket go up high, wrapped in plastic. The water stays outside, and you sleep calmly.', effect: { minutes: 60, stats: { stress: -2 } } },
+          { weight: 1, text: 'The water does creep in overnight, but everything important is already safe upstairs. Only the mop has a long night.', effect: { minutes: 60, stats: { stress: 3 } }, followUp: { eventId: 'banjir-cleanup', inDays: 2 } },
+        ],
+      },
+      {
+        id: 'relief-centre',
+        label: 'Go to the relief centre early',
+        hint: 'Safe, but it takes a few hours.',
+        outcomes: [
+          { text: 'The hall has mats, blankets, hot milo and volunteers with clipboards. Nobody sleeps much, but nobody is alone either.', effect: { minutes: 150, stats: { stress: 3, energy: -4, happiness: 1 } }, followUp: { eventId: 'banjir-cleanup', inDays: 2 } },
+        ],
+      },
+      {
+        id: 'volunteer',
+        label: 'Join the neighbourhood relief (sandbags and hot food)',
+        outcomes: [
+          {
+            text: 'You pass sandbags down a line of neighbours and ladle hot soup for the families on your lane. Tired arms, full heart.',
+            effect: { minutes: 120, community: 4, stats: { happiness: 4, energy: -10, health: -1 } },
+            apply: (s) => communityAct(s),
+            followUp: { eventId: 'banjir-cleanup', inDays: 2 },
+          },
+        ],
+      },
+      {
+        id: 'watch',
+        label: 'Keep an eye on the water and rest',
+        outcomes: [
+          { weight: 2, text: 'Around midnight the rain eases and the water stays outside. You sleep, a little tense, and wake to a quiet lane.', effect: { minutes: 30, stats: { stress: 2 } } },
+          {
+            weight: 1,
+            text: 'Water seeps in under the door. You move what you can, quickly, and wait for morning.',
+            effect: { minutes: 90, stats: { stress: 6, energy: -4 } },
+            apply: (s) => floodDamage(s, 30),
+            followUp: { eventId: 'banjir-cleanup', inDays: 2 },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'banjir-night',
+    title: 'Water naik at 2 AM',
+    icon: '🔦',
+    category: 'housing',
+    trigger: 'random',
+    contexts: ['night', 'home'],
+    weight: (s) => floodRisk(s) * 0.6,
+    cooldownDays: 60,
+    text: 'A knock at the door and a torch in your face. "Water naik!" your neighbour calls. Brown water is already creeping over the doorstep. Take a breath: you are not alone, and the whole lane is on the move together.',
+    choices: [
+      {
+        id: 'evacuate',
+        label: 'Grab your bag and walk to the relief centre with the neighbours',
+        hint: 'Safety first. Things can be replaced.',
+        outcomes: [
+          { text: 'IC and phone in a plastic bag, torch in hand, you wade out together holding the little ones\' hands. At the centre a volunteer hands you a blanket and a hot teh.', effect: { minutes: 240, stats: { stress: 6, energy: -10, happiness: -1 } }, followUp: { eventId: 'banjir-cleanup', inDays: 2 } },
+        ],
+      },
+      {
+        id: 'lift-then-leave',
+        label: 'Lift the essentials upstairs, then leave',
+        hint: 'A little for sheets and bags.',
+        cost: 25,
+        outcomes: [
+          { text: 'Five quick minutes: documents, charger and the best blanket go up high in plastic, then you leave with the neighbours. Most of it will be fine.', effect: { minutes: 180, stats: { stress: 5, energy: -8 } }, followUp: { eventId: 'banjir-cleanup', inDays: 2 } },
+        ],
+      },
+      {
+        id: 'wake-neighbours',
+        label: 'Help wake and guide the neighbours first',
+        outcomes: [
+          {
+            weight: 3,
+            text: 'You knock on every door on the lane, carry an elderly neighbour\'s bag, and walk the group to higher ground. Nobody is left behind.',
+            effect: { minutes: 180, community: 5, friends: 2, stats: { stress: 5, energy: -12, happiness: 2 } },
+            apply: (s) => communityAct(s),
+            followUp: { eventId: 'banjir-cleanup', inDays: 2 },
+          },
+          {
+            weight: 1,
+            text: 'Everyone gets out safely. Some of your own things get wet while you were busy, but your neighbours promise to return the favour.',
+            effect: { minutes: 180, community: 5, friends: 2, stats: { stress: 6, energy: -12, happiness: 1 } },
+            apply: (s) => {
+              communityAct(s);
+              return floodDamage(s, 25);
+            },
+            followUp: { eventId: 'banjir-cleanup', inDays: 2 },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'banjir-cleanup',
+    title: 'After the water',
+    icon: '🧹',
+    category: 'housing',
+    trigger: 'scheduled',
+    text: 'The water has gone down. It left mud, the smell of wet earth and a lot of work. Neighbours are already out with hoses and brooms, and somebody is frying pisang goreng for everyone.',
+    choices: [
+      {
+        id: 'gotong-royong',
+        label: 'Join the gotong-royong clean-up',
+        outcomes: [
+          {
+            text: 'Many hands, long hoses, loud radio. By evening the lane is clean, and you have been fed three times.',
+            effect: { minutes: 180, community: 4, friends: 2, stats: { happiness: 3, energy: -12, health: -1 } },
+            apply: (s) => communityAct(s),
+          },
+        ],
+      },
+      {
+        id: 'own-place',
+        label: 'Clean your own place first',
+        outcomes: [
+          { weight: 2, text: 'Scrub, rinse, repeat. It smells better by the evening and the neighbours wave through the window.', effect: { minutes: 180, stats: { energy: -10, stress: -1 } } },
+          { weight: 1, text: 'Most of it cleans up fine, but a few things are too wet to keep. You make a list and carry on.', effect: { minutes: 180, stats: { energy: -10 } }, apply: (s) => floodDamage(s, 40) },
+        ],
+      },
+      {
+        id: 'cleaning-crew',
+        label: 'Pay for a cleaning crew',
+        hint: 'Faster, and a little easier on the back.',
+        cost: 60,
+        outcomes: [{ text: 'Two cheerful cleaners and a very large hose. Your floor shines again by lunch.', effect: { minutes: 60, stats: { stress: -3, energy: -2 } } }],
+      },
     ],
   },
 
