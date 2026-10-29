@@ -32,7 +32,7 @@ the engine returns. Each file starts with a header comment stating its honesty l
 | `backgrounds.ts` | `backgrounds`, `backgroundById`, `lifeStages`, `lifeStageById` | `Background`, `LifeStageDef` | Game rules |
 | `holidays.ts` | `holidays`, `holidayOn`, `holidayStartingOn` | `Holiday` | Simulated calendar with fixed dates; not the real calendar |
 | `feed.ts` | `friendPosts`, `worldPosts`, `invitePosts` | string and post templates | Fictional NPCs and fictional Seri Harapan outlets |
-| `feed.ts` | `friendPosts`, `worldPosts`, `invitePosts` | string and post templates | Fictional NPCs and fictional Seri Harapan outlets. The feed generator (`generateFeedPosts`, `social.ts`) never repeats a post text within the last 8 generated posts, picking through `rng.ts`; keep each pool larger than 8 (a pool with no fresh text skips that post) |
+| `feed.ts` | `friendPosts`, `worldPosts`, `invitePosts` | string and post templates | Fictional NPCs and fictional Seri Harapan outlets. The feed generator (`generateFeedPosts`, `social.ts`) never repeats a post text within the last 8 generated posts, picking through `rng.ts`; keep each pool larger than 8 (a pool with no fresh text skips that post). The `scroll-feed` action calls `refreshFeed` for up to 3 more friend or town posts (never invitations) under the same rule, and says "You're all caught up" when none is fresh |
 | `events.ts` | `events` | `GameEventDef[]` | Fictional; see `event-contract.md` |
 | `achievements.ts` | `achievements`, `challenges`, `MAX_ACTIVE_CHALLENGES` | `Achievement`, `Challenge` | Fictional; conditions are pure functions of `GameState`, evaluated by `src/engine/progression.ts` |
 
