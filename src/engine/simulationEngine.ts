@@ -7,6 +7,8 @@ import { foodById } from '../data/foods';
 import { actionById, actionCatalogue, dyn, type ActionDef, type ActionView } from './actions';
 import { applyActionGame } from './actionGames';
 import { canAfford, formatRM, log, netWorth, round2, totalDebt, SKILL_KEYS } from './core';
+import { monthKey } from './calendar';
+import { monthlyCommitmentTotal } from './economy';
 import { isClassDay } from './education';
 import { isWorkday, listingsByMatch, onLeave } from './career';
 import { resolvePendingEvent, rollRandomEvent, viewEvent, type EventView } from './events';
@@ -237,6 +239,24 @@ function mealStep(s: GameState): RoutineStep | null {
   return food ? { kind: 'action', id: 'eat', param: food } : null;
 }
 
+/** Routine keeps at least this much cash, or three months of commitments if that is more. */
+export const ROUTINE_MIN_BUFFER = 1000;
+const ROUTINE_SAVE_STEP = 50;
+
+/**
+ * Cash the routine moves to savings, once per calendar month (the first step after payday, or any
+ * time the month's surplus first appears). Zero when below the buffer, when an overdue debt is open,
+ * or when it already saved this month. Only wallet cash: EPF and unit trust are never touched.
+ */
+export function surplusToSave(s: GameState): number {
+  const saved = s.flags.routineSaved;
+  if (typeof saved === 'number' && monthKey(s, saved) === monthKey(s)) return 0;
+  if (s.finance.debts.some((d) => d.kind === 'overdue' && d.balance > 0)) return 0;
+  const buffer = Math.max(ROUTINE_MIN_BUFFER, 3 * monthlyCommitmentTotal(s));
+  const amount = Math.floor((s.finance.cash - buffer) / ROUTINE_SAVE_STEP) * ROUTINE_SAVE_STEP;
+  return amount >= ROUTINE_SAVE_STEP && can(s, 'save', String(amount)) ? amount : 0;
+}
+
 /** The default routine's next move. Pure: reads the state, never changes it. */
 export function chooseRoutineStep(s: GameState): RoutineStep {
   const hour = s.clock.minute / 60;
@@ -283,6 +303,9 @@ export function chooseRoutineStep(s: GameState): RoutineStep {
     if (meal) return meal;
   }
   if (hour >= 22.5 || s.stats.energy < 12) return { kind: 'sleep' };
+  // Free time: move this month's surplus cash into savings (after work, study and meals are handled).
+  const surplus = surplusToSave(s);
+  if (surplus > 0) return { kind: 'action', id: 'save', param: String(surplus), once: 'routineSaved' };
   return can(s, 'chill') ? { kind: 'action', id: 'chill' } : { kind: 'wait' };
 }
 
