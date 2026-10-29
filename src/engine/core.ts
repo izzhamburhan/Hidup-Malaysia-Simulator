@@ -80,7 +80,7 @@ export function totalDebt(state: GameState): number {
 
 export function netWorth(state: GameState): number {
   const f = state.finance;
-  return round2(f.cash + f.savings + f.emergencyFund + f.epfBalance + assetValue(state) - totalDebt(state));
+  return round2(f.cash + f.savings + f.emergencyFund + f.unitTrust + f.epfBalance + assetValue(state) - totalDebt(state));
 }
 
 /** Rough resale value of owned assets (vehicle, property) - game estimate. */

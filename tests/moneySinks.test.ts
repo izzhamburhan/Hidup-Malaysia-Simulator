@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { netWorth } from '../src/engine/core';
 import { performAction, listActions } from '../src/engine/simulationEngine';
 import { processNewYear } from '../src/engine/economy';
 import { advanceTime } from '../src/engine/time';
@@ -236,5 +237,14 @@ describe('family duty events', () => {
       const text = JSON.stringify([e.title, typeof e.text === 'function' ? e.text(makeGame(), {}) : e.text]);
       expect(text).not.toMatch(/official|pork|babi|beer|alcohol|gambl/i);
     }
+  });
+});
+
+describe('net worth counts the unit trust', () => {
+  it('a unit trust balance adds to net worth, so investing never looks like losing money', () => {
+    const s = makeGame();
+    const before = netWorth(s);
+    s.finance.unitTrust = 2000;
+    expect(netWorth(s)).toBeCloseTo(before + 2000, 2);
   });
 });
