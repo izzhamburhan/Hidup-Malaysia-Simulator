@@ -189,7 +189,7 @@ export function EmptyState({ icon, title, children }: { icon: string; title: str
 
 export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: T; label: string; icon?: ReactNode }[]; value: T; onChange: (v: T) => void }) {
   return (
-    <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist">
+    <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-1" role="tablist">
       {tabs.map((t) => (
         <button
           key={t.id}
@@ -198,7 +198,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
           aria-selected={value === t.id}
           onClick={() => onChange(t.id)}
           className={cx(
-            'flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition',
+            'hit-44 flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition',
             value === t.id ? 'border-teal bg-teal text-white' : 'border-ink/10 bg-white text-ink-soft hover:border-teal/40',
           )}
         >
