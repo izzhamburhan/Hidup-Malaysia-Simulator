@@ -143,9 +143,32 @@ export function computeGpa(state: GameState, noise = 0): number {
   return round2(clamp(score * 4.2 + noise - 0.2, 0, 4));
 }
 
+/** Cash below this worries a student or a jobless fresh grad (game rule). */
+export const MONEY_WORRY_CASH = 150;
+
+/**
+ * Daily pressure on students and fresh grads: exam week, unfinished assignments close to exams,
+ * and an empty wallet. Small on purpose; sleep, rest and fun still bring stress back down.
+ */
+function studentPressure(state: GameState): number {
+  const e = state.education;
+  let pressure = 0;
+  if (e.status === 'studying') {
+    const d = semesterDay(state);
+    if (d >= CLASS_DAYS - 7 && d < CLASS_DAYS) pressure += 6;
+    if (d >= CLASS_DAYS - 21 && d < CLASS_DAYS) pressure += Math.min(3, 1.5 * Math.max(0, e.assignmentsTotal - e.assignmentsDone));
+    if (state.finance.cash < MONEY_WORRY_CASH) pressure += 1.5;
+  } else if (state.character.lifeStage === 'fresh_grad' && !state.career.job && state.finance.cash < MONEY_WORRY_CASH) {
+    pressure += 1.5;
+  }
+  return pressure;
+}
+
 /** Day-start processing for students. */
 export function processEducationDay(state: GameState): void {
   const e = state.education;
+  const pressure = studentPressure(state);
+  if (pressure > 0) applyStats(state, { stress: pressure });
   if (e.status !== 'studying') return;
   const d = semesterDay(state);
   // Assignments are released at weeks 2, 5, 8, 11.

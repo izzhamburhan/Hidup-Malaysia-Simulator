@@ -122,3 +122,14 @@ falls back to `randomAppearance(seed)`. Helpers in `src/engine/appearance.ts` (p
 own generator, never touch `state.rng`): `randomAppearance(seed)`, `appearanceFromName(name)`
 (stable NPC faces), `isValidAppearance(value)`, `moodOf(state)` (`happy`, `neutral`, `tired`,
 `stressed`, `unwell` from health, energy, stress and happiness).
+
+## Year 2 and beyond (career ladder, mastery, student stress)
+
+Plan: `docs/plans/gameplay-depth.md` group GD3. No `GameState` shape change (`mastery` arrived with save v8).
+
+- **Mastery.** `addSkills` keeps each skill within 0 to 100. Whatever a gain would push past 100 is added to `state.mastery[skill]` at `MASTERY_RATE` (0.5), rounded to 2 decimals. Mastery is never lowered by a skill dip. The Life screen shows "Mastery N" under a maxed skill.
+- **Promotions.** `promotionBar(fromLevel)` (`career.ts`) is the rule for the next rung: performance `75 + 3 x level`, 330 days on the rung (so about one promotion a year is possible for a high performer), and mastery in a skill the job practises (0 until rung 2, then 5, then 15). Reviews still run every 182 days. When only mastery is missing, the review log says so. Reaching the top rung takes years.
+- **Job-hop offers.** After a review with performance 70 or more, once the player has held the job 300 days, there is a 25% chance (rising 5 points a rung, capped at 50%) of an unsolicited offer from another company in a different role the player is eligible for. It is added to `career.applications` with `status: 'offer'` and `listingId: 'headhunt'`, pays at least 18% more than the current salary, and at most one is outstanding (300 day gap, `flags.headhuntDay`). It is never accepted for the player; `acceptOffer` starts the new job on its first rung (`level` 0, `jobsHeld` +1).
+- **Hustle tiers.** Reaching the top hustle tier needs `TOP_TIER_MASTERY` (5) in the hustle's skill; until then the session feedback says so and the xp is kept.
+- **Student stress.** `processEducationDay` adds daily stress for students and for jobless fresh grads: +6 in the 7 class days before exams, +1.5 per unfinished assignment (max +3) in the 3 weeks before exams, +1.5 when cash is under `MONEY_WORRY_CASH` (RM150). Sleep, rest and fun still reduce it.
+- **Repeat events.** Cooldowns of the most repeated random events were raised (stray cat 150, birthday 120, noisy neighbours 120, and others) so they fire a few times a year at most.

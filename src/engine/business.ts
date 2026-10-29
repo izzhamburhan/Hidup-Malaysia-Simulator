@@ -9,6 +9,8 @@ import type { GameState, Hustle } from './types';
 export const XP_PER_LEVEL = 100;
 export const MAX_HUSTLE_LEVEL = 6;
 export const REGISTRATION_FEE = 1000;
+/** Mastery in the hustle's skill needed to reach the top tier (game rule). */
+export const TOP_TIER_MASTERY = 5;
 export const EMPLOYEE_COST_NOTE = 'A helper costs RM1,900/month (fictional estimate), charged on bills day. They run sessions on weekdays while you work.';
 
 export function hustleRequirements(state: GameState, id: string): string | null {
@@ -79,7 +81,11 @@ export function workHustle(state: GameState, id: string): string[] {
   applyStats(state, { energy: -def.energy, stress: 2, happiness: profit > def.baseRevenue ? 3 : 0 });
 
   const lines = [`${def.name}: revenue ${formatRM(revenue)}, costs ${formatRM(cost)}, profit ${formatRM(profit)}.`];
-  if (h.xp >= XP_PER_LEVEL * h.level && h.level < MAX_HUSTLE_LEVEL) {
+  const levelReady = h.xp >= XP_PER_LEVEL * h.level && h.level < MAX_HUSTLE_LEVEL;
+  if (levelReady && h.level + 1 >= MAX_HUSTLE_LEVEL && state.mastery[def.skill] < TOP_TIER_MASTERY) {
+    // The top tier is for people who have mastered the trade, not just maxed the skill.
+    lines.push(`${def.name} is ready for the top tier, but that takes mastery of ${def.skill} (${Math.round(state.mastery[def.skill])}/${TOP_TIER_MASTERY}). Keep practising past skill 100.`);
+  } else if (levelReady) {
     h.xp = 0;
     h.level += 1;
     lines.push(`${def.name} grew to level ${h.level}! More customers are finding you.`);
