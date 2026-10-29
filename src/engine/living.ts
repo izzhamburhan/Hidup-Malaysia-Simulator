@@ -24,14 +24,24 @@ export function scaledCost(state: GameState, amount: number): number {
 /** Game rule for what moving house costs; moving to another state costs more by distance. */
 export const MOVING_STATE_COST = { sameRegion: 300, otherRegion: 700, acrossSea: 1800 } as const;
 
-/** Moving cost to another state: same region cheapest, across the South China Sea dearest (fictional). */
+/**
+ * Leaving the family home for another state means renting a room there: its deposit, at the
+ * target state's prices. Zero when not living with family or when moving to the home state.
+ */
+export function familyMoveDeposit(state: GameState, target: string | undefined): number {
+  const to = mapStateByName(target);
+  if (!to || state.housing.optionId !== 'family' || to.name === state.character.homeState) return 0;
+  const room = housingById('room')!;
+  return Math.round(room.rent * to.costFactor) * room.depositMonths;
+}
+
+/** Moving cost to another state: same region cheapest, across the South China Sea dearest (fictional), plus any room deposit. */
 export function movingStateCost(state: GameState, target: string | undefined): number {
   const from = mapStateByName(state.location.state);
   const to = mapStateByName(target);
   if (!from || !to) return 0;
-  if (from.region === to.region) return MOVING_STATE_COST.sameRegion;
-  if (from.region === 'borneo' || to.region === 'borneo') return MOVING_STATE_COST.acrossSea;
-  return MOVING_STATE_COST.otherRegion;
+  const move = from.region === to.region ? MOVING_STATE_COST.sameRegion : from.region === 'borneo' || to.region === 'borneo' ? MOVING_STATE_COST.acrossSea : MOVING_STATE_COST.otherRegion;
+  return move + familyMoveDeposit(state, target);
 }
 
 export interface HomeInfo {

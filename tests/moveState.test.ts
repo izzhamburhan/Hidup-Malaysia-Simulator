@@ -151,3 +151,28 @@ describe('move-state action', () => {
     expect(r.state.finance.cash).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe('moving away from the family home', () => {
+  it('rents a room in the new state, with the deposit in the moving cost', () => {
+    const s = makeGame({ backgroundId: 'fresh-home', homeState: 'Kelantan' });
+    expect(s.housing.optionId).toBe('family');
+    expect(s.location.state).toBe('Kelantan');
+    s.finance.cash = 5000;
+    const deposit = Math.round(550 * mapStateByName('Kuala Lumpur')!.costFactor) * 2;
+    expect(movingStateCost(s, 'Kuala Lumpur')).toBe(700 + deposit);
+    const view = viewAction(s, 'move-state', 'Kuala Lumpur')!;
+    expect(view.confirm).toMatch(/rent a room/);
+    const r = performAction(s, 'move-state', 'Kuala Lumpur');
+    expect(r.feedback.ok, r.feedback.error).toBe(true);
+    expect(r.state.location.state).toBe('Kuala Lumpur');
+    expect(r.state.housing.optionId).toBe('room');
+    expect(r.state.housing.depositHeld).toBe(deposit);
+    expect(r.state.finance.cash).toBeCloseTo(5000 - 700 - deposit, 2);
+  });
+
+  it('keeps your kind of home when you already rent', () => {
+    const s = makeGame({ backgroundId: 'renter', homeState: 'Kelantan' });
+    expect(s.housing.optionId).not.toBe('family');
+    expect(viewAction(s, 'move-state', 'Kuala Lumpur')!.confirm).toMatch(/keep your kind of home/);
+  });
+});

@@ -9,7 +9,7 @@ import { isWeekend } from '../calendar';
 import { REGISTRATION_FEE, hustleRequirements, startHustle, workHustle, EMPLOYEE_COST_NOTE } from '../business';
 import { debtServiceRatio, expectedMonthlyNet, monthlyCommitmentTotal } from '../economy';
 import { resign } from '../career';
-import { currentHome, mortgagePayment, movingStateCost, scaledCost, vehicleLoanPayment } from '../living';
+import { currentHome, familyMoveDeposit, mortgagePayment, movingStateCost, scaledCost, vehicleLoanPayment } from '../living';
 import { chance } from '../rng';
 import type { GameState, TransportMode } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
@@ -467,7 +467,7 @@ export const ownershipActions: ActionDef[] = [
           ? ' Your full-time job will be resigned (no remote work in v1).'
           : ' Your part-time job will be resigned too.'
         : '';
-      return `Moving to ${target.name} costs ${formatRM(movingStateCost(s, p))} now. Rent and bills follow ${target.name}'s cost factor (x${target.costFactor}), and new job offers follow its pay factor (x${target.payFactor}), both fictional estimates (Selangor = 1).${resign} You keep your kind of home.`;
+      return `Moving to ${target.name} costs ${formatRM(movingStateCost(s, p))} now. Rent and bills follow ${target.name}'s cost factor (x${target.costFactor}), and new job offers follow its pay factor (x${target.payFactor}), both fictional estimates (Selangor = 1).${resign}${familyMoveDeposit(s, p) ? ` You can't stay with family there, so you'll rent a room (its ${formatRM(familyMoveDeposit(s, p))} deposit is included).` : ' You keep your kind of home.'}`;
     },
     available: (s, p) => {
       const target = mapStateByName(p);
@@ -481,6 +481,7 @@ export const ownershipActions: ActionDef[] = [
     run: (s, p) => {
       const target = mapStateByName(p)!;
       const lines: string[] = [];
+      const deposit = familyMoveDeposit(s, p);
       spend(s, movingStateCost(s, p), `moving to ${target.name}`);
       const job = s.career.job;
       if (job) {
@@ -488,6 +489,10 @@ export const ownershipActions: ActionDef[] = [
         lines.push(`You resigned from your ${job.schedule === 'fulltime' ? 'full-time' : 'part-time'} job. Time to look for work in ${target.name}.`);
       }
       s.location.state = target.name;
+      if (deposit) {
+        s.housing = { optionId: 'room', sinceDay: s.clock.day, depositHeld: deposit, ownedPropertyId: null };
+        lines.push(`You can't stay with family in ${target.name}, so you rent a room there.`);
+      }
       applyStats(s, { stress: 6, happiness: 2 });
       log(s, 'milestone', `Moved to ${target.name}.`);
       addMemory(s, `Packed up and moved to ${target.name}.`);
