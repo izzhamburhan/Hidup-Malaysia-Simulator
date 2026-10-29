@@ -30,6 +30,22 @@ describe('rankLifeTabs (orders, never removes, Life sub-tabs)', () => {
     expect(order.indexOf('study')).toBeLessThan(order.indexOf('career'));
   });
 
+  it('follows the life stage right after the map: student -> Study, worker -> Career', () => {
+    expect(rankLifeTabs(makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs' })).slice(0, 3)).toEqual(['map', 'study', 'career']);
+    const worker = makeGame({ lifeStage: 'working', jobId: 'swe' });
+    worker.transport.vehicleId = null;
+    worker.relationships.prospects.push({} as never);
+    expect(rankLifeTabs(worker).slice(0, 2)).toEqual(['map', 'career']);
+    expect(rankLifeTabs(makeGame({ lifeStage: 'experienced', jobId: 'swe' })).slice(0, 2)).toEqual(['map', 'career']);
+    expect(rankLifeTabs(makeGame({ lifeStage: 'fresh_grad' })).slice(0, 2)).toEqual(['map', 'career']);
+  });
+
+  it('puts Hustle right after the map for a jobless entrepreneur, then Career', () => {
+    const s = makeGame({ lifeStage: 'entrepreneur' });
+    s.career.job = null;
+    expect(rankLifeTabs(s).slice(0, 3)).toEqual(['map', 'hustle', 'career']);
+  });
+
   it('moves Hustle above Shop once the player has a side hustle, and below it otherwise', () => {
     const none = makeGame();
     expect(none.hustles).toHaveLength(0);
