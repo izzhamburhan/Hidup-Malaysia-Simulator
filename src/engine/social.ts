@@ -202,28 +202,46 @@ export function dailyRelationships(state: GameState): void {
   if (day - r.lastFriendsDay > 10) r.friends = round2(clamp(r.friends - 0.4));
 }
 
-/** Daily fictional feed posts from friends, the world and invitations. */
+/** How many of the latest generated posts a new post may not repeat the text of. */
+const FEED_REPEAT_WINDOW = 8;
+
+/** Pick from a pool, skipping texts among the last few generated posts. Null when none is fresh. */
+function pickFresh<T>(state: GameState, pool: readonly T[], textOf: (item: T) => string): T | null {
+  const recent = new Set(
+    state.feed
+      .filter((p) => p.kind !== 'player')
+      .slice(0, FEED_REPEAT_WINDOW)
+      .map((p) => p.text),
+  );
+  const fresh = pool.filter((item) => !recent.has(textOf(item)));
+  return fresh.length ? pick(state, fresh) : null;
+}
+
+/** Daily fictional feed posts from friends, the world and invitations. No text repeats within a short window. */
 export function generateFeedPosts(state: GameState): void {
   const count = randInt(state, 1, 2);
   for (let i = 0; i < count; i++) {
     const author = pick(state, npcNames);
-    addPost(state, { author, handle: `@${handleOf(author)}`, text: pick(state, friendPosts), kind: 'friend', likes: randInt(state, 2, 240) });
+    const text = pickFresh(state, friendPosts, (t) => t);
+    if (text) addPost(state, { author, handle: `@${handleOf(author)}`, text, kind: 'friend', likes: randInt(state, 2, 240) });
   }
   if (chance(state, 0.35)) {
-    const w = pick(state, worldPosts);
-    addPost(state, { author: w.author, handle: `@${handleOf(w.author)}`, text: w.text, kind: 'world', likes: randInt(state, 20, 900) });
+    const w = pickFresh(state, worldPosts, (p) => p.text);
+    if (w) addPost(state, { author: w.author, handle: `@${handleOf(w.author)}`, text: w.text, kind: 'world', likes: randInt(state, 20, 900) });
   }
   if (chance(state, 0.18)) {
-    const inv = pick(state, invitePosts);
+    const inv = pickFresh(state, invitePosts, (p) => p.text);
     const author = pick(state, npcNames);
-    addPost(state, {
-      author,
-      handle: `@${handleOf(author)}`,
-      text: inv.text,
-      kind: 'invite',
-      likes: randInt(state, 5, 80),
-      invite: { eventId: inv.eventId, label: inv.label, used: false },
-    });
+    if (inv) {
+      addPost(state, {
+        author,
+        handle: `@${handleOf(author)}`,
+        text: inv.text,
+        kind: 'invite',
+        likes: randInt(state, 5, 80),
+        invite: { eventId: inv.eventId, label: inv.label, used: false },
+      });
+    }
   }
 }
 

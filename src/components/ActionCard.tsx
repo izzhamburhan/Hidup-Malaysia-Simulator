@@ -52,7 +52,8 @@ export function ActionCard({ view, compact = false, label, art }: { view: Action
 export function VariantRow({ views, icon, title, description }: { views: ActionView[]; icon: string; title: string; description: string }) {
   const { request } = useGame();
   const anyAvailable = views.some((v) => v.available);
-  const reason = !anyAvailable ? views[0]?.reason : null;
+  // All greyed: the first reason. Some greyed: the first unavailable pill's reason, so a greyed pill is explained.
+  const reason = views.find((v) => !v.available && v.reason)?.reason ?? null;
   return (
     <div className={cx('rounded-2xl border bg-white p-3', anyAvailable ? 'border-ink/10' : 'border-ink/5 bg-white/60')}>
       <div className="flex items-start gap-3">
