@@ -1384,7 +1384,7 @@ export const events: GameEventDef[] = [
     category: 'money',
     trigger: 'random',
     contexts: ['any'],
-    cooldownDays: 60,
+    cooldownDays: 90,
     weight: 6,
     when: (s) => {
       const overdue = s.finance.debts.filter((d) => d.kind === 'overdue').reduce((sum, d) => sum + d.balance, 0);

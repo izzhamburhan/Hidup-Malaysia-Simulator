@@ -67,7 +67,7 @@ check: cash under RM15, none pending, at least `BROKE_GAP_DAYS` (45) since the l
 `BROKE_AFTER_HELP_DAYS` (30) of the random `family-topup` event, and no income in the last
 `BROKE_RECOVERY_DAYS` (7) days (read from `dayReports`). The `family-topup` event (money, random)
 fires only with cash under RM50, overdue debt of RM100 or more, no family allowance or family home
-support, and a 60-day cooldown. It offers a gift, a small loan or a free "I will manage". The
+support, and a 90-day cooldown (about once a season, within the repeat ceiling in `tests/lateGame.test.ts`). It offers a gift, a small loan or a free "I will manage". The
 delivery gig action (`gig-work`, `action-contract.md`) is the third way out. Changing the gap or
 the conditions is a balancing change and needs a seeded autopilot comparison.
 
