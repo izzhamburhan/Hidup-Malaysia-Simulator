@@ -101,6 +101,8 @@ export interface Finance {
   monthSpent: number;
   monthEarned: number;
   insurance: boolean;
+  /** Fictional Seri Harapan unit trust balance (game rule; not a real fund). Never spendable cash directly. */
+  unitTrust: number;
 }
 
 export type JobSchedule = 'fulltime' | 'parttime' | 'intern';
@@ -404,6 +406,8 @@ export interface GameState {
   clock: Clock;
   stats: Stats;
   skills: Skills;
+  /** Practice past skill 100, per skill (0 and up). Unlocks senior roles and hustle tiers. */
+  mastery: Skills;
   finance: Finance;
   career: Career;
   education: Education;

@@ -146,3 +146,12 @@ and wardrobe hide the other gender's traditional items (`suitsGender`), and `cha
 them. A life with `null` sees everything. Nothing else in the simulation reads it. `migrations[6]` keeps a valid stored value and otherwise sets
 `null`; it never guesses a gender from the look. Test: `tests/save.test.ts` ("migrates a v6 save
 to v7 with gender not set").
+
+## Version 8 (money sinks and mastery)
+
+`Finance` gains `unitTrust: number`, the balance of a fictional Seri Harapan unit trust (a game
+rule with a varying yearly dividend; never real fund data, never spendable cash directly).
+`GameState` gains `mastery: Skills`, practice past skill 100 per skill (0 and up), which unlocks
+senior roles and hustle tiers. `migrations[7]` sets `unitTrust` to 0 unless a number is already
+stored and gives every skill key a mastery of 0; cash and skills are untouched. Test:
+`tests/save.test.ts` ("migrates a v7 save to v8 with an empty unit trust and no mastery yet").
