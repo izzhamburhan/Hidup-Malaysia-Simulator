@@ -89,12 +89,12 @@ export function FeedbackToast() {
   const { feedback, dismissFeedback, state } = useLoadedGame();
   useEffect(() => {
     if (!feedback) return;
-    const t = setTimeout(dismissFeedback, feedback.ok ? 3800 : 3200);
+    const t = setTimeout(dismissFeedback, feedback.ok ? 3800 : 5000);
     return () => clearTimeout(t);
   }, [feedback, dismissFeedback]);
   if (!feedback || state.events.pending.length) return null;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[76px] z-40 flex justify-center px-3">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(76px+env(safe-area-inset-bottom))] z-40 flex justify-center px-3">
       <div
         role="status"
         onClick={dismissFeedback}
@@ -179,7 +179,7 @@ export function DayReportModal() {
 function Mini({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div className="rounded-xl bg-white p-2">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-ink-soft">{label}</div>
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">{label}</div>
       <div className={cx('text-sm font-bold tabular-nums', tone)}>{value}</div>
     </div>
   );

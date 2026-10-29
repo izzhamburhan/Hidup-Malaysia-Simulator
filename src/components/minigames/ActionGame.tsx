@@ -15,7 +15,7 @@ const MEMORY_TEXT: Record<string, [string, string]> = {
 };
 
 export function ActionGame() {
-  const { gameFor, finishGame, cancelGame } = useLoadedGame();
+  const { gameFor, finishGame } = useLoadedGame();
   const [phase, setPhase] = useState<'intro' | 'play' | 'done'>('intro');
   const [score, setScore] = useState(0);
 
@@ -38,7 +38,7 @@ export function ActionGame() {
   return (
     <Modal
       open
-      onClose={cancelGame}
+      dismissable={false}
       title={
         <span className="flex items-center gap-2">
           <span className="text-2xl">{gameFor.icon}</span>
