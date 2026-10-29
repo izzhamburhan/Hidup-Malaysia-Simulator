@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { actionCatalogue } from '../src/engine/actions';
-import { ACTIVITIES, ROOMS, activityFor, daylight, skyIcon, wallItemFor } from '../src/components/room/activity';
+import { ACTIVITIES, ROOMS, activityFor, daylight, lampOn, skyIcon, wallItemFor } from '../src/components/room/activity';
 
 const at = (h: number, m = 0) => h * 60 + m;
 
@@ -15,6 +15,14 @@ describe('daylight (the room follows the clock, never the action)', () => {
     expect(daylight(at(19, 30))).toBe('night');
     expect(daylight(at(23, 59))).toBe('night');
     expect(daylight(at(0))).toBe('night');
+  });
+
+  it('switches the lamp on at night, and off while sleeping', () => {
+    expect(lampOn(at(21, 35), 'idle')).toBe(true);
+    expect(lampOn(at(21, 35), 'run')).toBe(true);
+    expect(lampOn(at(21, 35), 'sleep')).toBe(false);
+    expect(lampOn(at(18), 'idle')).toBe(false);
+    expect(lampOn(at(9), 'idle')).toBe(false);
   });
 
   it('shows the sky badge for the time', () => {

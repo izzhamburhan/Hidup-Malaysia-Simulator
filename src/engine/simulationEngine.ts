@@ -8,7 +8,7 @@ import { actionById, actionCatalogue, dyn, type ActionDef, type ActionView } fro
 import { applyActionGame } from './actionGames';
 import { canAfford, formatRM, log, netWorth, round2, totalDebt, SKILL_KEYS } from './core';
 import { isClassDay } from './education';
-import { isWorkday, onLeave } from './career';
+import { isWorkday, listingsByMatch, onLeave } from './career';
 import { resolvePendingEvent, rollRandomEvent, viewEvent, type EventView } from './events';
 import { rankEndings } from './endings';
 import { canStartChallenge, checkAchievements, updateChallenges } from './progression';
@@ -247,6 +247,9 @@ export function chooseRoutineStep(s: GameState): RoutineStep {
     if (meal) return meal;
   }
   const job = s.career.job;
+  // An interview the player applied for comes before everything else that day.
+  const interview = s.career.applications.find((a) => a.status === 'interview' && a.interviewDay === day);
+  if (interview && can(s, 'attend-interview', interview.id)) return { kind: 'action', id: 'attend-interview', param: interview.id };
   if (job && !s.career.workedToday) {
     if (job.schedule !== 'parttime' && isWorkday(s) && !onLeave(s) && hour < 11 && can(s, 'work-shift')) return { kind: 'action', id: 'work-shift' };
     if (job.schedule === 'parttime' && !isWorkday(s) && hour >= 8 && hour < 17 && can(s, 'work-shift')) return { kind: 'action', id: 'work-shift' };
@@ -261,6 +264,13 @@ export function chooseRoutineStep(s: GameState): RoutineStep {
   }
   if (!job && s.hustles.length && hour >= 8 && hour < 19 && s.flags.routineHustle !== day && can(s, 'work-hustle', s.hustles[0].id)) {
     return { kind: 'action', id: 'work-hustle', param: s.hustles[0].id, once: 'routineHustle' };
+  }
+  // Job hunting: one application a day to the best match. Offers stay the player's call.
+  if (!job && s.education.status !== 'studying' && s.character.lifeStage !== 'retired' && hour >= 9 && hour < 17 && s.flags.routineApply !== day) {
+    const active = s.career.applications.filter((a) => a.status === 'pending' || a.status === 'interview').length;
+    const hasOffer = s.career.applications.some((a) => a.status === 'offer');
+    const listing = active < 3 && !hasOffer ? listingsByMatch(s).find((l) => can(s, 'apply-job', l.id)) : undefined;
+    if (listing) return { kind: 'action', id: 'apply-job', param: listing.id, once: 'routineApply' };
   }
   if (!job && s.education.status !== 'studying' && hour >= 9 && hour < 18 && s.flags.routineGrow !== day) {
     if (can(s, 'update-cv')) return { kind: 'action', id: 'update-cv', once: 'routineGrow' };

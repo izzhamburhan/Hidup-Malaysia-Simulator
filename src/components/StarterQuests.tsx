@@ -41,13 +41,13 @@ export function StarterQuests({ go }: { go: (tab: QuestTab) => void }) {
                   const v = viewAction(state, 'claim-quest', quest.id);
                   if (v) request(v, 'tile');
                 }}
-                className="shrink-0 rounded-full bg-teal px-3 py-1 text-xs font-bold text-white shadow-sm active:scale-95"
+                className="min-h-[44px] shrink-0 rounded-full bg-teal px-4 text-sm font-bold text-white shadow-sm active:scale-95"
               >
                 {t('quests.claim', { n: QUEST_REWARD.cash })}
               </button>
             )}
             {!done && quest.tab !== 'home' && (
-              <button type="button" onClick={() => go(quest.tab)} className="shrink-0 rounded-full border border-teal/30 px-3 py-1 text-xs font-bold text-teal active:scale-95">
+              <button type="button" onClick={() => go(quest.tab)} className="min-h-[44px] shrink-0 rounded-full border border-teal/30 px-4 text-sm font-bold text-teal active:scale-95">
                 {t('quests.go')}
               </button>
             )}

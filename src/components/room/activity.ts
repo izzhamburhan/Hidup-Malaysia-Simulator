@@ -133,8 +133,11 @@ export const LIGHTING: Record<Daylight, string> = {
   morning: 'opacity-0',
   day: 'opacity-0',
   dusk: 'bg-[#ff7a2f] opacity-15',
-  night: 'bg-[#0b1230] opacity-45',
+  night: 'bg-[#0b1230] opacity-30',
 };
+
+/** At night a warm lamp lights the scene, switched off while the character sleeps. */
+export const lampOn = (minute: number, motion: Motion) => daylight(minute) === 'night' && motion !== 'sleep';
 
 export const skyIcon = (minute: number) => SKY[daylight(minute)];
 

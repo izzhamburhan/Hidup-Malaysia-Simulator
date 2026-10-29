@@ -44,3 +44,10 @@ bright, then the idle room at night (the dark bedroom) comes back. Only the smal
 npx vitest run tests/activity.test.ts
 npm run check
 ```
+## Follow-up (2026-10-29): too dark at night
+
+Feedback after release: night was too dark and the character looked murky. Night tint drops from
+45% to 30%, and both the tint and a new warm lamp glow (`lampOn`: night and not sleeping) sit
+behind Oyen and the character, so the room dims while they stay clear. Test: `lampOn` in
+`tests/activity.test.ts`. Checked with headless Edge screenshots at 360px: 1 PM living room,
+8:30 PM living room, 9:35 PM bedroom, and a run at 10:20 PM in the park.

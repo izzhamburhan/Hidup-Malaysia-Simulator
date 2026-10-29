@@ -21,6 +21,14 @@ export interface Eligibility {
 
 const QUAL_RANK = { spm: 0, diploma: 1, degree: 2 } as const;
 
+/** Open listings: ones the player meets every requirement for first, then best match. Pure; the sort is stable. */
+export function listingsByMatch(state: GameState): JobListing[] {
+  return state.career.listings
+    .map((l) => ({ l, e: jobEligibility(state, jobById(l.jobId)!) }))
+    .sort((a, b) => Number(b.e.ok) - Number(a.e.ok) || b.e.match - a.e.match)
+    .map((x) => x.l);
+}
+
 export function jobEligibility(state: GameState, job: Job): Eligibility {
   const missing: string[] = [];
   const edu = state.education;

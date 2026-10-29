@@ -12,7 +12,7 @@ import { useLoadedGame } from '../../hooks/useGame';
 import { useT } from '../../hooks/useT';
 import { PixelAvatar } from '../PixelAvatar';
 import { cx } from '../ui';
-import { ACTIVITIES, LIGHTING, ROOMS, activityFor, daylight, idleRoom, skyIcon, wallItemFor, type Activity } from './activity';
+import { ACTIVITIES, LIGHTING, ROOMS, activityFor, daylight, idleRoom, lampOn, skyIcon, wallItemFor, type Activity } from './activity';
 import { DecorShop } from './DecorShop';
 import { Wardrobe } from './Wardrobe';
 import { Minigames } from '../minigames/Minigames';
@@ -68,6 +68,7 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
   const season = home ? festiveSeason(state) : null;
   const petBusy = playing?.activity === 'petfeed' || playing?.activity === 'petplay';
   const light = daylight(state.clock.minute);
+  const lamp = lampOn(state.clock.minute, motion);
 
   return (
     <>
@@ -110,6 +111,19 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
             {centre}
           </div>
         )}
+
+        {/* Time of day, from the clock only, over every room. It sits behind Oyen and the
+            character, so the room dims at night while they stay clear. */}
+        <div className={cx('pointer-events-none absolute inset-0 transition-opacity duration-700', LIGHTING[light])} data-daylight={light} aria-hidden />
+
+        {/* Lamp light at night: a warm pool on the wall and floor behind the character */}
+        <div
+          className={cx(
+            'pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(255,206,130,0.55),rgba(255,206,130,0.18)_40%,transparent_68%)] transition-opacity duration-700',
+            lamp ? 'opacity-100' : 'opacity-0',
+          )}
+          aria-hidden
+        />
 
         {/* Oyen */}
         {state.pet && (
@@ -162,9 +176,6 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
             {def.bubble}
           </div>
         )}
-
-        {/* Time of day: from the clock only, the same over every room */}
-        <div className={cx('pointer-events-none absolute inset-0 z-10 transition-opacity duration-700', LIGHTING[light])} data-daylight={light} aria-hidden />
 
         {/* Lights down while sleeping (already dark at night) */}
         <div className={cx('pointer-events-none absolute inset-0 z-10 bg-[#0b1230] transition-opacity duration-700', motion === 'sleep' && light !== 'night' ? 'opacity-45' : 'opacity-0')} aria-hidden />

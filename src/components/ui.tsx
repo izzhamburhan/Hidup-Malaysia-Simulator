@@ -89,7 +89,7 @@ export function Modal({ open, onClose, title, children, footer, dismissable = tr
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="font-display text-lg font-bold leading-tight text-ink">{title}</div>
             {dismissable && onClose && (
-              <button type="button" onClick={onClose} className="rounded-full p-1 text-ink-soft hover:bg-paper-2" aria-label="Close">
+              <button type="button" onClick={onClose} className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-paper-2" aria-label="Close">
                 <X size={20} />
               </button>
             )}
@@ -123,7 +123,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
           aria-selected={value === t.id}
           onClick={() => onChange(t.id)}
           className={cx(
-            'flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition',
+            'flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition',
             value === t.id ? 'border-teal bg-teal text-white' : 'border-ink/10 bg-white text-ink-soft hover:border-teal/40',
           )}
         >
@@ -139,7 +139,7 @@ export function KeyValue({ label, value, strong }: { label: ReactNode; value: Re
   return (
     <div className="flex items-baseline justify-between gap-3 py-1 text-sm">
       <span className="text-ink-soft">{label}</span>
-      <span className={cx('text-right tabular-nums', strong ? 'font-bold text-ink' : 'font-medium')}>{value}</span>
+      <span className={cx('whitespace-nowrap text-right tabular-nums', strong ? 'font-bold text-ink' : 'font-medium')}>{value}</span>
     </div>
   );
 }

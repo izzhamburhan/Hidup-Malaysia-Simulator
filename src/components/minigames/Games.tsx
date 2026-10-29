@@ -18,9 +18,10 @@ function shuffled<T>(items: readonly T[]): T[] {
   return out;
 }
 
-const TAP_THEMES: Record<string, { runner: string; goal: string; start: string; go: string; sky: string }> = {
-  bus: { runner: '🏃', goal: '🚌', start: 'Tap to start running', go: 'LARI! TAP TAP TAP', sky: 'from-[#9fd6f2] to-[#d8f0c2]' },
-  run: { runner: '🏃', goal: '🏁', start: 'Tap to start your run', go: 'FASTER! TAP TAP TAP', sky: 'from-[#ffd7a8] to-[#d8f0c2]' },
+// The runner emoji faces left on every platform; `flip` turns it towards the goal on the right.
+const TAP_THEMES: Record<string, { runner: string; flip?: boolean; goal: string; start: string; go: string; sky: string }> = {
+  bus: { runner: '🏃', flip: true, goal: '🚌', start: 'Tap to start running', go: 'LARI! TAP TAP TAP', sky: 'from-[#9fd6f2] to-[#d8f0c2]' },
+  run: { runner: '🏃', flip: true, goal: '🏁', start: 'Tap to start your run', go: 'FASTER! TAP TAP TAP', sky: 'from-[#ffd7a8] to-[#d8f0c2]' },
   pushup: { runner: '🤸', goal: '💪', start: 'Tap to start', go: 'PUSH! TAP TAP TAP', sky: 'from-[#e7defc] to-[#fbefd9]' },
 };
 
@@ -53,7 +54,7 @@ export function TapRace({ theme = 'bus', onDone }: { theme?: string; onDone: Don
     <div className="select-none">
       <div className={cx('relative h-24 overflow-hidden rounded-2xl bg-gradient-to-b', look.sky)}>
         <div className="absolute inset-x-0 bottom-0 h-6 bg-[#6b6b6b]" />
-        <span className="absolute bottom-4 text-4xl transition-all duration-100" style={{ left: `${4 + progress * 62}%` }} aria-hidden>
+        <span className={cx('absolute bottom-4 text-4xl transition-all duration-100', look.flip && '-scale-x-100')} style={{ left: `${4 + progress * 62}%` }} aria-hidden>
           {look.runner}
         </span>
         <span className="absolute bottom-4 right-3 text-5xl" aria-hidden>

@@ -9,8 +9,7 @@ import { CLASS_DAYS, isClassDay, semesterDay } from './education';
 import { monthlyCommitmentTotal } from './economy';
 import { formatRM } from './core';
 import { foodById } from '../data/foods';
-import { jobById } from '../data/jobs';
-import { jobEligibility } from './career';
+import { listingsByMatch } from './career';
 import { currentHome } from './living';
 import { actionById, type ActionView } from './actions';
 import { describeAction } from './simulationEngine';
@@ -156,10 +155,7 @@ export function mealFor(s: GameState): ActionView | null {
 
 /** The best open job listing the player can apply for (highest match). */
 export function bestListing(s: GameState): ActionView | null {
-  const ranked = [...s.career.listings]
-    .map((l) => ({ l, match: jobEligibility(s, jobById(l.jobId)!).match }))
-    .sort((a, b) => b.match - a.match);
-  for (const { l } of ranked) {
+  for (const l of listingsByMatch(s)) {
     const v = view(s, 'apply-job', l.id);
     if (v?.available) return v;
   }
