@@ -22,6 +22,76 @@
   --font-display: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
 
+/* ---- UI v4-A: pixel display font and header tint (self-hosted, OFL-1.1; see Settings > Credits) ----
+   Pixelify Sans is used for the clock, wallet, landing title and big-moment titles only; body text
+   keeps the system face. Pixel faces stay crisp at multiples of 8px (16, 24, 32, 48), so those are
+   the sizes the components use. font-display: swap shows the fallback until the font arrives. */
+@font-face {
+  font-family: "Pixelify Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/pixelify-sans-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Pixelify Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/pixelify-sans-latin-700-normal.woff2") format("woff2");
+}
+
+.font-pixel {
+  font-family: "Pixelify Sans", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: none;
+}
+
+/* Header follows the time of day (daylight() in room/activity.ts). Subtle tints of the paper
+   colour. Worst-case contrast on the tints: ink 13.7, ink-soft 6.2, teal 9.5, hibiscus 4.1 (large
+   wallet text only; small "in danger" numbers use #9a3412, 5.8). The wallet flash peaks at 18%. */
+.header-tint {
+  transition: background-color 0.7s ease;
+}
+.header-tint-morning {
+  background-color: rgba(253, 244, 214, 0.95);
+}
+.header-tint-day {
+  background-color: rgba(251, 247, 239, 0.95);
+}
+.header-tint-dusk {
+  background-color: rgba(250, 230, 213, 0.95);
+}
+.header-tint-night {
+  background-color: rgba(228, 229, 238, 0.95);
+}
+
+/* Wallet flash: a brief tint when cash changes (green up, red down). */
+@keyframes wallet-flash-up {
+  0% { background-color: rgba(47, 125, 79, 0.18); }
+  100% { background-color: rgba(47, 125, 79, 0); }
+}
+@keyframes wallet-flash-down {
+  0% { background-color: rgba(194, 65, 12, 0.18); }
+  100% { background-color: rgba(194, 65, 12, 0); }
+}
+.wallet-flash-up {
+  animation: wallet-flash-up 0.9s ease-out both;
+}
+.wallet-flash-down {
+  animation: wallet-flash-down 0.9s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-tint {
+    transition: none;
+  }
+  .wallet-flash-up,
+  .wallet-flash-down {
+    animation: none;
+  }
+}
+/* ---- end UI v4-A ---- */
+
 html,
 body,
 #root {
