@@ -80,6 +80,17 @@ homeState)`, one way at least 240 minutes on the map, `geography.ts`). It costs 
 mood, never a stat floor, and has two free choices (crawl and sing along, leave at dawn) plus an
 RM15 R&R stop, so the player is never stuck.
 
+## Banjir at home
+
+`banjir-rising` and `banjir-night` (housing, random, contexts `home`/`night`) and the scheduled
+follow-up `banjir-cleanup` model a flood at the player's own home. Their weight is a pure function
+of `state.location.state` and the simulated month (`floodRisk` in `data/events.ts`): east coast
+(Kelantan, Terengganu, Pahang) in the fictional monsoon (November to January) is likeliest, other
+low-lying states less, and everywhere else or outside the monsoon is rare but never zero. The rng
+only picks among eligible events as usual. Every event keeps a free choice (relief centre,
+volunteering, gotong-royong); damage goes through `spend(min(cash, amount))`, so cash and debt are
+never affected. Copy is kind, safety first, and names no agency.
+
 ## Roll rate
 
 After an action of `m` minutes, a random event fires with probability
