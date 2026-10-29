@@ -59,6 +59,15 @@ export const migrations: Record<number, Migration> = {
     const gender = character.gender === 'male' || character.gender === 'female' ? character.gender : null;
     return { ...s, character: { ...character, gender }, version: 7 };
   },
+  // 7 -> 8: money sinks and mastery. Existing lives hold no unit trust and have no mastery yet.
+  7: (s) => {
+    const finance = (s.finance ?? {}) as Record<string, unknown>;
+    const skills = (s.skills ?? {}) as Record<string, unknown>;
+    const old = (s.mastery ?? {}) as Record<string, unknown>;
+    const mastery = Object.fromEntries(Object.keys(skills).map((k) => [k, typeof old[k] === 'number' ? old[k] : 0]));
+    const unitTrust = typeof finance.unitTrust === 'number' ? finance.unitTrust : 0;
+    return { ...s, finance: { ...finance, unitTrust }, mastery, version: 8 };
+  },
 };
 
 export function migrate(raw: Record<string, unknown>): GameState {

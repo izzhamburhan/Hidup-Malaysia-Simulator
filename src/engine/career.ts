@@ -306,17 +306,80 @@ export function overtime(state: GameState, hours: number): string[] {
   return [`${hours}h overtime logged: about ${formatRM(rate * hours)} extra on your next payslip.`];
 }
 
-/** Twice-yearly review: increments, promotions, or a warning / termination. */
+/** What the next promotion asks for, by the rung you are on now (0 is the entry rung). Game rule. */
+export interface PromotionBar {
+  /** Performance needed at the review. */
+  performance: number;
+  /** Days spent on this rung (a little under a year, so a yearly cadence is possible). */
+  tenureDays: number;
+  /** Mastery needed in a skill the job practises; senior rungs only. */
+  mastery: number;
+}
+
+export function promotionBar(fromLevel: number): PromotionBar {
+  return {
+    performance: 75 + 3 * fromLevel,
+    tenureDays: 330,
+    mastery: fromLevel >= 2 ? 5 + 10 * (fromLevel - 2) : 0,
+  };
+}
+
+/** The best mastery the player holds in the skills a job practises. */
+function jobMastery(state: GameState, def: Job): number {
+  return Math.max(0, ...Object.keys(def.growth).map((k) => state.mastery[k as keyof typeof state.mastery] ?? 0));
+}
+
+const HEADHUNT_COOLDOWN_DAYS = 300;
+
+/**
+ * An unsolicited better-paid offer from another company, placed in the usual offers list.
+ * It is never accepted for the player; taking it starts that job from its first rung.
+ */
+function maybeHeadhunt(state: GameState, perf: number): void {
+  const job = state.career.job;
+  if (!job || job.schedule !== 'fulltime' || perf < 70) return;
+  const day = state.clock.day;
+  if (day - job.startDay < 300) return;
+  if (day - Number(state.flags.headhuntDay ?? -9999) < HEADHUNT_COOLDOWN_DAYS) return;
+  if (state.career.applications.some((a) => a.status === 'offer')) return;
+  if (!chance(state, Math.min(0.5, 0.25 + 0.05 * job.level))) return;
+  const options = jobs.filter((j) => j.schedule === 'fulltime' && j.id !== job.jobId && jobEligibility(state, j).ok);
+  if (!options.length) return;
+  const target = pick(state, options);
+  const firms = companies.filter((c) => target.industries.includes(c.industry) && c.id !== job.companyId);
+  if (!firms.length) return;
+  const company = pick(state, firms);
+  const offerSalary = Math.max(salaryFor(state, target, company), Math.round((job.monthlySalary * 1.18) / 50) * 50);
+  state.flags.headhuntDay = day;
+  state.career.applications.unshift({
+    id: nextId(state, 'app'),
+    listingId: 'headhunt',
+    jobId: target.id,
+    companyId: company.id,
+    appliedDay: day,
+    respondDay: day,
+    status: 'offer',
+    offerSalary,
+    score: Math.round(perf),
+  });
+  log(state, 'milestone', `📧 A recruiter from ${company.name} noticed your work: ${target.title} at ${formatRM(offerSalary)}/month. Joining means starting on that ladder's first rung. It is your call.`);
+  highlight(state, `Offer from ${company.name}`);
+}
+
+/** Twice-yearly review: increments, promotions, or a warning / termination. Higher rungs ask for more. */
 export function performanceReview(state: GameState): void {
   const job = state.career.job;
   if (!job || job.schedule !== 'fulltime') return;
   const def = jobById(job.jobId)!;
   job.lastReviewDay = state.clock.day;
   const perf = job.performance;
-  const tenureAtLevel = (state.clock.day - job.levelSinceDay) / 365;
+  const bar = promotionBar(job.level);
+  const tenureAtLevel = state.clock.day - job.levelSinceDay;
   const mainSkill = Object.keys(def.skills)[0] as keyof typeof state.skills | undefined;
   const skillOk = !mainSkill || state.skills[mainSkill] >= (def.skills[mainSkill] ?? 0) + 12 * (job.level + 1);
-  if (perf >= 75 && tenureAtLevel >= 1 && skillOk && job.level < def.ladder.length - 1) {
+  const masteryOk = jobMastery(state, def) >= bar.mastery;
+  const hasRung = job.level < def.ladder.length - 1;
+  if (perf >= bar.performance && tenureAtLevel >= bar.tenureDays && skillOk && masteryOk && hasRung) {
     job.level += 1;
     job.levelSinceDay = state.clock.day;
     job.title = def.ladder[job.level];
@@ -330,7 +393,10 @@ export function performanceReview(state: GameState): void {
     const pct = perf >= 80 ? 0.07 : perf >= 65 ? 0.05 : 0.03;
     job.monthlySalary = Math.round((job.monthlySalary * (1 + pct)) / 10) * 10;
     log(state, 'milestone', `Performance review: rated ${perf >= 80 ? 'Excellent' : perf >= 65 ? 'Good' : 'Meets expectations'}. ${Math.round(pct * 100)}% increment to ${formatRM(job.monthlySalary)}.`);
-    if (!skillOk && perf >= 75) log(state, 'system', 'Your manager says you need stronger core skills before a promotion.');
+    if (perf >= bar.performance && hasRung && tenureAtLevel >= bar.tenureDays) {
+      if (!skillOk) log(state, 'system', 'Your manager says you need stronger core skills before a promotion.');
+      else if (!masteryOk) log(state, 'system', 'Your manager says the next step is for true masters of the craft. Keep practising once a skill is maxed out to build mastery.');
+    }
   } else if (perf >= 25) {
     log(state, 'warning', 'Performance review: "Needs improvement". No increment this cycle. HR is watching.');
     applyStats(state, { stress: 8, happiness: -5 });
@@ -338,7 +404,10 @@ export function performanceReview(state: GameState): void {
     applyStats(state, { stress: 12, happiness: -10, reputation: -5 });
     resign(state, 'After a poor review, your contract was not continued.');
   }
-  if (state.career.job) state.career.job.performance = round2(clamp(perf * 0.85 + 50 * 0.15));
+  if (state.career.job) {
+    state.career.job.performance = round2(clamp(perf * 0.85 + 50 * 0.15));
+    maybeHeadhunt(state, perf);
+  }
 }
 
 export const scheduleLabel: Record<JobSchedule, string> = {

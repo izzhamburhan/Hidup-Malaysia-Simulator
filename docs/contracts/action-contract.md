@@ -71,6 +71,12 @@ interface ActionView {
    passes the 0-100 score to `performAction` as `options.gameScore`. The bonus is applied by the
    engine (`engine-api.md`), never cash, and never for sleep, money, home or transport actions.
 
+10. **Gig work is income, not payroll.** `gig-work` (2h or 4h variants, `workActions.ts`) pays
+    fictional net cash per hour through `earn`, by commute mode (`GIG_RATE_PER_HOUR`: motorcycle,
+    car, walk, public; e-hailing mode has no gig), with a small seeded variation, energy, stress and
+    time costs, a cap of `GIG_MAX_HOURS_PER_DAY` hours a day, and no overlap with class or a
+    full-time shift before 5 PM. It names no brand and never appears on a payslip.
+
 ## Tests
 
 Each new action has tests for: the happy path through `performAction` with a fixed seed, at least

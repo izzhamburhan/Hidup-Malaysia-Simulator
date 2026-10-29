@@ -15,7 +15,7 @@ import { isValidAppearance, randomAppearance } from './appearance';
 import { generateFeedPosts } from './social';
 import type { GameState, NewGameOptions, Skills } from './types';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 export const START_DATE = '2027-01-04';
 export const START_MINUTE = 7 * 60;
 
@@ -34,6 +34,7 @@ export function emptyState(): GameState {
     clock: { day: 0, minute: START_MINUTE },
     stats: { energy: 80, health: 75, fitness: 40, stress: 25, happiness: 60, reputation: 50, satiety: 55 },
     skills,
+    mastery: Object.fromEntries(Object.keys(skills).map((k) => [k, 0])) as Skills,
     finance: {
       cash: 0,
       savings: 0,
@@ -48,6 +49,7 @@ export function emptyState(): GameState {
       monthSpent: 0,
       monthEarned: 0,
       insurance: false,
+      unitTrust: 0,
     },
     career: { job: null, experienceDays: 0, cvQuality: 25, applications: [], listings: [], listingsRefreshedDay: 0, promotions: 0, jobsHeld: 0, workedToday: false, unemployedSinceDay: 0 },
     education: {

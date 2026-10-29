@@ -1,7 +1,7 @@
 // Money management, housing, transport, shopping, side hustles and civic life.
 
 import { housingById, propertyById } from '../../data/housing';
-import { gymById, hustleDefById, shopItemById } from '../../data/lifestyle';
+import { SEDEKAH, SEDEKAH_DAILY_CAP, UNIT_TRUST, gymById, hustleDefById, lifestyleUpgradeById, lifestyleUpgrades, shopItemById } from '../../data/lifestyle';
 import { transportModeInfo, vehicleById } from '../../data/vehicles';
 import { addDebt, addSkills, applyStats, canAfford, clamp, formatRM, highlight, log, playerPost, round2, spend } from '../core';
 import { isWeekend } from '../calendar';
@@ -32,6 +32,11 @@ function payFromCashThenSavings(s: GameState, amount: number, label: string): vo
     s.today.spent = round2(s.today.spent + rest);
     s.counters.totalSpent = round2(s.counters.totalSpent + rest);
   }
+}
+
+/** RM already given as sedekah on the current day (stored in flags, reset by the day number). */
+function sedekahGivenToday(s: GameState): number {
+  return s.flags.sedekahDay === s.clock.day ? Number(s.flags.sedekahToday ?? 0) : 0;
 }
 
 function amountParam(p: string | undefined, fallback: number): number {
@@ -114,6 +119,126 @@ export const ownershipActions: ActionDef[] = [
       const a = amountParam(p, 500);
       s.finance.savings = round2(s.finance.savings - a);
       s.finance.cash = round2(s.finance.cash + a);
+    },
+  },
+  {
+    id: 'unit-trust-deposit',
+    category: 'money',
+    icon: '📈',
+    title: (_s, p) => `Invest ${formatRM(amountParam(p, 500))} in the unit trust`,
+    description: `${UNIT_TRUST.name}: a game-only fund in Seri Harapan. Pays a yearly dividend on 1 January that varies from year to year (fictional game estimate, not guaranteed). Not spendable cash until you withdraw.`,
+    minutes: 10,
+    cost: (_s, p) => amountParam(p, 500),
+    variants: () => [
+      { param: '500', label: 'RM500' },
+      { param: '2000', label: 'RM2,000' },
+      { param: '5000', label: 'RM5,000' },
+    ],
+    confirm: (s, p) => {
+      const a = amountParam(p, 500);
+      if (a < 2000) return null;
+      return `${formatRM(a)} leaves your wallet and goes into ${UNIT_TRUST.name}. It is not spendable until you withdraw it, and the yearly dividend is a fictional game estimate, not guaranteed. Cash after: ${formatRM(s.finance.cash - a)}.`;
+    },
+    available: (s, p) => (canAfford(s, amountParam(p, 500)) ? null : 'Not enough cash.'),
+    run: (s, p) => {
+      const a = amountParam(p, 500);
+      s.finance.cash = round2(s.finance.cash - a);
+      s.finance.unitTrust = round2(s.finance.unitTrust + a);
+      applyStats(s, { stress: -1 });
+      return [`Unit trust balance: ${formatRM(s.finance.unitTrust)}. The dividend arrives each 1 January (varies by year).`];
+    },
+  },
+  {
+    id: 'unit-trust-withdraw',
+    category: 'money',
+    icon: '🏧',
+    title: (_s, p) => (p === 'all' ? 'Withdraw all from the unit trust' : `Withdraw ${formatRM(amountParam(p, 500))} from the unit trust`),
+    description: 'Sell units and move the money back to your wallet.',
+    minutes: 10,
+    visible: (s) => s.finance.unitTrust > 0,
+    variants: () => [
+      { param: '500', label: 'RM500' },
+      { param: '2000', label: 'RM2,000' },
+      { param: 'all', label: 'All' },
+    ],
+    available: (s, p) => (p === 'all' || s.finance.unitTrust >= amountParam(p, 500) ? null : 'Not enough in the unit trust.'),
+    run: (s, p) => {
+      const a = p === 'all' ? s.finance.unitTrust : amountParam(p, 500);
+      s.finance.unitTrust = round2(s.finance.unitTrust - a);
+      s.finance.cash = round2(s.finance.cash + a);
+      return [`${formatRM(a)} is back in your wallet.`];
+    },
+  },
+  {
+    id: 'sedekah',
+    category: 'money',
+    icon: '🤲',
+    title: (_s, p) => `Sedekah ${formatRM(amountParam(p, 20))}`,
+    description: `Give to the ${SEDEKAH.cause}. Up to ${formatRM(SEDEKAH_DAILY_CAP)} a day. Small kindness, warm feeling.`,
+    minutes: 5,
+    cost: (_s, p) => amountParam(p, 20),
+    variants: () => SEDEKAH.amounts.map((a) => ({ param: String(a), label: `RM${a}` })),
+    available: (s, p) => {
+      const a = amountParam(p, 20);
+      if (!canAfford(s, a)) return 'Not enough cash.';
+      const left = SEDEKAH_DAILY_CAP - sedekahGivenToday(s);
+      return a > left ? (left <= 0 ? `You have given your limit of ${formatRM(SEDEKAH_DAILY_CAP)} today. Come back tomorrow.` : `Only ${formatRM(left)} left to give today.`) : null;
+    },
+    run: (s, p) => {
+      const a = amountParam(p, 20);
+      spend(s, a, 'sedekah');
+      s.flags.sedekahDay = s.clock.day;
+      s.flags.sedekahToday = round2(sedekahGivenToday(s) + a);
+      const tier = a >= 50 ? 3 : a >= 20 ? 2 : 1;
+      s.communityReputation = clamp(s.communityReputation + tier * 0.5);
+      applyStats(s, { happiness: tier * 1.5, stress: -tier * 0.5, reputation: tier * 0.5 });
+      return ['The fund will pass it on to families who need it. The warm feeling is a bonus.'];
+    },
+  },
+  {
+    id: 'lifestyle-upgrade',
+    category: 'leisure',
+    icon: '🛍️',
+    title: (_s, p) => {
+      const u = lifestyleUpgradeById(p);
+      return u ? `${u.name} (${formatRM(u.price)})` : 'Lifestyle upgrade';
+    },
+    description: (_s, p) => {
+      const u = lifestyleUpgradeById(p);
+      return u ? `${u.description} ${formatRM(u.price)} is a fictional game estimate. Optional.` : '';
+    },
+    minutes: (_s, p) => lifestyleUpgradeById(p)?.minutes ?? 60,
+    energy: (_s, p) => lifestyleUpgradeById(p)?.energy ?? 0,
+    cost: (_s, p) => lifestyleUpgradeById(p)?.price ?? 0,
+    variants: () => lifestyleUpgrades.map((u) => ({ param: u.id, label: u.name })),
+    confirm: (s, p) => {
+      const u = lifestyleUpgradeById(p);
+      if (!u) return null;
+      return `${formatRM(u.price)} from your wallet. Cash after purchase: ${formatRM(s.finance.cash - u.price)}. It cannot be refunded.`;
+    },
+    available: (s, p) => {
+      const u = lifestyleUpgradeById(p);
+      if (!u) return 'Unknown upgrade.';
+      const last = s.flags[`upgradeDay:${u.id}`];
+      if (typeof last === 'number') {
+        const wait = last + u.cooldownDays - s.clock.day;
+        if (wait > 0) return `You did this recently. Give it ${wait} more days.`;
+      }
+      if (u.energy < 0) {
+        const tired = needEnergy(s, Math.abs(u.energy) + 10);
+        if (tired) return tired;
+      }
+      return canAfford(s, u.price) ? null : 'Not enough cash.';
+    },
+    run: (s, p) => {
+      const u = lifestyleUpgradeById(p)!;
+      spend(s, u.price, u.name);
+      s.flags[`upgradeDay:${u.id}`] = s.clock.day;
+      s.counters.bigPurchases += 1;
+      if (u.id === 'holiday-abroad') s.counters.trips += 1;
+      applyStats(s, { happiness: u.happiness, stress: u.stress, energy: u.energy, health: u.health });
+      highlight(s, u.name);
+      return [u.result];
     },
   },
   {

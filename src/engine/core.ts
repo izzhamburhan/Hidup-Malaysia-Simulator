@@ -80,7 +80,7 @@ export function totalDebt(state: GameState): number {
 
 export function netWorth(state: GameState): number {
   const f = state.finance;
-  return round2(f.cash + f.savings + f.emergencyFund + f.epfBalance + assetValue(state) - totalDebt(state));
+  return round2(f.cash + f.savings + f.emergencyFund + f.unitTrust + f.epfBalance + assetValue(state) - totalDebt(state));
 }
 
 /** Rough resale value of owned assets (vehicle, property) - game estimate. */
@@ -100,6 +100,9 @@ export function applyStats(state: GameState, delta: Partial<Stats>): void {
   }
 }
 
+/** Share of a skill gain past 100 that is kept as mastery (practice beyond the ceiling counts for less). */
+export const MASTERY_RATE = 0.5;
+
 export function addSkills(state: GameState, delta: Partial<Record<SkillKey, number>>, multiplier = 1): void {
   for (const key of SKILL_KEYS) {
     const d = delta[key];
@@ -107,7 +110,10 @@ export function addSkills(state: GameState, delta: Partial<Record<SkillKey, numb
     // Diminishing returns as a skill approaches 100.
     const current = state.skills[key];
     const gain = d > 0 ? d * multiplier * (1 - current / 130) : d;
-    state.skills[key] = round2(clamp(current + gain));
+    const raw = current + gain;
+    state.skills[key] = round2(clamp(raw));
+    // Whatever would push a skill past 100 accrues as mastery instead (never lost on a later dip).
+    if (raw > 100) state.mastery[key] = round2((state.mastery[key] ?? 0) + (raw - 100) * MASTERY_RATE);
   }
 }
 

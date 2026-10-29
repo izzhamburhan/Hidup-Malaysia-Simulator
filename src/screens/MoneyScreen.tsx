@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { STATUTORY_DISCLAIMER } from '../data/statutory';
+import { UNIT_TRUST } from '../data/lifestyle';
 import { formatRM, netWorth, totalDebt } from '../engine/core';
 import { expectedMonthlyNet, monthlyCommitments } from '../engine/economy';
 import { computePayslip } from '../engine/payroll';
@@ -55,8 +56,9 @@ function Overview() {
       <Card className="mt-2">
         <KeyValue label="EPF / KWSP (retirement, not spendable)" value={formatRM(f.epfBalance, 2)} strong />
         <KeyValue label="…of which employer contributions" value={formatRM(f.epfEmployerTotal, 2)} />
+        <KeyValue label={UNIT_TRUST.name} value={formatRM(f.unitTrust, 2)} />
         <KeyValue label="Net worth (incl. assets, minus debt)" value={formatRM(netWorth(state))} strong />
-        <Disclaimer>EPF is tracked separately and can't be spent in the game. Asset values are rough game estimates.</Disclaimer>
+        <Disclaimer>EPF is tracked separately and can't be spent in the game. The unit trust is fictional: withdraw to spend it, and its yearly dividend is a game rule, not a forecast. Asset values are rough game estimates.</Disclaimer>
       </Card>
 
       <SectionTitle>This month</SectionTitle>

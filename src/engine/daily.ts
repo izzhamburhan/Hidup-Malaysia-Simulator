@@ -16,6 +16,26 @@ import type { GameState } from './types';
 
 export const BASE_DAILY_BURN = 1900;
 
+/** The "broke" safety-net event: at least this many days between two of them. */
+export const BROKE_GAP_DAYS = 45;
+/** Skipped while the player earned something in the last this many days (a recovery is under way). */
+export const BROKE_RECOVERY_DAYS = 7;
+/** Skipped for this many days after family helped through the top-up event. */
+export const BROKE_AFTER_HELP_DAYS = 30;
+
+/** Whether the "broke" event should be queued at the start of today. Pure: reads the state only. */
+export function brokeEventDue(state: GameState): boolean {
+  const day = state.clock.day;
+  if (state.finance.cash >= 15) return false;
+  if (state.events.pending.some((p) => p.eventId === 'broke')) return false;
+  const lastBroke = state.events.cooldowns.broke;
+  if (lastBroke !== undefined && day - lastBroke < BROKE_GAP_DAYS) return false;
+  const lastHelp = state.events.cooldowns['family-topup'];
+  if (lastHelp !== undefined && day - lastHelp < BROKE_AFTER_HELP_DAYS) return false;
+  if (state.dayReports.some((r) => day - r.day <= BROKE_RECOVERY_DAYS && r.earned > 0)) return false;
+  return true;
+}
+
 export function processDayEnd(state: GameState): void {
   const day = state.clock.day;
 
@@ -142,10 +162,7 @@ export function processDayStart(state: GameState): void {
   if (isLastDayOfMonth(state, day)) runPayroll(state, day);
 
   // Safety net: when the wallet is empty, family, friends or gigs can help.
-  const lastBroke = state.events.cooldowns.broke;
-  if (state.finance.cash < 15 && (lastBroke === undefined || day - lastBroke >= 10) && !state.events.pending.some((p) => p.eventId === 'broke')) {
-    queueEvent(state, 'broke');
-  }
+  if (brokeEventDue(state)) queueEvent(state, 'broke');
 
   generateFeedPosts(state);
   processScheduledEvents(state);

@@ -2,7 +2,8 @@
 // the annual tax settlement. One list of commitments feeds both the monthly
 // processing and the UI preview, so what the player sees is what gets charged.
 
-import { gymById } from '../data/lifestyle';
+import { gymById, UNIT_TRUST } from '../data/lifestyle';
+import { randRange } from './rng';
 import { transportModeInfo } from '../data/vehicles';
 import { backgroundById } from '../data/backgrounds';
 import { dailyRate, hourlyRate, computePayslip, annualTax } from './payroll';
@@ -209,6 +210,14 @@ export function processNewYear(state: GameState): void {
     const dividend = round2(f.epfBalance * EPF_DIVIDEND_RATE);
     f.epfBalance = round2(f.epfBalance + dividend);
     log(state, 'money', `EPF dividend credited: ${formatRM(dividend)} (fictional ${(EPF_DIVIDEND_RATE * 100).toFixed(1)}% game rate).`);
+  }
+  if (f.unitTrust > 0) {
+    // Fictional unit trust: the yearly rate comes from the seeded generator inside a modest range.
+    // Only drawn when there is a balance, so players without one keep their random sequence.
+    const rate = Math.round(randRange(state, UNIT_TRUST.dividendMin, UNIT_TRUST.dividendMax) * 1000) / 1000;
+    const dividend = round2(f.unitTrust * rate);
+    f.unitTrust = round2(f.unitTrust + dividend);
+    log(state, 'money', `Unit trust dividend reinvested: ${formatRM(dividend)} (${(rate * 100).toFixed(1)}% this year, a fictional game estimate, not a forecast).`);
   }
   const ty = f.taxYear;
   if (ty.grossIncome > 0) {

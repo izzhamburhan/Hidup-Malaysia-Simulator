@@ -71,10 +71,24 @@ describe('save system', () => {
     delete old.character.gender;
     const look = old.character.appearance;
     const migrated = migrate(old);
-    expect(SAVE_VERSION).toBe(7);
-    expect(migrated.version).toBe(7);
+    expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.character.gender).toBeNull();
     expect(migrated.character.appearance).toEqual(look);
+  });
+
+  it('migrates a v7 save to v8 with an empty unit trust and no mastery yet', () => {
+    const old = JSON.parse(JSON.stringify(makeGame()));
+    old.version = 7;
+    delete old.finance.unitTrust;
+    delete old.mastery;
+    const cash = old.finance.cash;
+    const migrated = migrate(old);
+    expect(SAVE_VERSION).toBe(8);
+    expect(migrated.version).toBe(8);
+    expect(migrated.finance.unitTrust).toBe(0);
+    expect(migrated.finance.cash).toBe(cash);
+    expect(Object.keys(migrated.mastery).sort()).toEqual(Object.keys(migrated.skills).sort());
+    expect(Object.values(migrated.mastery).every((v) => v === 0)).toBe(true);
   });
 
   it('refuses saves from a newer version', () => {

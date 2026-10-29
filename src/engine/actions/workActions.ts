@@ -4,7 +4,7 @@ import { companyById } from '../../data/companies';
 import { courseById } from '../../data/courses';
 import { jobById } from '../../data/jobs';
 import { universityById } from '../../data/universities';
-import { addSkills, applyStats, clamp, formatRM, spend } from '../core';
+import { addSkills, applyStats, clamp, earn, formatRM, spend } from '../core';
 import { formatDuration, yearOf } from '../calendar';
 import {
   acceptOffer, applyForJob, isWorkday, jobEligibility, negotiateOffer, onLeave, overtime, resign, workShift,
@@ -13,9 +13,9 @@ import { attendClass, doAssignment, dropOut, enroll, isClassDay, isFinalSemester
 import { queueEvent } from '../events';
 import { commuteLeg, commuteMinutes } from '../living';
 import { computePayslip } from '../payroll';
-import { chance } from '../rng';
+import { chance, randInt } from '../rng';
 import { meetSomeone } from '../social';
-import type { GameState, SkillKey } from '../types';
+import type { GameState, SkillKey, TransportMode } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
 
 export const ANNUAL_LEAVE_DAYS = 14;
@@ -36,7 +36,59 @@ function shiftMinutes(s: GameState): number {
   return def.shiftHours * 60 + lunch + commuteMinutes(s) * 2;
 }
 
+/** Gig work: fictional net pay per hour (after fuel) by how the player gets around. Game estimates. */
+export const GIG_RATE_PER_HOUR: Partial<Record<TransportMode, number>> = { motorcycle: 12, car: 10, walk: 7, public: 6 };
+export const GIG_MAX_HOURS_PER_DAY = 6;
+
+function gigHoursToday(s: GameState): number {
+  return s.flags.gigDay === s.clock.day ? Number(s.flags.gigHours ?? 0) : 0;
+}
+
 export const workActions: ActionDef[] = [
+  {
+    id: 'gig-work',
+    category: 'work',
+    icon: '🛵',
+    title: (_s, p) => `Delivery gig (${p ?? 2}h)`,
+    description: (s) => {
+      const rate = GIG_RATE_PER_HOUR[s.transport.mode];
+      return rate
+        ? `Pick up and drop off orders around town for about ${formatRM(rate)} an hour after fuel (fictional game estimate). Any day, no boss, no payslip.`
+        : 'Pick up and drop off orders around town. Needs your own wheels, a bike, or a pair of legs.';
+    },
+    minutes: (_s, p) => Number(p ?? 2) * 60,
+    energy: (_s, p) => -7 * Number(p ?? 2),
+    contexts: ['commute'],
+    variants: () => [
+      { param: '2', label: '2h' },
+      { param: '4', label: '4h' },
+    ],
+    available: (s, p) => {
+      const hours = Number(p ?? 2);
+      if (!GIG_RATE_PER_HOUR[s.transport.mode]) return 'Gigs need your own wheels, a bike, or walking. Switch your commute mode first.';
+      if (!withinHours(s, 7, 22 - hours + 1)) return `Orders run ${hoursLabel(7, 22)}; a ${hours}h gig won't fit now.`;
+      if (s.education.status === 'studying' && isClassDay(s) && !s.education.attendedToday && withinHours(s, 0, 17)) {
+        return 'You have class today. Attend first, gig after.';
+      }
+      if (s.career.job?.schedule === 'fulltime' && isWorkday(s) && !onLeave(s) && withinHours(s, 0, 17)) {
+        return 'Your shift comes first. Gigs are for after work or days off.';
+      }
+      if (gigHoursToday(s) + hours > GIG_MAX_HOURS_PER_DAY) return 'You have done enough gig hours today. Rest up, the orders will be there tomorrow.';
+      return needEnergy(s, 10 + 7 * hours);
+    },
+    run: (s, p) => {
+      const hours = Number(p ?? 2);
+      const rate = GIG_RATE_PER_HOUR[s.transport.mode] ?? 0;
+      const pay = Math.round(rate * hours * (randInt(s, 85, 115) / 100));
+      earn(s, pay);
+      s.flags.gigDay = s.clock.day;
+      s.flags.gigHours = gigHoursToday(s) + hours;
+      applyStats(s, { energy: -7 * hours, stress: 0.8 * hours, happiness: -0.5 * hours });
+      if (s.transport.vehicleId) s.transport.vehicleCondition = Math.max(0, s.transport.vehicleCondition - 0.15 * hours);
+      if (s.transport.mode === 'walk') applyStats(s, { fitness: 0.3 * hours });
+      return [`${hours} hours of orders. ${formatRM(pay)} in your pocket, after fuel.`];
+    },
+  },
   {
     id: 'work-shift',
     category: 'work',

@@ -13,6 +13,7 @@ import { breakUp, deepTalk, meetSomeone } from '../engine/social';
 import { adoptPet } from '../engine/pet';
 import { PET } from './pets';
 import { chance, pick, randInt } from '../engine/rng';
+import { backgroundById } from './backgrounds';
 import { companies } from './companies';
 import { jobById, jobs } from './jobs';
 import { housingById } from './housing';
@@ -892,7 +893,7 @@ export const events: GameEventDef[] = [
     category: 'commute',
     trigger: 'random',
     contexts: ['commute'],
-    cooldownDays: 8,
+    cooldownDays: 30,
     when: (s) => s.transport.mode === 'public',
     text: '"We apologise for the inconvenience. Due to a technical issue, services are delayed." The platform fills up like a sardine tin.',
     choices: [
@@ -1073,7 +1074,7 @@ export const events: GameEventDef[] = [
     category: 'opportunity',
     trigger: 'random',
     contexts: ['work', 'any'],
-    cooldownDays: 60,
+    cooldownDays: 120,
     weight: 0.7,
     when: (s) => hasJob(s) && s.career.experienceDays >= 60,
     text: '"Hi! I came across your profile and think you\'d be a GREAT fit for an exciting opportunity." Could be real. Let\'s find out.',
@@ -1255,7 +1256,7 @@ export const events: GameEventDef[] = [
     category: 'money',
     trigger: 'random',
     contexts: ['night', 'home', 'shopping'],
-    cooldownDays: 21,
+    cooldownDays: 60,
     text: '12:00 AM. MEGA FLASH SALE. "Up to 90% off!" The cart has 11 items you didn\'t know you needed an hour ago.',
     choices: [
       { id: 'checkout', label: 'Check out everything', cost: 280, outcomes: [{ text: 'Dopamine hit! Seven parcels are on their way. You\'ll forget what three of them are.', effect: { stats: { happiness: 6 } } }] },
@@ -1294,7 +1295,7 @@ export const events: GameEventDef[] = [
     category: 'money',
     trigger: 'random',
     contexts: ['any'],
-    cooldownDays: 30,
+    cooldownDays: 90,
     text: 'An SMS: "Your parcel is held at customs. Pay RM2.50 handling fee to release: hxxp://parcel-myy-release.co". Then a call from an "officer" who knows your full name.',
     choices: [
       { id: 'report', label: 'Ignore, block, and report', outcomes: [{ text: 'Blocked and reported. You warn the family group chat too.', effect: { family: 2, community: 2, stats: { stress: -1 } } }] },
@@ -1376,6 +1377,67 @@ export const events: GameEventDef[] = [
       { id: 'ignore', label: 'Ignore, the T&C has 14 pages', outcomes: [{ text: 'You close the app. Your money stays liquid (and spendable).', effect: {} }] },
     ],
   },
+  {
+    id: 'family-topup',
+    title: 'Mak can tell something is off',
+    icon: '💌',
+    category: 'money',
+    trigger: 'random',
+    contexts: ['any'],
+    cooldownDays: 90,
+    weight: 6,
+    when: (s) => {
+      const overdue = s.finance.debts.filter((d) => d.kind === 'overdue').reduce((sum, d) => sum + d.balance, 0);
+      const brokeLast = s.events.cooldowns.broke;
+      const supported = backgroundById(s.character.backgroundId).familyAllowance > 0 && (isStudying(s) || s.housing.optionId === 'family') && !hasJob(s);
+      return s.finance.cash < 50 && overdue >= 100 && !supported && (brokeLast === undefined || s.clock.day - brokeLast >= 14);
+    },
+    text: 'Mak calls "just to ask if you ate". Then, gently: "Money tight, is it? Abah and I put a little aside. Take it, we don\'t need to talk about it. Well, maybe a little."',
+    choices: [
+      {
+        id: 'gift',
+        label: 'Accept RM300 and listen to the advice',
+        hint: 'Family +, stress -. Pride takes a small hit, and you will hear about eating properly.',
+        outcomes: [
+          {
+            text: 'RM300 lands in ten minutes. The call lasts forty. You promise to eat vegetables and to visit soon.',
+            effect: { cash: 300, family: 3, stats: { stress: -6, happiness: -2 }, minutes: 30 },
+            apply: (s) => sawFamily(s),
+          },
+        ],
+      },
+      {
+        id: 'loan',
+        label: 'Take RM400 as a loan and repay RM50 a month',
+        hint: 'Family +. You keep your pride, but it is a small monthly commitment.',
+        outcomes: [
+          {
+            text: '"Pay back when you can, no rush." You set RM50 a month anyway. Abah approves of the spreadsheet.',
+            effect: {
+              cash: 400,
+              family: 2,
+              stats: { stress: -4 },
+              addDebt: { kind: 'family', label: 'Borrowed from Mak and Abah', amount: 400, monthlyPayment: 50, annualRate: 0 },
+              minutes: 30,
+            },
+            apply: (s) => sawFamily(s),
+          },
+        ],
+      },
+      {
+        id: 'decline',
+        label: 'Thank Mak and say you will manage',
+        hint: 'Free. Pride intact, wallet still thin.',
+        outcomes: [
+          {
+            text: '"Okay, but the offer stands." You hang up feeling proud and a little hungry. Maybe a delivery gig tomorrow.',
+            effect: { family: 1, stats: { happiness: 1, stress: 2 }, minutes: 15 },
+            apply: (s) => sawFamily(s),
+          },
+        ],
+      },
+    ],
+  },
 
   // ===================== Family =====================
   {
@@ -1385,7 +1447,7 @@ export const events: GameEventDef[] = [
     category: 'family',
     trigger: 'random',
     contexts: ['family', 'home', 'any'],
-    cooldownDays: 45,
+    cooldownDays: 90,
     text: 'The family group chat: "Kenduri this Saturday at Tok\'s house in {home}! Everyone come, need help with the cooking." 23 relatives have replied with stickers.',
     choices: [
       { id: 'help', label: 'Go early and help cook', cost: 60, outcomes: [{ text: 'You stir a giant pot of rendang for three hours. The aunties approve of you now.', effect: { family: 10, skills: { cooking: 2 }, stats: { energy: -14, happiness: 6, satiety: 30 }, minutes: 300 }, apply: (s) => sawFamily(s) }] },
@@ -1473,6 +1535,72 @@ export const events: GameEventDef[] = [
       { id: 'call', label: 'Call and convince him to go himself', outcomes: [{ weight: 1, text: 'He agrees. Eventually.', effect: { family: 2 } }, { weight: 1, text: '"Nothing lah!" He doesn\'t go. You worry.', effect: { stats: { stress: 5 } } }] },
     ],
   },
+  // Family duties: kind requests for money, only for players who hold a job and have some to spare.
+  // Every one has a free choice. Amounts are fictional game estimates.
+  {
+    id: 'family-clinic-bill',
+    title: 'Mak\'s clinic bill',
+    icon: '🏥',
+    category: 'family',
+    trigger: 'random',
+    contexts: ['family', 'any'],
+    cooldownDays: 150,
+    when: (s) => hasJob(s) && s.finance.cash >= 1000,
+    text: 'Mak mentions, very casually, that her knee clinic visit came to RM450 and she "will manage". Abah is quietly doing the sums on his pension.',
+    choices: [
+      { id: 'full', label: 'Cover the full RM450', cost: 450, outcomes: [{ text: '"Eh, no need lah..." she says, then keeps your transfer. Abah squeezes your shoulder.', effect: { family: 10, stats: { happiness: 4, stress: -2 } }, apply: (s) => { helpParents(s, 450); sawFamily(s); } }] },
+      { id: 'share', label: 'Pay RM200 and share the rest with Abang and Kak Long', cost: 200, outcomes: [{ text: 'The sibling chat is busy for an hour, then the bill is sorted. Teamwork.', effect: { family: 6 }, apply: (s) => { helpParents(s, 200); sawFamily(s); } }] },
+      { id: 'accompany', label: 'Take her to the next appointment instead', outcomes: [{ text: 'You sit in the waiting room, listen to her stories about the neighbours, and carry her bag. She enjoys it more than the money.', effect: { family: 5, stats: { energy: -6, happiness: 2 }, minutes: 180 }, apply: (s) => sawFamily(s) }] },
+    ],
+  },
+  {
+    id: 'sibling-tuition',
+    title: 'Adik\'s semester fees',
+    icon: '📚',
+    category: 'family',
+    trigger: 'random',
+    contexts: ['family', 'any'],
+    cooldownDays: 180,
+    when: (s) => hasJob(s) && s.finance.cash >= 1500,
+    text: 'Your younger sibling is in college and the semester fees are RM900 more than the loan covers. They have not asked. Mak mentions it anyway.',
+    choices: [
+      { id: 'full', label: 'Cover the RM900', cost: 900, outcomes: [{ text: 'They promise to pay you back "once I get a job". You both know you will say no.', effect: { family: 12, stats: { happiness: 5 } }, apply: (s) => { helpParents(s, 900); sawFamily(s); } }] },
+      { id: 'part', label: 'Send RM400 and help them find a bursary', cost: 400, outcomes: [{ text: 'You fill in forms together until midnight. The bursary reply comes later. The effort counts.', effect: { family: 7, skills: { communication: 1 }, stats: { energy: -4 } }, apply: (s) => { helpParents(s, 400); sawFamily(s); } }] },
+      { id: 'guide', label: 'Help them budget and look for part-time work', outcomes: [{ text: 'A spreadsheet, a lot of teh tarik and one clear plan. They leave looking more confident than before.', effect: { family: 5, skills: { communication: 1 }, stats: { energy: -5 }, minutes: 120 }, apply: (s) => sawFamily(s) }] },
+    ],
+  },
+  {
+    id: 'sibling-wedding-fund',
+    title: 'Kakak\'s wedding fund',
+    icon: '💐',
+    category: 'family',
+    trigger: 'random',
+    contexts: ['family', 'any'],
+    cooldownDays: 200,
+    when: (s) => hasJob(s) && s.finance.cash >= 1200 && s.character.startAge + s.clock.day / 365 >= 24,
+    text: 'Your older sister is getting married and the family is pooling money for the dais, the catering and the hantaran. Everyone is asked to contribute what they can.',
+    choices: [
+      { id: 'generous', label: 'Contribute RM500', cost: 500, outcomes: [{ text: 'Your name goes on the family list. Mak looks very proud.', effect: { family: 10, stats: { happiness: 4 } }, apply: (s) => { helpParents(s, 500); sawFamily(s); } }] },
+      { id: 'usual', label: 'Contribute RM200', cost: 200, outcomes: [{ text: 'A fair amount, gratefully received. Everyone else gave about the same.', effect: { family: 6 }, apply: (s) => { helpParents(s, 200); sawFamily(s); } }] },
+      { id: 'hands', label: 'Give your time: help with the preparations', outcomes: [{ text: 'You fold hundreds of door-gift boxes with the aunties. Your back disagrees, your heart does not.', effect: { family: 8, stats: { energy: -14, happiness: 3 }, minutes: 300 }, apply: (s) => sawFamily(s) }] },
+    ],
+  },
+  {
+    id: 'parents-fridge',
+    title: 'The old fridge gives up',
+    icon: '🧊',
+    category: 'family',
+    trigger: 'random',
+    contexts: ['family', 'home', 'any'],
+    cooldownDays: 240,
+    when: (s) => hasJob(s) && s.finance.cash >= 1500,
+    text: 'The fridge at home has made a strange noise for weeks and now it is warm inside. Mak is cooking in small portions "so nothing is wasted". A new one is about RM1,200.',
+    choices: [
+      { id: 'new', label: 'Buy them a new one (RM1,200)', cost: 1200, outcomes: [{ text: 'It arrives with a sticker on the door that Abah refuses to peel off. Mak fills it with kuih immediately.', effect: { family: 12, stats: { happiness: 6, stress: -3 } }, apply: (s) => { helpParents(s, 1200); sawFamily(s); } }] },
+      { id: 'secondhand', label: 'Find a good second-hand one (RM450)', cost: 450, outcomes: [{ text: 'A neighbour\'s cousin knows a seller. It hums quietly and works well. Everyone is happy.', effect: { family: 7, stats: { happiness: 3 } }, apply: (s) => { helpParents(s, 450); sawFamily(s); } }] },
+      { id: 'repair', label: 'Call a repairman and haggle with him for them', outcomes: [{ text: 'You spend an afternoon on the phone and in the kitchen. The repairman gives you a small discount and a long lecture. It runs again.', effect: { family: 5, stats: { energy: -8 }, minutes: 180 }, apply: (s) => sawFamily(s) }] },
+    ],
+  },
 
   // ===================== Social =====================
   {
@@ -1498,7 +1626,7 @@ export const events: GameEventDef[] = [
     category: 'social',
     trigger: 'random',
     contexts: ['night', 'social', 'home'],
-    cooldownDays: 7,
+    cooldownDays: 45,
     text: '{friend}: "Mamak? 10 PM. Same place." It\'s already 9:45 PM.',
     choices: [
       { id: 'go', label: 'Go', cost: 15, outcomes: [{ text: 'Roti tisu, Milo ais, and a two-hour debate about nothing. Perfect.', effect: { friends: 5, stats: { happiness: 6, stress: -4, satiety: 20, energy: -6 }, minutes: 120 }, apply: (s) => sawFriends(s) }] },
@@ -1513,7 +1641,7 @@ export const events: GameEventDef[] = [
     category: 'social',
     trigger: 'random',
     contexts: ['social', 'any'],
-    cooldownDays: 30,
+    cooldownDays: 120,
     text: 'It\'s {friend}\'s birthday! The group is planning a surprise dinner with a cake that has a slightly unflattering photo of them on it.',
     choices: [
       { id: 'join', label: 'Join and chip in for the gift', cost: 70, outcomes: [{ text: 'The surprise works. {friend} cries, laughs, then eats the cake with their own face on it.', effect: { friends: 7, stats: { happiness: 6, satiety: 25 }, minutes: 180 }, apply: (s) => sawFriends(s) }] },
@@ -1749,7 +1877,7 @@ export const events: GameEventDef[] = [
     category: 'housing',
     trigger: 'random',
     contexts: ['home'],
-    cooldownDays: 45,
+    cooldownDays: 90,
     when: hasHousemates,
     text: 'Your housemate {friend} hasn\'t paid their share of the bills for two months. The electricity company doesn\'t care about excuses.',
     choices: [
@@ -1797,7 +1925,7 @@ export const events: GameEventDef[] = [
     category: 'housing',
     trigger: 'random',
     contexts: ['home'],
-    cooldownDays: 60,
+    cooldownDays: 120,
     text: 'Scheduled water disruption for 24 hours in your area. You find out after you\'ve applied shampoo.',
     choices: [
       { id: 'bottled', label: 'Buy bottled water', cost: 20, outcomes: [{ text: 'You rinse with mineral water. Fancy, in a sad way.', effect: { stats: { stress: 2 } } }] },
@@ -1812,7 +1940,7 @@ export const events: GameEventDef[] = [
     category: 'housing',
     trigger: 'random',
     contexts: ['home', 'night'],
-    cooldownDays: 30,
+    cooldownDays: 120,
     text: 'It\'s 1 AM. Your neighbour is renovating? Moving furniture? Bowling? The thumps continue.',
     choices: [
       { id: 'talk', label: 'Knock and ask nicely', outcomes: [{ weight: 2, text: 'They apologise. They were assembling a wardrobe for their kid. It stops.', effect: { community: 2, stats: { stress: -2 } } }, { weight: 1, text: 'They shrug. It continues for another hour.', effect: { stats: { stress: 4, energy: -5 } } }] },
@@ -1846,7 +1974,7 @@ export const events: GameEventDef[] = [
     category: 'civic',
     trigger: 'random',
     contexts: ['home', 'any'],
-    cooldownDays: 45,
+    cooldownDays: 120,
     text: 'The residents\' association is organising a gotong-royong this Saturday morning: clear drains, cut grass, then free nasi lemak.',
     choices: [
       { id: 'join', label: 'Join in', outcomes: [{ text: 'Three hours of honest work, a sunburnt neck, and the best nasi lemak of your life.', effect: { community: 6, friends: 2, stats: { fitness: 2, energy: -12, happiness: 5, satiety: 25 }, minutes: 180 }, apply: (s) => communityAct(s) }] },
@@ -1892,7 +2020,7 @@ export const events: GameEventDef[] = [
     category: 'civic',
     trigger: 'random',
     contexts: ['commute', 'any'],
-    cooldownDays: 60,
+    cooldownDays: 150,
     text: 'There\'s a pothole on your road so deep it has its own ecosystem. Everyone swerves. Nobody reports it.',
     choices: [
       { id: 'report', label: 'Report it via the council\'s complaint app', outcomes: [{ text: 'Two weeks later, it\'s patched. You feel like a superhero.', effect: { community: 4, minutes: 10 }, apply: (s) => communityAct(s) }] },
@@ -1978,7 +2106,7 @@ export const events: GameEventDef[] = [
     trigger: 'random',
     contexts: ['home', 'commute'],
     weight: 3,
-    cooldownDays: 20,
+    cooldownDays: 150,
     when: (s) => !s.pet,
     text: 'A chubby ginger cat follows you all the way home and sits at your door, meowing like he pays rent. The neighbours call him Oyen.',
     choices: [
@@ -2062,7 +2190,7 @@ export const events: GameEventDef[] = [
     category: 'opportunity',
     trigger: 'random',
     contexts: ['any', 'home'],
-    cooldownDays: 30,
+    cooldownDays: 90,
     when: (s) => s.skills.tech >= 25 || s.skills.creative >= 25,
     text: (s) =>
       s.skills.tech >= s.skills.creative
@@ -2177,7 +2305,7 @@ export const events: GameEventDef[] = [
     category: 'world',
     trigger: 'random',
     contexts: ['any'],
-    cooldownDays: 45,
+    cooldownDays: 90,
     text: '37 degrees. The air feels like a hairdryer. Even the cats are lying flat.',
     choices: [
       { id: 'hydrate', label: 'Stay hydrated, cold drinks', cost: 10, outcomes: [{ text: 'Air bandung ais saves the day.', effect: { stats: { health: 2, happiness: 2 } } }] },
