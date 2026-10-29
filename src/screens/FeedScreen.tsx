@@ -40,16 +40,16 @@ export function FeedScreen() {
       <ChatSheet thread={open} onClose={() => setOpen(null)} />
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl font-black">Kecoh 📣</h2>
-        <Pill tone="gold">Fictional feed</Pill>
+        <Pill tone="gold">{t('feed.fictional')}</Pill>
       </div>
-      <p className="text-xs text-ink-soft">Posts from fictional friends and the fictional town of Seri Harapan. No real accounts are connected.</p>
+      <p className="text-xs text-ink-soft">{t('feed.note')}</p>
       {scroll && (
         <div className="mt-3">
           <ActionCard view={scroll} compact />
         </div>
       )}
       <div className="mt-3 space-y-2">
-        {state.feed.length === 0 && <EmptyState icon="📭" title="Quiet timeline">Come back tomorrow.</EmptyState>}
+        {state.feed.length === 0 && <EmptyState icon="📭" title={t('feed.quiet')}>{t('feed.quiet.hint')}</EmptyState>}
         {state.feed.map((p) => (
           <Card key={p.id} className={cx('p-3', p.kind === 'player' && 'border-teal/40 bg-teal-soft/40')}>
             <div className="flex items-start gap-3">
@@ -66,7 +66,7 @@ export function FeedScreen() {
                 <div className="flex flex-wrap items-baseline gap-x-1.5 text-sm">
                   <span className="font-bold">{p.author}</span>
                   <span className="text-xs text-ink-soft">{p.handle}</span>
-                  <span className="text-xs text-ink-soft">· {p.day === state.clock.day ? formatTime(p.minute) : `day ${p.day + 1}`}</span>
+                  <span className="text-xs text-ink-soft">· {p.day === state.clock.day ? formatTime(p.minute) : t('feed.dayN', { n: p.day + 1 })}</span>
                 </div>
                 <p className="mt-0.5 text-sm leading-snug">{p.text}</p>
                 <div className="mt-2 flex items-center gap-3">
@@ -89,7 +89,7 @@ export function FeedScreen() {
                         p.invite.used ? 'bg-paper-2 text-ink-soft' : 'bg-teal text-white hover:bg-teal-2 disabled:bg-teal/40',
                       )}
                     >
-                      {p.invite.used ? 'Replied' : p.invite.label}
+                      {p.invite.used ? t('feed.replied') : p.invite.label}
                     </button>
                   )}
                 </div>
@@ -98,7 +98,7 @@ export function FeedScreen() {
           </Card>
         ))}
       </div>
-      <Disclaimer>Comparison anxiety is a toggleable mechanic in Settings. Everyone's feed is a highlight reel.</Disclaimer>
+      <Disclaimer>{t('feed.disclaimer')}</Disclaimer>
     </div>
   );
 }

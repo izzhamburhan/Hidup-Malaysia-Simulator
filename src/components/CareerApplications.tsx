@@ -6,6 +6,8 @@ import { formatRM } from '../engine/core';
 import type { ApplicationStatus, JobApplication } from '../engine/types';
 import { viewAction } from '../engine/simulationEngine';
 import { useLoadedGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
+import type { StringKey } from '../i18n';
 import { ActionCard } from './ActionCard';
 import { OrgBadge } from './OrgBadge';
 import { Button, Card, Modal, Pill, SectionTitle, cx } from './ui';
@@ -17,10 +19,20 @@ export function hasLiveApplications(apps: JobApplication[]): boolean {
   return apps.some((a) => a.status === 'offer' || a.status === 'interview');
 }
 
-function salaryLabel(a: JobApplication): string {
+function salaryLabel(a: JobApplication, t: (key: StringKey) => string): string {
   const perShift = jobById(a.jobId)?.schedule === 'parttime';
-  return `${formatRM(a.offerSalary ?? 0)}${perShift ? '/shift' : '/mo'}`;
+  return `${formatRM(a.offerSalary ?? 0)}${perShift ? t('offers.perShift') : t('offers.perMo')}`;
 }
+
+const STATUS_KEY: Record<ApplicationStatus, StringKey> = {
+  pending: 'offers.status.pending',
+  interview: 'offers.status.interview',
+  offer: 'offers.status.offer',
+  rejected: 'offers.status.rejected',
+  accepted: 'offers.status.accepted',
+  declined: 'offers.status.declined',
+  expired: 'offers.status.expired',
+};
 
 function statusTone(s: ApplicationStatus) {
   return s === 'offer' ? 'green' : s === 'interview' ? 'blue' : s === 'rejected' || s === 'expired' ? 'red' : 'neutral';
@@ -29,6 +41,7 @@ function statusTone(s: ApplicationStatus) {
 /** Applications on Life > Career: live ones first, offers as compact rows, dead ones under "Past (n)". */
 export function CareerApplications() {
   const { state, request } = useLoadedGame();
+  const t = useT();
   const [respondId, setRespondId] = useState<string | null>(null);
   const [showPast, setShowPast] = useState(false);
   const apps = state.career.applications.slice(0, 10);
@@ -48,7 +61,7 @@ export function CareerApplications() {
 
   return (
     <>
-      <SectionTitle>Applications</SectionTitle>
+      <SectionTitle>{t('offers.title')}</SectionTitle>
       <div className="space-y-2">
         {live.map((a) =>
           a.status === 'offer' ? (
@@ -59,12 +72,12 @@ export function CareerApplications() {
                   <div className="truncate text-sm font-semibold">{jobById(a.jobId)?.title}</div>
                   <div className="truncate text-xs text-ink-soft">{companyById(a.companyId)?.name}</div>
                   <div className="mt-0.5 flex flex-wrap items-center gap-1">
-                    <Pill tone="green">Offer</Pill>
-                    <span className="text-xs font-bold tabular-nums">{salaryLabel(a)}</span>
+                    <Pill tone="green">{t('offers.status.offer')}</Pill>
+                    <span className="text-xs font-bold tabular-nums">{salaryLabel(a, t)}</span>
                   </div>
                 </div>
-                <Button className="hit-44 h-8 shrink-0 px-3 text-[13px]" onClick={() => setRespondId(a.id)} aria-label={`Respond to offer from ${companyById(a.companyId)?.name ?? 'employer'}`}>
-                  Respond
+                <Button className="hit-44 h-8 shrink-0 px-3 text-[13px]" onClick={() => setRespondId(a.id)} aria-label={t('offers.respondAria', { name: companyById(a.companyId)?.name ?? t('offers.employer') })}>
+                  {t('offers.respond')}
                   <ChevronRight size={16} aria-hidden />
                 </Button>
               </div>
@@ -76,9 +89,9 @@ export function CareerApplications() {
                   <div className="truncate text-sm font-semibold">{jobById(a.jobId)?.title}</div>
                   <div className="truncate text-xs text-ink-soft">{companyById(a.companyId)?.name}</div>
                 </div>
-                <Pill tone={statusTone(a.status)}>{a.status}</Pill>
+                <Pill tone={statusTone(a.status)}>{t(STATUS_KEY[a.status])}</Pill>
               </div>
-              {a.status === 'pending' && <div className="mt-1 text-xs text-ink-soft">Reply expected around day {a.respondDay + 1}.</div>}
+              {a.status === 'pending' && <div className="mt-1 text-xs text-ink-soft">{t('offers.pending', { n: a.respondDay + 1 })}</div>}
               {a.status === 'interview' && <InterviewAttend id={a.id} day={(a.interviewDay ?? 0) + 1} />}
             </Card>
           ),
@@ -94,7 +107,7 @@ export function CareerApplications() {
             aria-controls="past-applications"
             className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-2 text-sm font-semibold text-ink-soft hover:bg-paper-2"
           >
-            <span>Past ({past.length})</span>
+            <span>{t('offers.past', { n: past.length })}</span>
             <ChevronDown size={16} aria-hidden className={cx('transition-transform', showPast && 'rotate-180')} />
           </button>
           {showPast && (
@@ -106,7 +119,7 @@ export function CareerApplications() {
                       <div className="truncate text-sm font-semibold">{jobById(a.jobId)?.title}</div>
                       <div className="truncate text-xs text-ink-soft">{companyById(a.companyId)?.name}</div>
                     </div>
-                    <Pill tone={statusTone(a.status)}>{a.status}</Pill>
+                    <Pill tone={statusTone(a.status)}>{t(STATUS_KEY[a.status])}</Pill>
                   </div>
                 </Card>
               ))}
@@ -118,7 +131,7 @@ export function CareerApplications() {
       <Modal
         open={!!responding}
         onClose={() => setRespondId(null)}
-        title="Respond to offer"
+        title={t('offers.sheet')}
       >
         {responding && (
           <div>
@@ -129,14 +142,14 @@ export function CareerApplications() {
                 <div className="text-xs text-ink-soft">{companyById(responding.companyId)?.name}</div>
                 <div className="mt-0.5 text-sm">
                   <b>{formatRM(responding.offerSalary ?? 0)}</b>
-                  {jobById(responding.jobId)?.schedule === 'parttime' ? ' per shift' : ' per month (gross)'}
+                  {jobById(responding.jobId)?.schedule === 'parttime' ? t('offers.perShiftLong') : t('offers.perMonthGross')}
                 </div>
               </div>
             </div>
             <div className="mt-4 grid gap-2">
-              <SheetAction id="accept-offer" param={responding.id} label="Accept offer" variant="primary" onPick={respond} />
-              <SheetAction id="negotiate-offer" param={responding.id} label="Negotiate salary" variant="secondary" onPick={respond} />
-              <SheetAction id="decline-offer" param={responding.id} label="Decline offer" variant="secondary" onPick={respond} />
+              <SheetAction id="accept-offer" param={responding.id} label={t('offers.accept')} variant="primary" onPick={respond} />
+              <SheetAction id="negotiate-offer" param={responding.id} label={t('offers.negotiate')} variant="secondary" onPick={respond} />
+              <SheetAction id="decline-offer" param={responding.id} label={t('offers.decline')} variant="secondary" onPick={respond} />
             </div>
           </div>
         )}
@@ -147,11 +160,12 @@ export function CareerApplications() {
 
 function InterviewAttend({ id, day }: { id: string; day: number }) {
   const { state } = useLoadedGame();
+  const t = useT();
   const view = viewAction(state, 'attend-interview', id);
   if (!view) return null;
   return (
     <div className="mt-2">
-      <ActionCard view={view} label={`Attend interview (day ${day})`} />
+      <ActionCard view={view} label={t('offers.attend', { n: day })} />
     </div>
   );
 }

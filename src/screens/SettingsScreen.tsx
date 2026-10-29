@@ -28,35 +28,35 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
     a.download = `hidup-malaysia-${state.character.name.replace(/\W+/g, '-').toLowerCase()}-day${state.clock.day + 1}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setMessage('Backup downloaded.');
+    setMessage(t('settings.backupDone'));
   };
 
   return (
     <div>
-      <SectionTitle>Save</SectionTitle>
+      <SectionTitle>{t('settings.save')}</SectionTitle>
       <Card>
-        <KeyValue label="Character" value={`${state.character.name} (${state.mode})`} />
-        <KeyValue label="Save version" value={state.version} />
-        <KeyValue label="Last autosave" value={saveError ? <span className="text-hibiscus">Failed — storage unavailable</span> : lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString() : '—'} />
+        <KeyValue label={t('settings.character')} value={`${state.character.name} (${state.mode})`} />
+        <KeyValue label={t('settings.saveVersion')} value={state.version} />
+        <KeyValue label={t('settings.lastSave')} value={saveError ? <span className="text-hibiscus">{t('settings.saveFailed')}</span> : lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString() : '—'} />
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Button variant="secondary" onClick={download}>
-            <Download size={16} /> Export backup
+            <Download size={16} /> {t('settings.export')}
           </Button>
           <Button variant="secondary" onClick={onExit}>
-            Main menu
+            {t('menu.main')}
           </Button>
         </div>
-        <Disclaimer>Saves live only in this browser (LocalStorage). Nothing is uploaded.</Disclaimer>
+        <Disclaimer>{t('settings.local')}</Disclaimer>
       </Card>
 
-      <SectionTitle>Import a backup</SectionTitle>
+      <SectionTitle>{t('settings.import.title')}</SectionTitle>
       <Card>
         <textarea
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
-          placeholder="Paste exported save JSON here"
+          placeholder={t('settings.import.placeholder')}
           className="h-24 w-full rounded-xl border border-ink/15 bg-white p-2 font-mono text-xs"
-          aria-label="Save JSON"
+          aria-label={t('settings.import.aria')}
         />
         <Button
           variant="secondary"
@@ -64,11 +64,11 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
           disabled={!importText.trim()}
           onClick={() => {
             const err = importSave(importText);
-            setMessage(err ?? 'Backup imported.');
+            setMessage(err ?? t('settings.imported'));
             if (!err) setImportText('');
           }}
         >
-          <Upload size={16} /> Import (replaces current life)
+          <Upload size={16} /> {t('settings.import.btn')}
         </Button>
       </Card>
 
@@ -101,8 +101,8 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
           <p className="mt-1 text-xs text-ink-soft">{t('settings.language.hint')}</p>
         </div>
         <Toggle
-          label="Comparison anxiety"
-          hint="Scrolling the feed while unhappy can raise stress."
+          label={t('settings.comparison')}
+          hint={t('settings.comparison.hint')}
           checked={state.flags.comparisonAnxiety !== false}
           onChange={(v) => interact('setting', 'comparisonAnxiety', v)}
         />
@@ -110,37 +110,36 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
         <Toggle label={t('settings.sound')} hint={t('settings.sound.hint')} checked={settings.sound} onChange={(v) => setSettings({ sound: v })} />
         <Toggle label={t('settings.vibration')} hint={t('settings.vibration.hint')} checked={settings.vibration} onChange={(v) => setSettings({ vibration: v })} />
         <Toggle label={t('settings.motion')} hint={t('settings.motion.hint')} checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
-        <Toggle label="Show 'How to play' again" hint="Replays the intro next time you open the game." checked={!settings.tutorialSeen} onChange={(v) => setSettings({ tutorialSeen: !v })} />
+        <Toggle label={t('settings.tutorial')} hint={t('settings.tutorial.hint')} checked={!settings.tutorialSeen} onChange={(v) => setSettings({ tutorialSeen: !v })} />
       </Card>
 
-      <SectionTitle>Privacy</SectionTitle>
+      <SectionTitle>{t('settings.privacy')}</SectionTitle>
       <Card className="space-y-3">
         {analyticsConfigured() && (
           <Toggle
-            label="Share anonymous usage stats"
-            hint="Cookie-free counts of visits and features used. Never your name or save."
+            label={t('settings.analytics')}
+            hint={t('settings.analytics.hint')}
             checked={!settings.analyticsOptOut}
             onChange={(v) => setSettings({ analyticsOptOut: !v })}
           />
         )}
         <Button variant="secondary" className="w-full" onClick={() => setPrivacy(true)}>
-          Read the privacy note
+          {t('settings.privacy.read')}
         </Button>
       </Card>
 
-      <SectionTitle>Credits</SectionTitle>
+      <SectionTitle>{t('settings.credits')}</SectionTitle>
       <Card className="mb-3 space-y-1 text-xs text-ink-soft">
         <p>
-          <span className="font-pixel text-base font-bold text-ink">Pixelify Sans</span> is the pixel display font for titles (numbers stay in a plain font so every digit is unambiguous). Copyright 2021 The Pixelify Sans Project Authors, used under the SIL Open Font
-          License 1.1.{' '}
+          <span className="font-pixel text-base font-bold text-ink">Pixelify Sans</span> {t('settings.credits.font')}{' '}
           <a href="./fonts/PixelifySans-OFL.txt" target="_blank" rel="noreferrer" className="font-semibold text-teal underline">
-            Read the licence
+            {t('settings.credits.licence')}
           </a>
           .
         </p>
       </Card>
       <Card className="space-y-2 text-xs text-ink-soft">
-        <p>State and federal territory flags are from Wikimedia Commons, shown for identification only. No state government is connected with this game.</p>
+        <p>{t('settings.credits.flags')}</p>
         <ul className="space-y-1">
           {STATE_FLAGS.map((f) => (
             <li key={f.state} className="flex items-center gap-2">
@@ -152,13 +151,13 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
                 {' · '}
                 {f.license === 'CC BY-SA 3.0' ? (
                   <>
-                    by {f.author},{' '}
+                    {t('settings.credits.by', { author: f.author ?? '' })}{' '}
                     <a href={CC_BY_SA_3} target="_blank" rel="noreferrer" className="underline">
                       CC BY-SA 3.0
                     </a>
                   </>
                 ) : (
-                  'Public domain'
+                  t('settings.credits.pd')
                 )}
               </span>
             </li>
@@ -166,29 +165,27 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
         </ul>
       </Card>
 
-      <SectionTitle>Danger zone</SectionTitle>
+      <SectionTitle>{t('settings.danger')}</SectionTitle>
       <Button variant="danger" className="w-full" onClick={() => setConfirmReset(true)}>
-        <Trash2 size={16} /> Reset all game data
+        <Trash2 size={16} /> {t('settings.reset')}
       </Button>
       {message && <p className="mt-3 text-center text-sm text-ink-soft">{message}</p>}
 
       <PrivacyNotice open={privacy} onClose={() => setPrivacy(false)} />
 
-      <SectionTitle>About</SectionTitle>
+      <SectionTitle>{t('settings.about')}</SectionTitle>
       <Card className="text-xs leading-relaxed text-ink-soft">
-        HIDUP MALAYSIA is a fictional life simulator. Real universities and companies appear only as names and do not imply vacancies, fees or rankings. Salaries, prices, rents and calories are game
-        estimates. Payroll is a simplified simulation based on published KWSP, PERKESO and LHDN rates — not an official calculation. Holiday dates use a simulated calendar. Political parties and the town of
-        Seri Harapan are fictional.
+        {t('settings.about.body')}
       </Card>
 
       <Modal
         open={confirmReset}
         onClose={() => setConfirmReset(false)}
-        title="Delete everything?"
+        title={t('settings.reset.title')}
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirmReset(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="danger"
@@ -197,12 +194,12 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
                 onExit();
               }}
             >
-              Delete
+              {t('common.delete')}
             </Button>
           </>
         }
       >
-        <p className="text-sm text-ink-soft">This permanently deletes {state.character.name}'s save and your settings from this browser. Export a backup first if you might want it back.</p>
+        <p className="text-sm text-ink-soft">{t('settings.reset.body', { name: state.character.name })}</p>
       </Modal>
     </div>
   );

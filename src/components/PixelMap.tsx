@@ -6,7 +6,9 @@ import { formatRM } from '../engine/core';
 import { viewAction } from '../engine/simulationEngine';
 import { useLoadedGame } from '../hooks/useGame';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { borderEdges, costNote, glyphSlots, kampungRoute, markerSummary, markersFor, payNote, tileCentroid, type GlyphKind, type MarkerKind } from './map/mapModel';
+import { useT } from '../hooks/useT';
+import type { StringKey } from '../i18n';
+import { borderEdges, compareTier, glyphSlots, kampungRoute, markersFor, tileCentroid, type GlyphKind, type MarkerKind } from './map/mapModel';
 import { StateFlag } from './StateFlag';
 import { Button, Card, Disclaimer, Modal, Pill, SectionTitle, cx } from './ui';
 
@@ -57,12 +59,27 @@ function Glyph({ kind, x, y, r }: { kind: GlyphKind; x: number; y: number; r: nu
   );
 }
 
-const LEGEND: { kind: MarkerKind; text: string }[] = [
-  { kind: 'residence', text: 'You live here' },
-  { kind: 'kampung', text: 'Kampung (home state)' },
-  { kind: 'campus', text: 'Campus' },
-  { kind: 'stamp', text: 'Stamped' },
+const LEGEND: { kind: MarkerKind; text: StringKey }[] = [
+  { kind: 'residence', text: 'map.legend.residence' },
+  { kind: 'kampung', text: 'map.legend.kampung' },
+  { kind: 'campus', text: 'map.legend.campus' },
+  { kind: 'stamp', text: 'map.legend.stamp' },
 ];
+
+const SUMMARY_KEY: Record<MarkerKind, StringKey> = {
+  residence: 'map.sum.residence',
+  kampung: 'map.sum.kampung',
+  campus: 'map.sum.campus',
+  stamp: 'map.sum.stamp',
+};
+
+const TIER_KEY: Record<ReturnType<typeof compareTier>, StringKey> = {
+  same: 'map.cmp.same',
+  bitHigher: 'map.cmp.bitHigher',
+  higher: 'map.cmp.higher',
+  bitLower: 'map.cmp.bitLower',
+  lower: 'map.cmp.lower',
+};
 
 function LegendKey({ kind }: { kind: MarkerKind }) {
   return (
@@ -75,8 +92,11 @@ function LegendKey({ kind }: { kind: MarkerKind }) {
 /** "My Malaysia": the pixel map with the player's markers, and a state sheet to travel or move. */
 export function PixelMap() {
   const { state } = useLoadedGame();
+  const t = useT();
   const reduced = useReducedMotion();
   const [picked, setPicked] = useState<string | null>(null);
+  /** Screen-reader text for a state: its name plus what is marked there. */
+  const summary = (name: string) => [`${name}.`, ...markersFor(state, name).map((m) => t(SUMMARY_KEY[m]))].join(' ');
   const route = kampungRoute(state);
   const from = route && tileCentroid(route.from);
   const to = route && tileCentroid(route.to);
@@ -85,9 +105,9 @@ export function PixelMap() {
 
   return (
     <div>
-      <SectionTitle>My Malaysia</SectionTitle>
+      <SectionTitle>{t('map.title')}</SectionTitle>
       <Card className="p-2">
-        <svg viewBox={`-0.5 -0.5 ${MAP_COLS + 1} ${MAP_ROWS + 1}`} className="block h-auto w-full" role="group" aria-label="Pixel map of Malaysia, not to scale. Each state is a button.">
+        <svg viewBox={`-0.5 -0.5 ${MAP_COLS + 1} ${MAP_ROWS + 1}`} className="block h-auto w-full" role="group" aria-label={t('map.aria')}>
           <defs>
             <pattern id="map-sea-dots" width="2" height="2" patternUnits="userSpaceOnUse">
               <rect x="0.5" y="0.5" width="0.2" height="0.2" fill={SEA_DOT} />
@@ -96,11 +116,11 @@ export function PixelMap() {
           <rect x="-0.5" y="-0.5" width={MAP_COLS + 1} height={MAP_ROWS + 1} rx="0.5" fill={SEA} />
           <rect x="-0.5" y="-0.5" width={MAP_COLS + 1} height={MAP_ROWS + 1} rx="0.5" fill="url(#map-sea-dots)" shapeRendering="crispEdges" />
           <g fill="#57524a" fontSize="0.62" fontStyle="italic" textAnchor="middle" aria-hidden="true">
-            <text x="12.8" y="2.4">South China Sea</text>
+            <text x="12.8" y="2.4">{t('map.sea')}</text>
           </g>
 
           {MALAYSIA.map((s) => (
-            <StateShape key={s.name} def={s} summary={markerSummary(state, s.name)} stamped={markersFor(state, s.name).includes('stamp')} onOpen={open} />
+            <StateShape key={s.name} def={s} summary={summary(s.name)} stamped={markersFor(state, s.name).includes('stamp')} onOpen={open} />
           ))}
 
           {/* Outlines of stamped states sit above every gap line so they read as a border. */}
@@ -130,11 +150,11 @@ export function PixelMap() {
         </svg>
       </Card>
 
-      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-ink-soft" aria-label="Map key">
+      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-ink-soft" aria-label={t('map.key')}>
         {LEGEND.map((l) => (
           <li key={l.kind} className="flex items-center gap-1.5">
             <LegendKey kind={l.kind} />
-            {l.text}
+            {t(l.text)}
           </li>
         ))}
         {route && (
@@ -142,13 +162,13 @@ export function PixelMap() {
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0">
               <line x1="2" y1="9" x2="16" y2="9" stroke={ROUTE} strokeWidth="2.4" strokeLinecap="round" strokeDasharray="0.1 5" />
             </svg>
-            Balik kampung route
+            {t('map.legend.route')}
           </li>
         )}
       </ul>
-      <p className="mt-1 text-[11px] text-ink-soft">Not to scale: a stylised pixel map, not real borders. Tap a state.</p>
+      <p className="mt-1 text-[11px] text-ink-soft">{t('map.notScale')}</p>
 
-      <SectionTitle>All states</SectionTitle>
+      <SectionTitle>{t('map.all')}</SectionTitle>
       <div className="flex flex-wrap gap-2">
         {MALAYSIA.map((s) => {
           const marks = markersFor(state, s.name);
@@ -157,7 +177,7 @@ export function PixelMap() {
               key={s.name}
               type="button"
               onClick={() => open(s.name)}
-              aria-label={markerSummary(state, s.name)}
+              aria-label={summary(s.name)}
               className={cx(
                 'hit-44 flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition',
                 marks.length ? 'border-teal/40 bg-teal-soft text-teal' : 'border-ink/10 bg-white text-ink-soft hover:border-teal/40',
@@ -211,15 +231,16 @@ function StateShape({ def, summary, stamped, onOpen }: { def: MapState; summary:
   );
 }
 
-const MARKER_PILL: Record<MarkerKind, { tone: 'teal' | 'gold' | 'blue' | 'green'; text: string }> = {
-  residence: { tone: 'teal', text: 'You live here' },
-  kampung: { tone: 'gold', text: 'Your kampung' },
-  campus: { tone: 'blue', text: 'Your campus' },
-  stamp: { tone: 'green', text: 'Stamped' },
+const MARKER_PILL: Record<MarkerKind, { tone: 'teal' | 'gold' | 'blue' | 'green'; text: StringKey }> = {
+  residence: { tone: 'teal', text: 'map.legend.residence' },
+  kampung: { tone: 'gold', text: 'map.pill.kampung' },
+  campus: { tone: 'blue', text: 'map.pill.campus' },
+  stamp: { tone: 'green', text: 'map.legend.stamp' },
 };
 
 function StateSheet({ name, onClose }: { name: string | null; onClose: () => void }) {
   const { state, request } = useLoadedGame();
+  const t = useT();
   const def = mapStateByName(name);
   const trip = def ? viewAction(state, 'trip-state', def.name) : null;
   const move = def ? viewAction(state, 'move-state', def.name) : null;
@@ -237,24 +258,24 @@ function StateSheet({ name, onClose }: { name: string | null; onClose: () => voi
               {markersFor(state, def.name).map((m) => (
                 <Pill key={m} tone={MARKER_PILL[m].tone}>
                   {m === 'stamp' && <Check size={11} aria-hidden="true" />}
-                  {MARKER_PILL[m].text}
+                  {t(MARKER_PILL[m].text)}
                 </Pill>
               ))}
             </div>
           </div>
           <p className="mt-3 text-sm leading-snug text-ink">{def.blurb}</p>
           <div className="mt-3 rounded-xl bg-paper-2 p-3 text-sm leading-snug text-ink-soft">
-            <div>{costNote(def.costFactor)}</div>
-            <div className="mt-0.5">{payNote(def.payFactor)}</div>
-            <div className="mt-1 text-[11px]">Game estimates, not real figures.</div>
+            <div>{t(TIER_KEY[compareTier(def.costFactor)], { what: t('map.what.cost') })}</div>
+            <div className="mt-0.5">{t(TIER_KEY[compareTier(def.payFactor)], { what: t('map.what.pay') })}</div>
+            <div className="mt-1 text-[11px]">{t('map.estimates')}</div>
           </div>
           {(trip || move) && (
             <div className="mt-4 grid gap-3">
-              {trip && <SheetButton view={trip} label="Go on a trip" variant="primary" onPick={go} />}
-              {move && <SheetButton view={move} label="Move here" variant="secondary" onPick={go} />}
+              {trip && <SheetButton view={trip} label={t('map.sheet.trip')} variant="primary" onPick={go} />}
+              {move && <SheetButton view={move} label={t('map.sheet.move')} variant="secondary" onPick={go} />}
             </div>
           )}
-          <Disclaimer>Flags are the official state and territory flags, shown for identification only.</Disclaimer>
+          <Disclaimer>{t('map.flags')}</Disclaimer>
         </div>
       )}
     </Modal>

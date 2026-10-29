@@ -4,10 +4,12 @@ import { formatDuration } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import type { ActionView } from '../engine/simulationEngine';
 import { useGame } from '../hooks/useGame';
+import { useT } from '../hooks/useT';
 import { cx } from './ui';
 
 export function ActionCard({ view, compact = false, label, art }: { view: ActionView; compact?: boolean; label?: string; art?: ReactNode }) {
   const { request } = useGame();
+  const t = useT();
   return (
     <button
       type="button"
@@ -36,7 +38,7 @@ export function ActionCard({ view, compact = false, label, art }: { view: Action
               {view.energy}
             </span>
           )}
-          {view.confirm && <span className="text-sky">Major decision</span>}
+          {view.confirm && <span className="text-sky">{t('action.major')}</span>}
         </span>
         {!view.available && view.reason && (
           <span className="mt-1 flex items-start gap-1 text-[11px] font-medium text-hibiscus">
@@ -51,6 +53,7 @@ export function ActionCard({ view, compact = false, label, art }: { view: Action
 /** Compact pill buttons for action variants (e.g. Sleep 5h / 7h / 8h). */
 export function VariantRow({ views, icon, title, description }: { views: ActionView[]; icon: string; title: string; description: string }) {
   const { request } = useGame();
+  const t = useT();
   const anyAvailable = views.some((v) => v.available);
   // All greyed: the first reason. Some greyed: the first unavailable pill's reason, so a greyed pill is explained.
   const reason = views.find((v) => !v.available && v.reason)?.reason ?? null;
@@ -77,7 +80,7 @@ export function VariantRow({ views, icon, title, description }: { views: ActionV
               v.available ? 'border-teal/30 bg-teal-soft text-teal hover:bg-teal hover:text-white' : 'border-ink/10 bg-paper-2 text-ink-soft/70',
             )}
           >
-            {variantLabel(v)}
+            {variantLabel(v, t('action.stop'))}
           </button>
         ))}
       </div>
@@ -90,11 +93,11 @@ export function VariantRow({ views, icon, title, description }: { views: ActionV
   );
 }
 
-function variantLabel(v: ActionView): string {
+function variantLabel(v: ActionView, stop: string): string {
   const p = v.param ?? '';
   if (/^\d+$/.test(p)) {
     if (['save', 'withdraw', 'emergency-deposit', 'give-parents'].includes(v.id)) return formatRM(Number(p));
-    if (v.id === 'parent-allowance') return Number(p) ? `${formatRM(Number(p))}/mo` : 'Stop';
+    if (v.id === 'parent-allowance') return Number(p) ? `${formatRM(Number(p))}/mo` : stop;
     return `${p}h`;
   }
   return shortTitle(v);

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useT } from '../hooks/useT';
 
 export function cx(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(' ');
@@ -101,6 +102,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
 
 export function Modal({ open, onClose, title, children, footer, dismissable = true }: { open: boolean; onClose?: () => void; title?: ReactNode; children: ReactNode; footer?: ReactNode; dismissable?: boolean }) {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const t = useT();
   const titleId = useId();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -164,7 +166,7 @@ export function Modal({ open, onClose, title, children, footer, dismissable = tr
           <div className="mb-3 flex items-start justify-between gap-3">
             <div id={titleId} className="font-display text-lg font-bold leading-tight text-ink">{title}</div>
             {dismissable && onClose && (
-              <button type="button" onClick={onClose} className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-paper-2" aria-label="Close">
+              <button type="button" onClick={onClose} className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-paper-2" aria-label={t('common.close')}>
                 <X size={20} />
               </button>
             )}
