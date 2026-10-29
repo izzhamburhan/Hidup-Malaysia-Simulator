@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { rankLifeTabs, type LifeTabId } from '../src/engine/insights';
 import { makeGame } from './helpers';
 
-const ALL: LifeTabId[] = ['career', 'study', 'food', 'fitness', 'people', 'home', 'transport', 'hustle', 'shop'];
+const ALL: LifeTabId[] = ['career', 'study', 'food', 'fitness', 'people', 'home', 'transport', 'hustle', 'shop', 'map'];
 
 describe('rankLifeTabs (orders, never removes, Life sub-tabs)', () => {
   it('always returns every tab exactly once', () => {
@@ -22,6 +22,11 @@ describe('rankLifeTabs (orders, never removes, Life sub-tabs)', () => {
     const s = makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs' });
     const order = rankLifeTabs(s);
     expect(order.indexOf('study')).toBeLessThan(order.indexOf('career'));
+  });
+
+  it('keeps the Map tab last so it never displaces the working tabs', () => {
+    expect(rankLifeTabs(makeGame()).at(-1)).toBe('map');
+    expect(rankLifeTabs(makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs' })).at(-1)).toBe('map');
   });
 
   it('moves Hustle above Shop once the player has a side hustle, and below it otherwise', () => {

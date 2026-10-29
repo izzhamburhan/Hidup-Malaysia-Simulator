@@ -71,6 +71,15 @@ support, and a 90-day cooldown (about once a season, within the repeat ceiling i
 delivery gig action (`gig-work`, `action-contract.md`) is the third way out. Changing the gap or
 the conditions is a balancing change and needs a seeded autopilot comparison.
 
+## The festive traffic jam
+
+`festive-jam` (festive, random, contexts `family` and `commute`, 25-day cooldown) can follow a
+family or commute action during a festive season (`festiveSeason`) when you rent or own away from
+your family home and your home state is a long way off (`isLongDistance(location.state,
+homeState)`, one way at least 240 minutes on the map, `geography.ts`). It costs a little time and
+mood, never a stat floor, and has two free choices (crawl and sing along, leave at dawn) plus an
+RM15 R&R stop, so the player is never stuck.
+
 ## Roll rate
 
 After an action of `m` minutes, a random event fires with probability

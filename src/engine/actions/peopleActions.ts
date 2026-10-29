@@ -2,6 +2,7 @@
 
 import { addMemory, adjustFamily, applyStats, canAfford, formatRM, round2, spend } from '../core';
 import { isWeekend } from '../calendar';
+import { tripMinutes, travelBetween } from '../geography';
 import { currentHome } from '../living';
 import { breakUp, chatPartner, deepTalk, defineRelationship, goOnDate, marry, propose, startTalking } from '../social';
 import type { GameState } from '../types';
@@ -24,12 +25,20 @@ const DATES: Record<string, { label: string; cost: number; minutes: number; qual
 const hasPartner = (s: GameState) => !!s.relationships.partner;
 const stageAtLeast = (s: GameState, stages: string[]) => !!s.relationships.partner && stages.includes(s.relationships.partner.stage);
 
+/** Minutes at the kampung (the there-and-back travel from the map is added on top). */
+const BALIK_KAMPUNG_VISIT_MINUTES = 360;
+
+/** The return fare from where you live to your home state (fictional estimate); a short hop in the same state. */
 export function baliKampungCost(s: GameState): number {
   if (currentHome(s).familyHome) return 0;
-  // Fuel + tolls for own vehicles, bus/train fare otherwise (fictional estimates).
-  if (s.transport.mode === 'car') return 120;
-  if (s.transport.mode === 'motorcycle') return 50;
-  return 90;
+  const fare = travelBetween(s.location.state, s.character.homeState);
+  // A motorcycle is cheaper on the road; a flight is a flight.
+  return fare.mode === 'road' && s.transport.mode === 'motorcycle' ? Math.round((fare.cost * 0.6) / 5) * 5 : fare.cost;
+}
+
+/** Clock minutes for the whole day: travel there and back plus the visit, within one day. */
+export function baliKampungMinutes(s: GameState): number {
+  return tripMinutes(travelBetween(s.location.state, s.character.homeState), BALIK_KAMPUNG_VISIT_MINUTES);
 }
 
 export const peopleActions: ActionDef[] = [
@@ -226,7 +235,7 @@ export const peopleActions: ActionDef[] = [
     icon: '🏡',
     title: 'Balik kampung for the day',
     description: (s) => `Visit family back in ${s.character.homeState}. Travel ~${formatRM(baliKampungCost(s))}.`,
-    minutes: 720,
+    minutes: baliKampungMinutes,
     cost: baliKampungCost,
     energy: -12,
     contexts: ['family', 'commute'],

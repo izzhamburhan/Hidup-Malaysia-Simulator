@@ -408,6 +408,10 @@ export interface GameState {
   skills: Skills;
   /** Practice past skill 100, per skill (0 and up). Unlocks senior roles and hustle tiers. */
   mastery: Skills;
+  /** Where the player lives now (a MALAYSIA state name). Drives fictional cost and pay factors. */
+  location: { state: string };
+  /** Jelajah Malaysia: state name -> day the player first visited on a trip. */
+  travel: { stamps: Record<string, number> };
   finance: Finance;
   career: Career;
   education: Education;

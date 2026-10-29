@@ -83,8 +83,7 @@ describe('save system', () => {
     delete old.mastery;
     const cash = old.finance.cash;
     const migrated = migrate(old);
-    expect(SAVE_VERSION).toBe(8);
-    expect(migrated.version).toBe(8);
+    expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.finance.unitTrust).toBe(0);
     expect(migrated.finance.cash).toBe(cash);
     expect(Object.keys(migrated.mastery).sort()).toEqual(Object.keys(migrated.skills).sort());

@@ -1,4 +1,5 @@
 // Achievements and life challenges. Conditions are pure functions of GameState.
+import { visitedStates } from '../engine/geography';
 import type { GameState } from '../engine/types';
 import { DECOR_SLOTS } from './decor';
 import { MINIGAMES } from './minigames';
@@ -48,6 +49,9 @@ export const achievements: Achievement[] = [
   { id: 'hustle-1k', title: 'Four Figures on the Side', description: 'RM1,000 total side-hustle profit.', icon: '📈', check: (s) => s.counters.hustleProfit >= 1000 },
   { id: 'founder', title: 'Founder', description: 'Register a company.', icon: '🏢', check: (s) => s.hustles.some((h) => h.registered) },
   { id: 'traveller', title: 'Jalan-Jalan', description: 'Go on 5 trips.', icon: '✈️', check: (s) => s.counters.trips >= 5 },
+  { id: 'jelajah-first', title: 'Cop Pertama', description: 'Get your first Jelajah Malaysia stamp on a trip to another state.', icon: '🧭', check: (s) => Object.keys(s.travel.stamps).length >= 1 },
+  { id: 'jelajah-8', title: 'Separuh Jalan', description: 'Visit 8 of Malaysia\'s 16 states and territories (where you live counts).', icon: '🗺️', check: (s) => visitedStates(s).length >= 8 },
+  { id: 'jelajah-all', title: 'Jelajah Malaysia', description: 'Visit all 13 states and 3 federal territories (where you live counts).', icon: '🌏', check: (s) => visitedStates(s).length >= 16 },
   { id: 'festive', title: 'Festive Spirit', description: 'Celebrate 3 festivals.', icon: '🪔', check: (s) => s.counters.festivals >= 3 },
   { id: 'community', title: 'Orang Kampung', description: 'Community reputation 75+.', icon: '🤝', check: (s) => s.communityReputation >= 75 },
   { id: 'night-owl', title: 'Night Owl', description: 'Sleep under 6 hours on 5 nights.', icon: '🦉', check: (s) => s.counters.daysLowSleep >= 5 },

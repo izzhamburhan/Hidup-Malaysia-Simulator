@@ -12,7 +12,7 @@ import { formatDate, formatDuration } from '../engine/calendar';
 import { scheduleLabel, jobEligibility } from '../engine/career';
 import { formatRM, SKILL_KEYS } from '../engine/core';
 import { CLASS_DAYS, computeGpa, isFinalSemester, semesterDay } from '../engine/education';
-import { commuteMinutes, currentHome } from '../engine/living';
+import { commuteMinutes, currentHome, scaledCost } from '../engine/living';
 import { rankLifeTabs, type LifeTabId } from '../engine/insights';
 import { listActions, viewAction, type ActionView } from '../engine/simulationEngine';
 import { STAGE_LABEL } from '../engine/social';
@@ -22,6 +22,7 @@ import { OrgBadge } from '../components/OrgBadge';
 import { NpcAvatar } from '../components/PixelAvatar';
 import { ActionCard, VariantRow } from '../components/ActionCard';
 import { CareerApplications, hasLiveApplications } from '../components/CareerApplications';
+import { PixelMap } from '../components/PixelMap';
 import { Button, Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, StatBar, Tabs, cx } from '../components/ui';
 
 type Sub = LifeTabId;
@@ -36,6 +37,7 @@ const LABELS: Record<Sub, string> = {
   transport: '🚗 Transport',
   hustle: '🛠️ Hustle',
   shop: '🛒 Shop',
+  map: '🗺️ Map',
 };
 
 export function LifeScreen() {
@@ -59,6 +61,7 @@ export function LifeScreen() {
         {sub === 'transport' && <TransportTab />}
         {sub === 'hustle' && <HustleTab />}
         {sub === 'shop' && <ShopTab />}
+        {sub === 'map' && <PixelMap />}
       </div>
     </div>
   );
@@ -487,7 +490,7 @@ function HomeTab() {
       <SectionTitle>Move</SectionTitle>
       <div className="grid gap-2">
         {housingOptions.map((h) => (
-          <V key={h.id} id="move-home" param={h.id} label={`${h.icon} ${h.name} — ${h.rent ? `${formatRM(h.rent)}/mo` : 'free'}`} />
+          <V key={h.id} id="move-home" param={h.id} label={`${h.icon} ${h.name} — ${h.rent ? `${formatRM(scaledCost(state, h.rent))}/mo` : 'free'}`} />
         ))}
       </div>
       <SectionTitle>Buy property</SectionTitle>

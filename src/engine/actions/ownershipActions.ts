@@ -1,13 +1,15 @@
 // Money management, housing, transport, shopping, side hustles and civic life.
 
 import { housingById, propertyById } from '../../data/housing';
+import { mapStateByName } from '../../data/malaysia';
 import { SEDEKAH, SEDEKAH_DAILY_CAP, UNIT_TRUST, gymById, hustleDefById, lifestyleUpgradeById, lifestyleUpgrades, shopItemById } from '../../data/lifestyle';
 import { transportModeInfo, vehicleById } from '../../data/vehicles';
-import { addDebt, addSkills, applyStats, canAfford, clamp, formatRM, highlight, log, playerPost, round2, spend } from '../core';
+import { addDebt, addMemory, addSkills, applyStats, canAfford, clamp, formatRM, highlight, log, playerPost, round2, spend } from '../core';
 import { isWeekend } from '../calendar';
 import { REGISTRATION_FEE, hustleRequirements, startHustle, workHustle, EMPLOYEE_COST_NOTE } from '../business';
 import { debtServiceRatio, expectedMonthlyNet, monthlyCommitmentTotal } from '../economy';
-import { currentHome, mortgagePayment, vehicleLoanPayment } from '../living';
+import { resign } from '../career';
+import { currentHome, familyMoveDeposit, mortgagePayment, movingStateCost, scaledCost, vehicleLoanPayment } from '../living';
 import { chance } from '../rng';
 import type { GameState, TransportMode } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
@@ -407,15 +409,15 @@ export const ownershipActions: ActionDef[] = [
     minutes: 300,
     energy: -20,
     contexts: ['home'],
-    cost: (_s, p) => {
+    cost: (s, p) => {
       const h = housingById(p);
-      return h ? h.rent * h.depositMonths + (h.familyHome ? 0 : MOVING_COST) : 0;
+      return h ? scaledCost(s, h.rent) * h.depositMonths + (h.familyHome ? 0 : MOVING_COST) : 0;
     },
     confirm: (s, p) => {
       const h = housingById(p);
       if (!h) return null;
-      const deposit = h.rent * h.depositMonths;
-      const monthly = h.rent + h.utilities + h.internet;
+      const deposit = scaledCost(s, h.rent) * h.depositMonths;
+      const monthly = scaledCost(s, h.rent) + scaledCost(s, h.utilities) + scaledCost(s, h.internet);
       const refund = Math.round(s.housing.depositHeld * 0.9);
       return `Deposit ${formatRM(deposit)} + moving ${formatRM(h.familyHome ? 0 : MOVING_COST)} now. New monthly housing cost ${formatRM(monthly)} (rent + utilities + internet, fictional estimates).${refund ? ` Your old deposit refund: ${formatRM(refund)}.` : ''}`;
     },
@@ -425,14 +427,14 @@ export const ownershipActions: ActionDef[] = [
       if (s.housing.optionId === p) return 'You already live here.';
       if (h.studentOnly && s.education.status !== 'studying') return 'Hostel places are for current students.';
       if (s.housing.ownedPropertyId) return 'Sell your property first.';
-      const need = h.rent * h.depositMonths + (h.familyHome ? 0 : MOVING_COST);
+      const need = scaledCost(s, h.rent) * h.depositMonths + (h.familyHome ? 0 : MOVING_COST);
       return canAfford(s, need) ? null : `Need ${formatRM(need)} cash for deposit and moving.`;
     },
     run: (s, p) => {
       const h = housingById(p)!;
       const refund = round2(s.housing.depositHeld * 0.9);
       if (refund > 0) s.finance.cash = round2(s.finance.cash + refund);
-      const deposit = h.rent * h.depositMonths;
+      const deposit = scaledCost(s, h.rent) * h.depositMonths;
       spend(s, deposit + (h.familyHome ? 0 : MOVING_COST), 'deposit and moving');
       s.housing = { optionId: h.id, sinceDay: s.clock.day, depositHeld: deposit, ownedPropertyId: null };
       if (s.inventory.items.includes('furniture') && h.familyHome) {
@@ -443,6 +445,60 @@ export const ownershipActions: ActionDef[] = [
       log(s, 'milestone', `Moved to: ${h.name}.`);
       if (!h.familyHome) playerPost(s, `New place, who dis? ${h.icon}`);
       return refund ? [`Old deposit refunded: ${formatRM(refund)} (10% kept for "wear and tear").`] : [];
+    },
+  },
+  {
+    id: 'move-state',
+    category: 'home',
+    icon: '🧳',
+    dedicated: true,
+    title: (_s, p) => `Move to ${mapStateByName(p)?.name ?? 'another state'}`,
+    description: (_s, p) => mapStateByName(p)?.blurb ?? '',
+    minutes: 480,
+    energy: -25,
+    contexts: ['home'],
+    cost: (s, p) => movingStateCost(s, p),
+    confirm: (s, p) => {
+      const target = mapStateByName(p);
+      if (!target) return null;
+      const job = s.career.job;
+      const resign = job
+        ? job.schedule === 'fulltime'
+          ? ' Your full-time job will be resigned (no remote work in v1).'
+          : ' Your part-time job will be resigned too.'
+        : '';
+      return `Moving to ${target.name} costs ${formatRM(movingStateCost(s, p))} now. Rent and bills follow ${target.name}'s cost factor (x${target.costFactor}), and new job offers follow its pay factor (x${target.payFactor}), both fictional estimates (Selangor = 1).${resign}${familyMoveDeposit(s, p) ? ` You can't stay with family there, so you'll rent a room (its ${formatRM(familyMoveDeposit(s, p))} deposit is included).` : ' You keep your kind of home.'}`;
+    },
+    available: (s, p) => {
+      const target = mapStateByName(p);
+      if (!target) return 'Unknown state';
+      if (s.location.state === target.name) return `You already live in ${target.name}.`;
+      if (s.education.status === 'studying') return 'You are still studying. Finish or leave your course before moving state.';
+      if (s.housing.ownedPropertyId) return 'Sell your property first.';
+      const need = movingStateCost(s, p);
+      return canAfford(s, need) ? null : `Need ${formatRM(need)} cash for the move.`;
+    },
+    run: (s, p) => {
+      const target = mapStateByName(p)!;
+      const lines: string[] = [];
+      const deposit = familyMoveDeposit(s, p);
+      spend(s, movingStateCost(s, p), `moving to ${target.name}`);
+      const job = s.career.job;
+      if (job) {
+        resign(s, `You resigned your ${job.schedule === 'fulltime' ? 'full-time' : 'part-time'} job to move to ${target.name}.`);
+        lines.push(`You resigned from your ${job.schedule === 'fulltime' ? 'full-time' : 'part-time'} job. Time to look for work in ${target.name}.`);
+      }
+      s.location.state = target.name;
+      if (deposit) {
+        s.housing = { optionId: 'room', sinceDay: s.clock.day, depositHeld: deposit, ownedPropertyId: null };
+        lines.push(`You can't stay with family in ${target.name}, so you rent a room there.`);
+      }
+      applyStats(s, { stress: 6, happiness: 2 });
+      log(s, 'milestone', `Moved to ${target.name}.`);
+      addMemory(s, `Packed up and moved to ${target.name}.`);
+      playerPost(s, `New state, new chapter: ${target.name} 🧳`);
+      lines.push(`Welcome to ${target.name}. Rent and prices now follow its fictional cost factor.`);
+      return lines;
     },
   },
   {

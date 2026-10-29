@@ -109,9 +109,10 @@ SKILLS.md              index of every skill
 | Career | done: 47 jobs and 24 example employers, promotions up a 5-rung ladder with tougher bars and mastery-gated top rungs, occasional headhunt offers, skill mastery past 100, weekly job board, applications, interview event, offers/negotiation, shifts, overtime, leave, reviews, promotions |
 | Education | done: 40 institutions, 27 courses, classes, assignments, exams/GPA/CGPA, FYP, probation, graduation, PTPTN-style loan |
 | Social and feed | done: prospects, dating stages to marriage, breakups, family/friends drift, fictional feed with likes and invites |
-| Events | done: 107 events (87 random + 20 scheduled; includes 6 scam-awareness events), modes, contexts, cooldowns, follow-ups, safety net |
-| Actions catalogue | done: 104 actions across 15 categories with availability reasons and confirmations |
-| Achievements and endings | done: 43 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| Events | done: 108 events (88 random + 20 scheduled; includes 6 scam-awareness events and a festive traffic jam), modes, contexts, cooldowns, follow-ups, safety net |
+| Actions catalogue | done: 106 actions across 15 categories with availability reasons and confirmations |
+| Achievements and endings | done: 46 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| Malaysia map | done: stylised pixel-tile map of the 16 states (`src/data/malaysia.ts`, not to scale) on a Life "Map" tab with pins for residence, kampung and campus; Jelajah Malaysia day trips (`trip-state`, road or flight from `geography.ts`) collect stamps and 3 achievements; moving state (`move-state`) with fictional cost and pay factors relative to Selangor; balik kampung cost and time follow the map; save v9 |
 | State flags | done: official flags of all 13 states and 3 federal territories (Wikimedia Commons, credited), flag grid in character creation, flag in the game header |
 | Festive seasons | done: 11 seasons on the simulated calendar (CNY, Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
@@ -125,12 +126,12 @@ SKILLS.md              index of every skill
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
 | Home decor | done: 16 decor items in four slots, bought from the room's Decorate button, shown in the living room and bedroom, small daily comfort bonus |
 | Pets | done: Oyen the cat (adopt from Act or a stray event), feed and play, daily hunger and mood, shown in the Home room |
-| Save and migrations | done: SAVE_VERSION 8 (v2 adds the pixel character appearance, v3 the pet, v4 home decor, v5 wardrobe unlocks, v6 festive outfits, v7 gender, v8 unit trust and skill mastery), migration chain, corrupt-save quarantine, export/import |
+| Save and migrations | done: SAVE_VERSION 9 (v2 adds the pixel character appearance, v3 the pet, v4 home decor, v5 wardrobe unlocks, v6 festive outfits, v7 gender, v8 unit trust and skill mastery, v9 residence state and travel stamps), migration chain, corrupt-save quarantine, export/import |
 | Public engine API (`simulationEngine.ts`) | done: performAction, resolveEvent, listActions, runAutopilot, interact, endChapter |
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 41 Vitest files, 311 tests |
+| Tests | done: 45 Vitest files, 370 tests |
 
 ## Commands
 
@@ -192,7 +193,7 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 ## Save and versioning
 
 - LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`. Settings live under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot, never the main life).
-- `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 8; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
+- `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 9; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
 - Any change to the shape of `GameState` bumps `SAVE_VERSION`, adds a migration from the previous version, and adds a Vitest test that migrates a fixture of the old shape.
 - A corrupt or unreadable save never crashes the app: the raw text is backed up to `hidup-malaysia:save:corrupt` and the player gets a clear message and a fresh start.
 - Full contract: `docs/contracts/save-format.md`.

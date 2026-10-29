@@ -80,14 +80,14 @@ export function upcoming(s: GameState, horizon = 31): Upcoming[] {
   return out.sort((a, b) => a.day - b.day).slice(0, 8);
 }
 
-export type LifeTabId = 'career' | 'study' | 'food' | 'fitness' | 'people' | 'home' | 'transport' | 'hustle' | 'shop';
+export type LifeTabId = 'career' | 'study' | 'food' | 'fitness' | 'people' | 'home' | 'transport' | 'hustle' | 'shop' | 'map';
 
 /**
  * Orders the Life screen's sub-tabs by relevance to what the player is doing right now.
  * Never removes a tab — every id in `ALL_LIFE_TABS` always comes back exactly once — so no
  * feature (enrolling, starting a hustle) ever becomes unreachable. Pure and read-only.
  */
-export const ALL_LIFE_TABS: LifeTabId[] = ['career', 'study', 'food', 'fitness', 'people', 'home', 'transport', 'hustle', 'shop'];
+export const ALL_LIFE_TABS: LifeTabId[] = ['career', 'study', 'food', 'fitness', 'people', 'home', 'transport', 'hustle', 'shop', 'map'];
 
 export function rankLifeTabs(s: GameState): LifeTabId[] {
   const studying = s.education.status === 'studying';
@@ -102,6 +102,7 @@ export function rankLifeTabs(s: GameState): LifeTabId[] {
     transport: s.career.job && !s.transport.vehicleId ? 55 : 20,
     hustle: s.hustles.length > 0 ? 50 : 8,
     shop: 12,
+    map: 4,
   };
   return [...ALL_LIFE_TABS].sort((a, b) => score[b] - score[a]);
 }

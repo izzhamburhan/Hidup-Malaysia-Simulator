@@ -2,6 +2,7 @@
 // stays testable without a browser; the UI passes window.localStorage.
 
 import { SAVE_VERSION, emptyState } from './newGame';
+import { DEFAULT_RESIDENCE, mapStateByName } from '../data/malaysia';
 import { isValidAppearance, randomAppearance } from './appearance';
 import { endings } from './endings';
 import type { GameState } from './types';
@@ -67,6 +68,17 @@ export const migrations: Record<number, Migration> = {
     const mastery = Object.fromEntries(Object.keys(skills).map((k) => [k, typeof old[k] === 'number' ? old[k] : 0]));
     const unitTrust = typeof finance.unitTrust === 'number' ? finance.unitTrust : 0;
     return { ...s, finance: { ...finance, unitTrust }, mastery, version: 8 };
+  },
+  // 8 -> 9: Malaysia map. Lives living with family are in their home state; everyone else starts in
+  // the Klang Valley (the baseline the game's prices were tuned for), so nobody's costs change. No stamps.
+  8: (s) => {
+    const character = (s.character ?? {}) as Record<string, unknown>;
+    const housing = (s.housing ?? {}) as Record<string, unknown>;
+    const home = typeof character.homeState === 'string' ? character.homeState : '';
+    const state = housing.optionId === 'family' && mapStateByName(home) ? home : DEFAULT_RESIDENCE;
+    const location = (s.location as { state?: unknown } | undefined)?.state ? s.location : { state };
+    const travel = (s.travel as { stamps?: unknown } | undefined)?.stamps ? s.travel : { stamps: {} };
+    return { ...s, location, travel, version: 9 };
   },
 };
 
