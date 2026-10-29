@@ -16,21 +16,24 @@ export interface RoomDef {
   decor: [string, string];
   /** Emoji hung on the wall (window, poster, clock). */
   wallItem: string;
-  dark?: boolean;
+  /** Under the open sky: the wall item gives way to the night sky after dark. */
+  outdoor?: boolean;
 }
 
+// Every room is drawn in daylight colours; the time of day is a lighting layer on top
+// (see `daylight`), so an action can change where the character is, never when.
 export const ROOMS: Record<RoomId, RoomDef> = {
-  bedroom: { label: 'Bedroom', wall: 'from-[#3b3f6b] to-[#262a4d]', floor: '#4a3b5c', decor: ['🛏️', '🪴'], wallItem: '🪟', dark: true },
+  bedroom: { label: 'Bedroom', wall: 'from-[#e4e2f3] to-[#cbc6e6]', floor: '#9a86b0', decor: ['🛏️', '🪴'], wallItem: '🪟' },
   livingroom: { label: 'Living room', wall: 'from-[#f3e3c3] to-[#e8cf9f]', floor: '#b98a5a', decor: ['🛋️', '📺'], wallItem: '🖼️' },
   kitchen: { label: 'Kitchen', wall: 'from-[#e3f1ec] to-[#c4e2d6]', floor: '#c9b28a', decor: ['🍳', '🧊'], wallItem: '🕰️' },
-  park: { label: 'Park', wall: 'from-[#9fd6f2] to-[#d8f0c2]', floor: '#6aa84f', decor: ['🌳', '🌴'], wallItem: '☁️' },
+  park: { label: 'Park', wall: 'from-[#9fd6f2] to-[#d8f0c2]', floor: '#6aa84f', decor: ['🌳', '🌴'], wallItem: '☁️', outdoor: true },
   gym: { label: 'Gym', wall: 'from-[#d9dde3] to-[#b8bfc9]', floor: '#4b5563', decor: ['🏋️', '🧴'], wallItem: '🪞' },
-  court: { label: 'Court', wall: 'from-[#bfe3f7] to-[#e6f4fb]', floor: '#2f7d4f', decor: ['🥅', '🧃'], wallItem: '☁️' },
+  court: { label: 'Court', wall: 'from-[#bfe3f7] to-[#e6f4fb]', floor: '#2f7d4f', decor: ['🥅', '🧃'], wallItem: '☁️', outdoor: true },
   office: { label: 'Office', wall: 'from-[#e6ebf2] to-[#cdd6e3]', floor: '#8b95a5', decor: ['🖥️', '🪴'], wallItem: '📊' },
   campus: { label: 'Campus', wall: 'from-[#fbefcd] to-[#f2d98f]', floor: '#a3866a', decor: ['📚', '🪑'], wallItem: '📋' },
   mamak: { label: 'Mamak', wall: 'from-[#fde4d6] to-[#f5b98f]', floor: '#9c6b43', decor: ['🫖', '🪑'], wallItem: '📺' },
   mall: { label: 'Mall', wall: 'from-[#f6dff0] to-[#e6c3e0]', floor: '#c9c2d6', decor: ['🛍️', '🎬'], wallItem: '💡' },
-  street: { label: 'Out and about', wall: 'from-[#ffd59e] to-[#f6b26b]', floor: '#6b6b6b', decor: ['🏪', '🚦'], wallItem: '☀️' },
+  street: { label: 'Out and about', wall: 'from-[#ffd59e] to-[#f6b26b]', floor: '#6b6b6b', decor: ['🏪', '🚦'], wallItem: '☀️', outdoor: true },
 };
 
 export type Activity =
@@ -111,6 +114,31 @@ export function activityFor(actionId: string, _param?: string): Activity {
   const def = actionById(actionId);
   return def ? BY_CATEGORY[def.category] : 'idle';
 }
+
+export type Daylight = 'morning' | 'day' | 'dusk' | 'night';
+
+/** Time of day from the game clock alone; no action changes it. */
+export function daylight(minute: number): Daylight {
+  const h = minute / 60;
+  if (h >= 5 && h < 11) return 'morning';
+  if (h >= 11 && h < 16) return 'day';
+  if (h >= 16 && h < 19.5) return 'dusk';
+  return 'night';
+}
+
+const SKY: Record<Daylight, string> = { morning: '🌤️', day: '☀️', dusk: '🌇', night: '🌙' };
+
+/** Lighting layer drawn over whichever room is showing. */
+export const LIGHTING: Record<Daylight, string> = {
+  morning: 'opacity-0',
+  day: 'opacity-0',
+  dusk: 'bg-[#ff7a2f] opacity-15',
+  night: 'bg-[#0b1230] opacity-45',
+};
+
+export const skyIcon = (minute: number) => SKY[daylight(minute)];
+
+export const wallItemFor = (room: RoomDef, minute: number) => (room.outdoor && daylight(minute) === 'night' ? '⭐' : room.wallItem);
 
 /** The room the character is in when nothing is playing. */
 export function idleRoom(minute: number): RoomId {

@@ -12,7 +12,7 @@ import { useLoadedGame } from '../../hooks/useGame';
 import { useT } from '../../hooks/useT';
 import { PixelAvatar } from '../PixelAvatar';
 import { cx } from '../ui';
-import { ACTIVITIES, ROOMS, activityFor, idleRoom, type Activity } from './activity';
+import { ACTIVITIES, LIGHTING, ROOMS, activityFor, daylight, idleRoom, skyIcon, wallItemFor, type Activity } from './activity';
 import { DecorShop } from './DecorShop';
 import { Wardrobe } from './Wardrobe';
 import { Minigames } from '../minigames/Minigames';
@@ -28,14 +28,6 @@ interface Playing {
   activity: Activity;
   held?: string;
   key: number;
-}
-
-function sky(minute: number): string {
-  const h = minute / 60;
-  if (h >= 5 && h < 11) return '🌤️';
-  if (h >= 11 && h < 16) return '☀️';
-  if (h >= 16 && h < 19.5) return '🌇';
-  return '🌙';
 }
 
 export function Room({ greeting, title, detail, onGoal }: { greeting: string; title: string; detail: string; onGoal?: () => void }) {
@@ -75,20 +67,21 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
   const centre = home ? decorById(state.decor.placed.centre)?.icon : undefined;
   const season = home ? festiveSeason(state) : null;
   const petBusy = playing?.activity === 'petfeed' || playing?.activity === 'petplay';
+  const light = daylight(state.clock.minute);
 
   return (
     <>
       <section className={cx('relative h-[290px] overflow-hidden rounded-3xl bg-gradient-to-b shadow-md transition-colors duration-500', room.wall)} aria-label={`${state.character.name} in the ${room.label.toLowerCase()}`}>
         {/* Wall */}
         <div className="absolute right-4 top-14 text-4xl opacity-90" aria-hidden>
-          {mine('wall', room.wallItem)}
+          {mine('wall', wallItemFor(room, state.clock.minute))}
         </div>
-        <div className="absolute right-3 top-3 rounded-full bg-white/70 px-2 py-0.5 text-lg leading-none shadow-sm" aria-hidden>
-          {sky(state.clock.minute)}
+        <div className="absolute right-3 top-3 z-20 rounded-full bg-white/70 px-2 py-0.5 text-lg leading-none shadow-sm" aria-hidden>
+          {skyIcon(state.clock.minute)}
         </div>
 
         {/* Goal */}
-        <button type="button" onClick={onGoal} disabled={!onGoal} className="absolute left-3 right-14 top-3 rounded-2xl bg-white/80 px-3 py-2 text-left shadow-sm backdrop-blur-sm enabled:active:scale-[0.99]">
+        <button type="button" onClick={onGoal} disabled={!onGoal} className="absolute left-3 right-14 top-3 z-20 rounded-2xl bg-white/80 px-3 py-2 text-left shadow-sm backdrop-blur-sm enabled:active:scale-[0.99]">
           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">{greeting}</div>
           <div className="font-display truncate text-[15px] font-black leading-tight text-ink">{title}</div>
           <div className="truncate text-xs text-ink-soft">{detail}</div>
@@ -165,15 +158,18 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
         </div>
 
         {def?.bubble && (
-          <div key={`b${playing?.key}`} className="anim-pop absolute left-1/2 top-[27%] -translate-x-1/2 whitespace-nowrap rounded-2xl bg-white px-3 py-1 text-sm font-bold text-ink shadow-md">
+          <div key={`b${playing?.key}`} className="anim-pop absolute left-1/2 top-[27%] z-20 -translate-x-1/2 whitespace-nowrap rounded-2xl bg-white px-3 py-1 text-sm font-bold text-ink shadow-md">
             {def.bubble}
           </div>
         )}
 
-        {/* Lights down while sleeping */}
-        <div className={cx('pointer-events-none absolute inset-0 bg-[#0b1230] transition-opacity duration-700', motion === 'sleep' ? 'opacity-45' : 'opacity-0')} aria-hidden />
+        {/* Time of day: from the clock only, the same over every room */}
+        <div className={cx('pointer-events-none absolute inset-0 z-10 transition-opacity duration-700', LIGHTING[light])} data-daylight={light} aria-hidden />
 
-        <div className="absolute bottom-2 left-3 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{room.label}</div>
+        {/* Lights down while sleeping (already dark at night) */}
+        <div className={cx('pointer-events-none absolute inset-0 z-10 bg-[#0b1230] transition-opacity duration-700', motion === 'sleep' && light !== 'night' ? 'opacity-45' : 'opacity-0')} aria-hidden />
+
+        <div className="absolute bottom-2 left-3 z-20 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{room.label}</div>
       </section>
       <div className="mt-2 grid grid-cols-3 gap-2" role="toolbar" aria-label="Room">
         {(
