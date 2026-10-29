@@ -35,6 +35,7 @@ The links live in the header of `src/data/statutory.ts` and are shown in the pay
 | Daily rate | Monthly salary / 26 (used for unpaid leave). |
 | Tax year | `finance.taxYear` tracks gross, PCB paid, EPF and SOCSO/EIS. On 1 January the game computes the annual tax, stores the difference from PCB paid in `finance.pendingTaxSettlement` (refund or top-up), and schedules a simplified `tax-filing` event in early April to settle it. |
 | EPF balance | Grows with both shares and a fictional annual dividend (`EPF_DIVIDEND_RATE`, a game rule). Never spendable cash. |
+| Unit trust | `finance.unitTrust`: a fictional Seri Harapan fund (`UNIT_TRUST` in `src/data/lifestyle.ts`, a game rule, not real fund data). Deposit and withdraw actions move money between cash and the fund. On 1 January a dividend is reinvested; the rate is drawn from `state.rng` inside a modest range (`dividendMin` to `dividendMax`) and only when the balance is above zero. Never spendable cash until withdrawn. |
 
 ## Payslip
 

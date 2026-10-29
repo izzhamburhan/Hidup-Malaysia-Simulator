@@ -43,6 +43,102 @@ export const shopItems: ShopItem[] = [
 
 export const shopItemById = (id: string | null | undefined) => shopItems.find((i) => i.id === id);
 
+/**
+ * Fictional unit trust. A GAME RULE, not a real fund and not a forecast: the dividend each
+ * 1 January is drawn from this range by the seeded generator, so some years pay more than others.
+ * Money inside is not spendable cash until withdrawn.
+ */
+export const UNIT_TRUST = {
+  name: 'Dana Harapan Seri (fictional unit trust)',
+  dividendMin: 0.02,
+  dividendMax: 0.07,
+} as const;
+
+/** Sedekah: give to a fictional community fund in Seri Harapan. Total per calendar day is capped. */
+export const SEDEKAH = {
+  cause: 'Tabung Kebajikan Seri Harapan (fictional community fund)',
+  amounts: [5, 20, 50],
+} as const;
+export const SEDEKAH_DAILY_CAP = 100;
+
+export interface LifestyleUpgrade {
+  id: string;
+  name: string;
+  icon: string;
+  /** FICTIONAL GAME ESTIMATE in RM. */
+  price: number;
+  description: string;
+  minutes: number;
+  /** Energy the outing costs (negative = tiring). */
+  energy: number;
+  happiness: number;
+  stress: number;
+  health?: number;
+  /** Days before the same upgrade can be bought again. */
+  cooldownDays: number;
+  /** Message after buying. */
+  result: string;
+}
+
+/** Optional big purchases. They cost real money and are never required. */
+export const lifestyleUpgrades: LifestyleUpgrade[] = [
+  {
+    id: 'phone-refresh',
+    name: 'Phone refresh',
+    icon: '📱',
+    price: 2200,
+    description: 'Swap the cracked-screen veteran for a new phone. The old one goes to Adik.',
+    minutes: 90,
+    energy: -3,
+    happiness: 8,
+    stress: -2,
+    cooldownDays: 365,
+    result: 'Crisp screen, fast apps, and a battery that survives lunch. The old phone makes Adik very happy.',
+  },
+  {
+    id: 'laptop-refresh',
+    name: 'Laptop refresh',
+    icon: '💻',
+    price: 3000,
+    description: 'A new laptop that opens spreadsheets without a prayer.',
+    minutes: 90,
+    energy: -3,
+    happiness: 7,
+    stress: -4,
+    cooldownDays: 540,
+    result: 'The fan no longer sounds like a small aeroplane. Deadlines feel slightly less scary.',
+  },
+  {
+    id: 'holiday-abroad',
+    name: 'Short holiday abroad',
+    icon: '✈️',
+    price: 3500,
+    description: 'A few days overseas: flights, a small hotel and far too much street food.',
+    minutes: 720,
+    energy: -12,
+    happiness: 20,
+    stress: -25,
+    cooldownDays: 180,
+    result: 'Passport stamped, photos taken, stress left at the airport. Your gallery now has 400 pictures of noodles.',
+  },
+  {
+    id: 'home-upgrade',
+    name: 'Home makeover',
+    icon: '🛋️',
+    price: 5000,
+    description: 'New mattress, fan or air-cond, curtains and a tidy-up. Rest feels different.',
+    minutes: 240,
+    energy: -10,
+    happiness: 12,
+    stress: -8,
+    health: 2,
+    cooldownDays: 365,
+    result: 'You sleep better in a room that is finally yours. The mattress alone was worth it.',
+  },
+];
+
+export const lifestyleUpgradeById = (id: string | null | undefined) => lifestyleUpgrades.find((u) => u.id === id);
+
 export interface HustleDef {
   id: string;
   name: string;
