@@ -21,6 +21,7 @@ import { useLoadedGame } from '../hooks/useGame';
 import { OrgBadge } from '../components/OrgBadge';
 import { NpcAvatar } from '../components/PixelAvatar';
 import { ActionCard, VariantRow } from '../components/ActionCard';
+import { CareerApplications, hasLiveApplications } from '../components/CareerApplications';
 import { Button, Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, StatBar, Tabs, cx } from '../components/ui';
 
 type Sub = LifeTabId;
@@ -90,12 +91,18 @@ function V({ id, param, label, art }: { id: string; param?: string; label?: stri
 function CareerTab() {
   const { state, request } = useLoadedGame();
   const job = state.career.job;
-  const apps = state.career.applications;
+  const liveApps = hasLiveApplications(state.career.applications);
   const [industry, setIndustry] = useState<string>('all');
   const listings = state.career.listings.filter((l) => industry === 'all' || companyById(l.companyId)?.industry === industry);
 
   return (
     <div>
+      {liveApps && (
+        <>
+          <CareerApplications />
+          <div className="mt-5" />
+        </>
+      )}
       <SectionTitle>Current job</SectionTitle>
       {job ? (
         <Card>
@@ -135,43 +142,7 @@ function CareerTab() {
         <StatBar label="CV quality" value={state.career.cvQuality} tone="gold" />
       </Card>
 
-      {apps.length > 0 && (
-        <>
-          <SectionTitle>Applications</SectionTitle>
-          <div className="space-y-2">
-            {apps.slice(0, 10).map((a) => (
-              <Card key={a.id} className="p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold">{jobById(a.jobId)?.title}</div>
-                    <div className="truncate text-xs text-ink-soft">{companyById(a.companyId)?.name}</div>
-                  </div>
-                  <Pill tone={a.status === 'offer' ? 'green' : a.status === 'interview' ? 'blue' : a.status === 'rejected' || a.status === 'expired' ? 'red' : 'neutral'}>{a.status}</Pill>
-                </div>
-                {a.status === 'pending' && <div className="mt-1 text-xs text-ink-soft">Reply expected around day {a.respondDay + 1}.</div>}
-                {a.status === 'interview' && (
-                  <div className="mt-2">
-                    <V id="attend-interview" param={a.id} label={`Attend interview (day ${(a.interviewDay ?? 0) + 1})`} />
-                  </div>
-                )}
-                {a.status === 'offer' && (
-                  <div className="mt-2 space-y-2">
-                    <div className="text-sm">
-                      Offer: <b>{formatRM(a.offerSalary ?? 0)}</b>
-                      {jobById(a.jobId)?.schedule === 'parttime' ? ' per shift' : ' per month (gross)'}
-                    </div>
-                    <div className="grid gap-2">
-                      <V id="accept-offer" param={a.id} />
-                      <V id="negotiate-offer" param={a.id} />
-                      <V id="decline-offer" param={a.id} />
-                    </div>
-                  </div>
-                )}
-              </Card>
-            ))}
-          </div>
-        </>
-      )}
+      {!liveApps && <CareerApplications />}
 
       <SectionTitle action={<span className="text-[11px] text-ink-soft">Refreshes weekly</span>}>Job board</SectionTitle>
       <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="mb-2 w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-sm" aria-label="Filter by industry">

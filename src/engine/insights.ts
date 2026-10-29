@@ -3,6 +3,7 @@
 
 import { holidays } from '../data/holidays';
 import { companyById } from '../data/companies';
+import { jobById } from '../data/jobs';
 import { dateOf, dayOfMonth, isLastDayOfMonth } from './calendar';
 import { isWorkday } from './career';
 import { CLASS_DAYS, isClassDay, semesterDay } from './education';
@@ -164,28 +165,48 @@ export function bestListing(s: GameState): ActionView | null {
 
 const usable = (v: ActionView | null | undefined): v is ActionView => !!v && v.available;
 
-/** The single most sensible action right now, for the big play button. */
-export function primaryAction(s: GameState): ActionView | null {
+/** What the big play button does: run an action, or open a tab (e.g. compare job offers). */
+export type PrimaryStep =
+  | { kind: 'action'; view: ActionView }
+  | { kind: 'navigate'; tab: 'life'; icon: string; title: string; sub: string };
+
+/** A single offer reads "Accept TM: RM2,500/mo" so the button is never a blind "Accept offer". */
+function offerView(s: GameState, id: string): ActionView | null {
+  const v = view(s, 'accept-offer', id);
+  const app = s.career.applications.find((a) => a.id === id);
+  if (!v || !app) return v;
+  const parttime = jobById(app.jobId)?.schedule === 'parttime';
+  const company = companyById(app.companyId)?.name ?? 'the company';
+  const pay = `${formatRM(app.offerSalary ?? 0)}${parttime ? '/shift' : '/mo'}`;
+  return { ...v, title: `Accept ${company}: ${pay}`, description: `${jobById(app.jobId)?.title ?? 'Job'} at ${company}, ${pay}. Sign the offer letter.` };
+}
+
+/** The single most sensible step right now, for the big play button. */
+export function primaryStep(s: GameState): PrimaryStep | null {
   if (s.events.pending.length || s.ending) return null;
+  const act = (v: ActionView | null | undefined): PrimaryStep | null => (usable(v) ? { kind: 'action', view: v } : null);
   const hour = s.clock.minute / 60;
-  const pick = (...vs: (ActionView | null | undefined)[]) => vs.find(usable) ?? null;
+  const pick = (...vs: (ActionView | null | undefined)[]) => act(vs.find(usable));
   if (s.stats.energy < 15) {
     const rest = pick(view(s, 'sleep', '8'), view(s, 'nap'));
     if (rest) return rest;
   }
   if (s.stats.satiety < 25) {
-    const meal = mealFor(s);
-    if (usable(meal)) return meal;
+    const meal = act(mealFor(s));
+    if (meal) return meal;
   }
   const interview = s.career.applications.find((a) => a.status === 'interview' && a.interviewDay === s.clock.day);
   if (interview) {
-    const v = view(s, 'attend-interview', interview.id);
-    if (usable(v)) return v;
+    const v = act(view(s, 'attend-interview', interview.id));
+    if (v) return v;
   }
-  const offer = s.career.applications.find((a) => a.status === 'offer');
-  if (offer) {
-    const v = view(s, 'accept-offer', offer.id);
-    if (usable(v)) return v;
+  const offers = s.career.applications.filter((a) => a.status === 'offer');
+  if (offers.length > 1) {
+    return { kind: 'navigate', tab: 'life', icon: '📨', title: `${offers.length} job offers: compare them`, sub: 'Life → Career' };
+  }
+  if (offers.length === 1) {
+    const v = act(offerView(s, offers[0].id));
+    if (v) return v;
   }
   const work = pick(view(s, 'work-shift'), view(s, 'attend-class'));
   if (work) return work;
@@ -194,8 +215,8 @@ export function primaryAction(s: GameState): ActionView | null {
     if (bed) return bed;
   }
   if (s.stats.satiety < 50) {
-    const meal = mealFor(s);
-    if (usable(meal)) return meal;
+    const meal = act(mealFor(s));
+    if (meal) return meal;
   }
   const studying = s.education.status === 'studying';
   if (studying) {
@@ -204,16 +225,22 @@ export function primaryAction(s: GameState): ActionView | null {
   }
   if (!s.career.job && !studying && s.character.lifeStage !== 'retired') {
     if (s.hustles.length) {
-      const h = view(s, 'work-hustle', s.hustles[0].id);
-      if (usable(h)) return h;
+      const h = act(view(s, 'work-hustle', s.hustles[0].id));
+      if (h) return h;
     }
     const pending = s.career.applications.filter((a) => a.status === 'pending' || a.status === 'interview').length;
     if (pending < 3) {
-      const apply = bestListing(s);
+      const apply = act(bestListing(s));
       if (apply) return apply;
     }
   }
   return null;
+}
+
+/** The action behind the big play button, or null when the step is navigation (or there is none). */
+export function primaryAction(s: GameState): ActionView | null {
+  const step = primaryStep(s);
+  return step?.kind === 'action' ? step.view : null;
 }
 
 /** Up to six one-tap tiles for the play screen, available ones first. */

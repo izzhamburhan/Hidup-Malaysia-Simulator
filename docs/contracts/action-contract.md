@@ -58,7 +58,7 @@ interface ActionView {
 ## Rules
 
 1. **Availability explains why.** `available` returns `null` or a short, player-facing reason ("Classes are only on weekdays", "Too tired (need 20 energy). Rest or sleep first."). Never `false`, never an empty string. The engine adds the generic reasons itself (chapter ended, event pending, not visible, "Need RMx cash."). The UI shows the reason; there are no dead buttons.
-2. **Major decisions confirm the cost.** Quitting a job, dropping out, buying a vehicle or home, taking a loan, moving out, and ending a relationship set `confirm`, returning text that states the financial consequence (for example "Down payment RM4,200 now, then RM389 a month for 7 years").
+2. **Major decisions confirm the cost.** Quitting a job, dropping out, buying a vehicle or home, taking a loan, moving out, and ending a relationship, and cancelling medical insurance (it stops cover for big hospital bills) set `confirm`, returning text that states the financial consequence (for example "Down payment RM4,200 now, then RM389 a month for 7 years").
 3. **`run` mutates only the draft, only through `core.ts` helpers** (`earn`, `spend`, `canAfford`, `addDebt`, `applyStats`, `addSkills`, `applyEffect`, `log`) and the domain modules. It does not advance time; `performAction` does that with `minutes`.
 4. **No randomness outside `rng.ts`.** `run` may use `chance`, `randInt`, `pick`, `weightedPick` with the draft.
 5. **Affordability.** A `cost` above the wallet makes the action unavailable. Voluntary spending never creates debt; only a loan action does, explicitly, and its `confirm` says so.

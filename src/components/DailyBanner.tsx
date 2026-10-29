@@ -36,12 +36,12 @@ export function DailyBanner({ status }: { status: DailyStatus }) {
           {def.icon}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a5a00]">
+          <div className="truncate text-[11px] font-bold uppercase tracking-[0.14em] text-[#7a5a00]">
             {t('daily.label', { d: finished ? 7 : day + 1 })} · {def.title}
           </div>
           <div className="truncate text-xs text-ink-soft">{def.goal}</div>
         </div>
-        <span className={cx('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold', won ? 'bg-leaf text-white' : 'bg-white text-ink-soft')}>{t(won ? 'daily.won' : finished ? 'daily.missed' : 'daily.going')}</span>
+        <span className={cx('shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold', won ? 'bg-leaf text-white' : 'bg-white text-ink-soft')}>{t(won ? 'daily.won' : finished ? 'daily.missed' : 'daily.going')}</span>
         {!finished && (
           <button type="button" onClick={exitDaily} className="min-h-[36px] shrink-0 rounded-full bg-white px-2.5 text-[11px] font-bold text-teal shadow-sm active:scale-95">
             {t('daily.exit')}
