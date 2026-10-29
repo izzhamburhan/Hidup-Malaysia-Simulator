@@ -11,6 +11,8 @@ import { addDebt, addSkills, applyStats, clamp, earn, formatRM, log, round2, spe
 import { jobEligibility, resolveInterview } from '../engine/career';
 import { breakUp, deepTalk, meetSomeone } from '../engine/social';
 import { adoptPet } from '../engine/pet';
+import { festiveSeason } from '../engine/festive';
+import { isLongDistance } from '../engine/geography';
 import { PET } from './pets';
 import { chance, pick, randInt } from '../engine/rng';
 import { backgroundById } from './backgrounds';
@@ -545,6 +547,42 @@ export const events: GameEventDef[] = [
     houseText: 'Turkey, curry devil, and fruitcake. Everyone\'s welcome, and the carolling gets surprisingly competitive.',
     memory: 'Christmas get-together with friends',
   }),
+  {
+    id: 'festive-jam',
+    title: 'The long road home',
+    icon: '🚗',
+    category: 'festive',
+    trigger: 'random',
+    contexts: ['family', 'commute'],
+    weight: 3,
+    cooldownDays: 25,
+    when: (s) => festiveSeason(s) !== null && s.housing.optionId !== 'family' && isLongDistance(s.location.state, s.character.homeState),
+    text: 'The whole country is balik kampung at the same time. The highway to {home} is one long red line on the map, and the family chat keeps asking "Dah sampai mana?"',
+    choices: [
+      {
+        id: 'crawl',
+        label: 'Join the crawl and sing along',
+        hint: 'Free. Slow, but you get there.',
+        outcomes: [
+          { text: 'Bumper to bumper for hours. You learn every word of the playlist and wave at a bus full of fellow balik-kampung travellers.', effect: { minutes: 90, stats: { stress: 4, happiness: 2 } } },
+          { text: 'It clears faster than the traffic app promised. Someone in the next lane is doing karaoke. You join.', effect: { minutes: 30, stats: { happiness: 4 } } },
+        ],
+      },
+      {
+        id: 'rest',
+        label: 'Stop at the R&R for a break',
+        hint: 'RM15. Stress down, a little time lost.',
+        cost: 15,
+        outcomes: [{ text: 'Teh tarik, a stretch and a quick call home. The jam melts a little while you are not staring at it.', effect: { minutes: 60, stats: { stress: -4, satiety: 15, energy: 4 } } }],
+      },
+      {
+        id: 'dawn',
+        label: 'Tell the family you will leave at dawn instead',
+        hint: 'Free. Family -, rested.',
+        outcomes: [{ text: '"Okay lah, hati-hati." A little sigh from Mak, but a fresh start on an empty road tomorrow.', effect: { family: -1, stats: { stress: -3, energy: 5 } } }],
+      },
+    ],
+  },
   {
     id: 'merdeka',
     title: 'Merdeka Day',

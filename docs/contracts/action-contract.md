@@ -82,6 +82,26 @@ interface ActionView {
     follow its pay factor, and that a job is resigned (no remote work in v1). Details in
     `engine-api.md`, "Moving to another state".
 
+12. **Trips and balik kampung use the map.** `src/engine/geography.ts` (pure) turns the stylised
+    map in `src/data/malaysia.ts` into `travelBetween(from, to)`: `{ mode: 'road' | 'flight', minutes
+    (one way), cost (fictional RM, return journey) }`. Road inside the Peninsula or inside Borneo
+    (Labuan counts as Borneo), a flight across the sea, a short local hop (45 minutes, RM20) inside
+    one state. Time is about 60 minutes of road per map tile; flights are 150 minutes plus 8 per
+    tile. `tripMinutes(travel, stay)` is there-and-back plus `stay`, between 480 and 840 minutes, so
+    a trip always fits in one day of game time.
+    - `trip-state` (param = a state name from `MALAYSIA`, `dedicated`, opened from the map) is a
+      day trip: weekends, public holidays or an annual-leave day, leaving 6-11 AM, at least 25
+      energy and enough cash for the `travelBetween` fare. It takes `tripMinutes(travel, 240)`,
+      raises happiness, lowers stress, counts a trip, and the first visit to a state records
+      `travel.stamps[state] = day` and a memory. It is unavailable, with a reason, for an unknown
+      state, the state you live in (`location.state`), a working weekday, a late start or too
+      little cash.
+    - `balik-kampung` costs `travelBetween(location.state, homeState).cost` (motorcycle on the road
+      costs 60%, living with family costs nothing) and takes `tripMinutes(travel, 360)`, so living
+      in your home state is a short, cheap hop and living across the sea is a long flight.
+    - Jelajah Malaysia achievements (`jelajah-first`, `jelajah-8`, `jelajah-all`) count
+      `geography.visitedStates`: trip stamps plus the state you live in.
+
 ## Tests
 
 Each new action has tests for: the happy path through `performAction` with a fixed seed, at least
