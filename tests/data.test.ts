@@ -28,6 +28,21 @@ describe('data catalogues', () => {
     }
   });
 
+  it('includes more private universities, courses and jobs to choose from', () => {
+    const shorts = universities.map((u) => u.short);
+    for (const s of ['UTP', 'UTAR', 'TAR UMT', 'UNITEN', 'UniKL', 'APU', 'UCSI', 'INTI', 'Limkokwing', 'MSU', 'Nottingham', 'Heriot-Watt', 'XMUM', 'Swinburne', 'Curtin', 'AIMST']) {
+      expect(shorts).toContain(s);
+    }
+    for (const id of ['mech', 'chem', 'mech-dip', 'cyber-sec', 'fin', 'biz-dip', 'actuarial', 'ece', 'mbbs', 'physio', 'arch', 'mass-comm', 'nursing-dip']) {
+      expect(courses.some((c) => c.id === id), id).toBe(true);
+    }
+    for (const id of ['cloud-eng', 'ux-designer', 'mech-eng', 'process-eng', 'qs', 'architect', 'maintenance-tech', 'doctor', 'pharmacist', 'physiotherapist', 'staff-nurse', 'auditor', 'fin-analyst', 'hr', 'logistics', 'social-media', 'preschool-teacher', 'cabin-crew', 'customer-service', 'tutor', 'fnb-crew', 'intern-eng']) {
+      expect(jobs.some((j) => j.id === id), id).toBe(true);
+    }
+    // Private tuition stays a fictional estimate above the public range; no fee is implied.
+    for (const u of universities) expect(u.tuitionPerSemester, u.id).toBeGreaterThan(0);
+  });
+
   it('every university offers at least one course in the catalogue', () => {
     for (const u of universities) expect(courses.some((c) => u.fields.includes(c.field)), u.id).toBe(true);
   });
