@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles, Trophy, Wallet, Zap, LogOut, Compass, HelpCircle, MessageSquareHeart } from 'lucide-react';
 import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
@@ -35,8 +35,25 @@ const NAV: { id: Tab; label: StringKey; icon: typeof Home }[] = [
   { id: 'feed', label: 'nav.feed', icon: MessageCircle },
 ];
 
+/** "3 Feb 2027": the date without the weekday, so the header fits one line at 360px. */
+const shortDate = (state: Parameters<typeof formatDate>[0]) => formatDate(state).replace(/^[A-Za-z]+,\s*/, '');
+
 export function GameShell({ onExit }: { onExit: () => void }) {
   const { state, settings, setSettings } = useLoadedGame();
+  const navRef = useRef<HTMLElement>(null);
+  const [navH, setNavH] = useState(64);
+  // The bottom nav's real height (icons, labels and the safe-area inset), so screens can park
+  // a sticky bar just above it with `bottom: var(--nav-h)`.
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const read = () => setNavH(Math.ceil(el.getBoundingClientRect().height));
+    read();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const [tab, setTab] = useState<Tab>('home');
   const [menu, setMenu] = useState(false);
   const [tutorial, setTutorial] = useState(!settings.tutorialSeen);
@@ -52,33 +69,42 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   const unseenInvites = state.feed.filter((p) => p.invite && !p.invite.used).length;
 
   return (
-    <div className="mx-auto min-h-screen max-w-lg pb-24">
+    <div className="mx-auto min-h-screen max-w-lg pb-24" style={{ '--nav-h': `${navH}px` } as CSSProperties}>
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-paper/95 px-4 pb-2 pt-3 backdrop-blur">
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => go('home')} className="flex min-h-[44px] min-w-[44px] shrink-0 items-end justify-center rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label="Home">
             <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={30} />
           </button>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[11px] font-semibold text-ink-soft">
+            <div className="whitespace-nowrap text-[11px] font-semibold text-ink-soft">
               <StateFlag state={state.character.homeState} width={18} className="mr-1 align-[-2px]" />
-              Day {state.clock.day + 1} · {formatDate(state)} · Age {ageOf(state)}
-              {state.mode === 'chaotic' && <span className="ml-1 text-hibiscus">· 🌀</span>}
+              Day {state.clock.day + 1} · {shortDate(state)}
             </div>
-            <div className="font-display whitespace-nowrap text-2xl font-black leading-tight tabular-nums">{formatTime(state.clock.minute)}</div>
+            <div className="font-display whitespace-nowrap text-2xl font-black leading-tight tabular-nums">
+              {formatTime(state.clock.minute)}
+              {state.mode === 'chaotic' && (
+                <span className="ml-1 text-base text-hibiscus" role="img" aria-label="Chaotic mode">
+                  🌀
+                </span>
+              )}
+            </div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft">{t('hud.wallet')}</div>
-            <div className={cx('font-display whitespace-nowrap text-base font-black tabular-nums', state.finance.cash < 100 ? 'text-hibiscus' : 'text-teal')}>{formatRM(state.finance.cash, 2)}</div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft">{t('hud.wallet')}</div>
+            <div className={cx('font-display whitespace-nowrap text-base font-black tabular-nums', state.finance.cash < 100 ? 'text-hibiscus' : 'text-teal')}>
+              {state.finance.cash < 100 && <span aria-label="Low cash">! </span>}
+              {formatRM(state.finance.cash, state.finance.cash < 10000 ? 2 : 0)}
+            </div>
           </div>
           <button type="button" onClick={() => setMenu(true)} className="flex h-11 w-11 items-center justify-center rounded-xl border border-ink/10 bg-white" aria-label="Open menu">
             <Menu size={20} />
           </button>
         </div>
         <div className="mt-2 grid grid-cols-4 gap-2">
-          <MiniMeter label={`⚡ ${t('hud.energy')}`} value={state.stats.energy} />
-          <MiniMeter label={`😣 ${t('hud.stress')}`} value={state.stats.stress} invert />
-          <MiniMeter label={`🙂 ${t('hud.mood')}`} value={state.stats.happiness} />
-          <MiniMeter label={`🍽️ ${t('hud.full')}`} value={state.stats.satiety} />
+          <MiniMeter icon="⚡" name={t('hud.energy')} value={state.stats.energy} />
+          <MiniMeter icon="😣" name={t('hud.stress')} value={state.stats.stress} invert />
+          <MiniMeter icon="🙂" name={t('hud.mood')} value={state.stats.happiness} />
+          <MiniMeter icon="🍽️" name={t('hud.full')} value={state.stats.satiety} />
         </div>
       </header>
 
@@ -93,7 +119,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         {tab === 'settings' && <SettingsScreen onExit={onExit} />}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 backdrop-blur safe-bottom" aria-label="Main">
+      <nav ref={navRef} className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 backdrop-blur safe-bottom" aria-label="Main">
         <div className="mx-auto grid max-w-lg grid-cols-5">
           {NAV.map(({ id, label, icon: Icon }) => (
             <button
@@ -113,6 +139,9 @@ export function GameShell({ onExit }: { onExit: () => void }) {
       </nav>
 
       <Modal open={menu} onClose={() => setMenu(false)} title={t('menu.title')}>
+        <p className="mb-3 text-sm font-semibold text-ink-soft">
+          {state.character.name} · Age {ageOf(state)} · {formatDate(state)}
+        </p>
         <div className="grid grid-cols-2 gap-2">
           <MenuItem icon={<Trophy size={20} />} label={t('menu.goals')} onClick={() => go('goals')} />
           <MenuItem icon={<BookOpen size={20} />} label={t('menu.report')} onClick={() => go('report')} highlight={!!state.flags.chapterOffered && !state.ending} />
@@ -161,16 +190,31 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   );
 }
 
-function MiniMeter({ label, value, invert = false }: { label: string; value: number; invert?: boolean }) {
+/** A header meter. In danger it shows a "!" beside the number, so colour is never the only signal. */
+function MiniMeter({ icon, name, value, invert = false }: { icon: string; name: string; value: number; invert?: boolean }) {
   const v = Math.round(value);
   const bad = invert ? v >= 75 : v <= 20;
   return (
     <div>
       <div className="flex justify-between text-[11px] font-semibold text-ink-soft">
-        <span className="truncate">{label}</span>
-        <span className={cx('tabular-nums', bad && 'text-hibiscus')}>{v}</span>
+        <span className="truncate">
+          <span aria-hidden>{icon} </span>
+          {name}
+        </span>
+        <span className={cx('tabular-nums', bad && 'font-bold text-hibiscus')}>
+          {bad && <span aria-hidden>! </span>}
+          {v}
+        </span>
       </div>
-      <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-paper-2">
+      <div
+        role="meter"
+        aria-label={name}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={v}
+        aria-valuetext={`${v} out of 100${bad ? ', in danger' : ''}`}
+        className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-paper-2"
+      >
         <div className={cx('h-full rounded-full transition-all duration-500', bad ? 'bg-hibiscus' : invert ? 'bg-gold' : 'bg-teal-2')} style={{ width: `${v}%` }} />
       </div>
     </div>

@@ -1,14 +1,14 @@
 // The play screen: everything needed for a normal day is one tap away.
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type RefObject, type ReactNode } from 'react';
 import { ChevronDown, FastForward, Moon, SkipForward } from 'lucide-react';
 import { companyById } from '../data/companies';
 import { vehicleById, transportModeInfo } from '../data/vehicles';
 import { formatDate, formatDuration, formatTime } from '../engine/calendar';
 import { formatRM, netWorth, totalDebt } from '../engine/core';
-import { currentObjective, primaryAction, quickActions, upcoming } from '../engine/insights';
+import { currentObjective, primaryStep, quickActions, upcoming } from '../engine/insights';
 import { currentHome } from '../engine/living';
-import type { ActionView } from '../engine/simulationEngine';
+import { viewAction, type ActionView } from '../engine/simulationEngine';
 import { relationshipStatus } from '../engine/social';
 import { useLoadedGame } from '../hooks/useGame';
 import { Room } from '../components/room/Room';
@@ -37,6 +37,9 @@ function greetingFor(minute: number): string {
 export function Dashboard({ go }: { go: (t: Tab) => void }) {
   const { state, request, step, autopilot } = useLoadedGame();
   const [more, setMore] = useState(false);
+  const [questsOpen, setQuestsOpen] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
+  const barH = useElementHeight(barRef);
   const t = useT();
   const greeting = greetingFor(state.clock.minute);
   const daily = dailyStatus(state);
@@ -49,8 +52,19 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
     : nextQuest
       ? { icon: nextQuest.quest.icon, title: `${t('quests.title')}: ${nextQuest.quest.title}`, detail: nextQuest.quest.hint }
       : currentObjective(state);
-  const toQuests = () => document.getElementById('starter-quests')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  const primary = primaryAction(state);
+  // Tapping the goal: a finished quest is claimed right there (through the engine); an open one opens the list.
+  const toQuests = () => {
+    setQuestsOpen(true);
+    window.setTimeout(() => document.getElementById('starter-quests')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+  };
+  const onGoal = () => {
+    if (readyQuest) {
+      const v = viewAction(state, 'claim-quest', readyQuest.quest.id);
+      if (v) request(v, 'tile');
+    } else toQuests();
+  };
+  const next = primaryStep(state);
+  const primary = next?.kind === 'action' ? next.view : null;
   const tiles = quickActions(state).filter((t) => !primary || t.id !== primary.id || t.param !== primary.param);
   const blocked = state.events.pending.length > 0 || !!state.ending;
   const recent = state.log.filter((l) => l.kind !== 'system').slice(0, 4);
@@ -60,11 +74,12 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
   const chats = unreadChats(state);
 
   return (
-    <div className="space-y-3">
+    // The bottom padding keeps the last card clear of the sticky action bar.
+    <div className="space-y-3" style={{ paddingBottom: barH }}>
       {daily && <DailyBanner status={daily} />}
 
       {/* Pou-style room: the character in the middle, animating after each action */}
-      <Room greeting={`${greeting}, ${state.character.name}`} title={`${objective.icon} ${objective.title}`} detail={objective.detail} onGoal={quests && (readyQuest || nextQuest) ? toQuests : undefined} />
+      <Room greeting={`${greeting}, ${state.character.name}`} title={`${objective.icon} ${objective.title}`} detail={objective.detail} onGoal={quests && (readyQuest || nextQuest) ? onGoal : undefined} />
 
       {/* Big round one-tap buttons, one swipeable row */}
       <div className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto px-4 pt-1">
@@ -73,24 +88,8 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
         ))}
       </div>
 
-      {/* Do this next */}
-      {state.flags.chapterOffered && !state.ending ? (
-        <BigButton onClick={() => go('report')} icon="📖" title={t('home.report')} sub={t('home.report.sub')} />
-      ) : primary ? (
-        <BigButton onClick={() => request(primary, 'primary')} icon={primary.icon} title={primary.title} sub={meta(primary)} />
-      ) : (
-        <BigButton disabled={blocked} onClick={step} icon="⏭️" title={t('home.carryon')} sub={t('home.carryon.sub')} />
-      )}
-
-      {/* Time controls */}
-      <div className="grid grid-cols-3 gap-2">
-        <TimeButton disabled={blocked} onClick={step} icon={<SkipForward size={18} />} label={t('home.next')} sub={t('home.next.sub')} />
-        <TimeButton disabled={blocked} onClick={() => autopilot(1)} icon={<Moon size={18} />} label={t('home.endday')} sub={t('home.endday.sub')} />
-        <TimeButton disabled={blocked} onClick={() => autopilot(7)} icon={<FastForward size={18} />} label={t('home.week')} sub={t('home.week.sub')} />
-      </div>
-
       {/* New life? A short guided path */}
-      <StarterQuests go={go} />
+      <StarterQuests go={go} open={questsOpen} onToggle={() => setQuestsOpen((o) => !o)} />
       <InstallBanner day={state.clock.day} />
 
       {/* Inbox chips */}
@@ -125,8 +124,50 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
         {t(more ? 'home.details.hide' : 'home.details.show')} <ChevronDown size={16} className={cx('transition', more && 'rotate-180')} />
       </button>
       {more && <Details go={go} />}
+
+      {/* Sticky action bar: the next step and the time controls sit just above the bottom nav. */}
+      <div
+        ref={barRef}
+        className="fixed inset-x-0 z-20 border-t border-ink/10 bg-paper/95 backdrop-blur"
+        style={{ bottom: 'var(--nav-h, 64px)' }}
+        role="region"
+        aria-label="Next step and time controls"
+      >
+        <div className="mx-auto max-w-lg space-y-2 px-4 py-2">
+          {state.flags.chapterOffered && !state.ending ? (
+            <BigButton onClick={() => go('report')} icon="📖" title={t('home.report')} sub={t('home.report.sub')} />
+          ) : next?.kind === 'navigate' ? (
+            <BigButton onClick={() => go(next.tab)} icon={next.icon} title={next.title} sub={next.sub} />
+          ) : primary ? (
+            <BigButton onClick={() => request(primary, 'primary')} icon={primary.icon} title={primary.title} sub={meta(primary)} />
+          ) : (
+            <BigButton disabled={blocked} onClick={step} icon="⏭️" title={t('home.carryon')} sub={t('home.carryon.sub')} />
+          )}
+          <div className="grid grid-cols-3 gap-2">
+            <TimeButton disabled={blocked} onClick={step} icon={<SkipForward size={18} />} label={t('home.next')} sub={t('home.next.sub')} />
+            <TimeButton disabled={blocked} onClick={() => autopilot(1)} icon={<Moon size={18} />} label={t('home.endday')} sub={t('home.endday.sub')} />
+            <TimeButton disabled={blocked} onClick={() => autopilot(7)} icon={<FastForward size={18} />} label={t('home.week')} sub={t('home.week.sub')} />
+          </div>
+        </div>
+      </div>
     </div>
   );
+}
+
+/** Height in px of an element, kept current as it resizes (0 until measured). */
+function useElementHeight(ref: RefObject<HTMLElement | null>): number {
+  const [h, setH] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const read = () => setH(Math.ceil(el.getBoundingClientRect().height));
+    read();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return h;
 }
 
 function meta(v: ActionView): string {
@@ -141,12 +182,12 @@ function BigButton({ onClick, icon, title, sub, disabled }: { onClick: () => voi
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="anim-pop flex w-full items-center gap-3 rounded-2xl bg-ink p-3.5 text-left text-white shadow-lg transition active:scale-[0.98] disabled:opacity-60"
+      className="anim-pop flex min-h-[56px] w-full items-center gap-3 rounded-2xl bg-ink px-3 py-2 text-left text-white shadow-lg transition active:scale-[0.98] disabled:opacity-60"
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl">{icon}</span>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl">{icon}</span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-base font-bold">{title}</span>
-        {sub && <span className="block text-xs text-white/70">{sub}</span>}
+        <span className="line-clamp-2 block text-base font-bold leading-tight">{title}</span>
+        {sub && <span className="block truncate text-[11px] text-white/70">{sub}</span>}
       </span>
       <span className="text-xl font-black" aria-hidden>
         ▶
@@ -186,11 +227,13 @@ function TimeButton({ onClick, icon, label, sub, disabled }: { onClick: () => vo
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex flex-col items-center gap-0.5 rounded-2xl border border-teal/25 bg-teal-soft py-2.5 text-teal transition active:scale-[0.97] disabled:opacity-50"
+      className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border border-teal/25 bg-teal-soft px-1.5 py-1 text-teal transition active:scale-[0.97] disabled:opacity-50"
     >
-      {icon}
-      <span className="text-sm font-bold leading-none">{label}</span>
-      <span className="text-[10px] font-medium text-teal/70">{sub}</span>
+      <span className="shrink-0">{icon}</span>
+      <span className="min-w-0 text-left">
+        <span className="block truncate text-sm font-bold leading-tight">{label}</span>
+        <span className="block truncate text-[11px] font-medium leading-tight text-teal">{sub}</span>
+      </span>
     </button>
   );
 }
