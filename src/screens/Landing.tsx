@@ -41,7 +41,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
         </div>
         <div className="relative mt-3">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gold">Life simulator · Malaysia</p>
-          <h1 className="font-display mt-2 text-5xl font-black leading-[0.95] tracking-tight">
+          <h1 className="font-pixel mt-2 font-bold text-5xl leading-[0.95]">
             HIDUP
             <br />
             MALAYSIA

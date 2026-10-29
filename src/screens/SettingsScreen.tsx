@@ -129,6 +129,16 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
       </Card>
 
       <SectionTitle>Credits</SectionTitle>
+      <Card className="mb-3 space-y-1 text-xs text-ink-soft">
+        <p>
+          <span className="font-pixel text-base font-bold text-ink">Pixelify Sans</span> is the pixel display font for the clock, wallet and titles. Copyright 2021 The Pixelify Sans Project Authors, used under the SIL Open Font
+          License 1.1.{' '}
+          <a href="./fonts/PixelifySans-OFL.txt" target="_blank" rel="noreferrer" className="font-semibold text-teal underline">
+            Read the licence
+          </a>
+          .
+        </p>
+      </Card>
       <Card className="space-y-2 text-xs text-ink-soft">
         <p>State and federal territory flags are from Wikimedia Commons, shown for identification only. No state government is connected with this game.</p>
         <ul className="space-y-1">
