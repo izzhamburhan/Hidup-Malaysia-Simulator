@@ -47,6 +47,7 @@ export const companies: Company[] = [
   { id: 'inari', name: 'Inari Amertron', industry: 'electronics', pace: 'steady', payFactor: 1.0, badge: 'INR' },
   { id: 'sekolah', name: 'SK Taman Harmoni (fictional)', industry: 'public', pace: 'steady', payFactor: 0.95, fictional: true, badge: 'SK' },
   { id: 'klinik', name: 'Klinik Sihat Selalu (fictional)', industry: 'public', pace: 'fast', payFactor: 0.95, fictional: true, badge: 'KSS' },
+  { id: 'hospital', name: 'Hospital Seri Harapan (fictional)', industry: 'public', pace: 'intense', payFactor: 1.0, fictional: true, badge: 'HSH' },
   { id: 'kopitiam', name: 'Kopitiam Pak Lang (fictional)', industry: 'sme', pace: 'fast', payFactor: 0.9, fictional: true, badge: 'KPL' },
   { id: 'startup', name: 'Lepak Labs Sdn Bhd (fictional)', industry: 'sme', pace: 'intense', payFactor: 0.97, fictional: true, badge: 'LL' },
   { id: 'agency', name: 'Kreatif Gila Agency (fictional)', industry: 'sme', pace: 'intense', payFactor: 0.92, fictional: true, badge: 'KGA' },

@@ -53,7 +53,7 @@ The other tabs (Act, Money, Life, Feed) are for deeper decisions: moving house, 
 | --- | --- |
 | Shared simulation | One state, one clock and one wallet. Passive hunger and tiredness, a forced sleep at 0 energy, end-of-day reports and seeded randomness. |
 | Modes | Realistic, or Chaotic: the same engine with more absurd events, rolled more often. |
-| Education | 24 Malaysian universities and colleges and 14 courses. Classes, study, assignments, final exams, GPA and CGPA, Dean's List, probation, final-year project, graduation, internships, scholarships and a PTPTN-style loan. |
+| Education | 40 Malaysian universities and colleges and 27 courses. Classes, study, assignments, final exams, GPA and CGPA, Dean's List, probation, final-year project, graduation, internships, scholarships and a PTPTN-style loan. |
 | Career | A weekly job board with real company names (as examples only) and fictional listings. Eligibility and match scores, applications, interview events, offers and salary negotiation. Also shifts, overtime, annual leave, absences, twice-yearly reviews, increments, promotions, resigning, CV polishing, courses and networking. |
 | Payroll & money | Payslips with EPF, SOCSO, EIS and a PCB estimate, plus employer contributions. Wallet, savings and emergency fund are kept apart from EPF. Debts with interest, early repayment, overdue debt when you can't pay, buy-now-pay-later, insurance, a tax year and an e-filing event. |
 | Housing | Family home, campus hostel, rented room, shared house, apartment and condo. Deposits, refunds, utilities and commutes. You can buy property after a down payment and debt-service check. |
