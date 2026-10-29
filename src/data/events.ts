@@ -1319,6 +1319,146 @@ export const events: GameEventDef[] = [
     ],
   },
   {
+    id: 'scam-task-job',
+    title: '"Earn RM500 a day liking videos!"',
+    icon: '💼',
+    category: 'money',
+    trigger: 'random',
+    contexts: ['any'],
+    cooldownDays: 120,
+    text: 'A friendly stranger messages: "Part-time job! Like videos, earn RM500 a day. First task pays RM20 right now." To unlock the bigger tasks, you just need to top up a small deposit first.',
+    choices: [
+      { id: 'report', label: 'Block and report it', outcomes: [{ text: 'Real jobs pay you; they never ask you to pay first. Blocked, reported, and you warn your group chat.', effect: { friends: 2, community: 2 } }] },
+      {
+        id: 'try',
+        label: 'Do the first task and top up',
+        outcomes: [
+          {
+            text: 'The RM20 arrives. Then the deposit. Then a bigger deposit to withdraw your "earnings".',
+            effect: { stats: { stress: 12, happiness: -10 } },
+            apply: (s) => {
+              const lost = Math.min(s.finance.cash, 350);
+              if (lost > 0) spend(s, lost, 'scam');
+              return `The group chat vanishes with ${formatRM(lost)}. Task scams pay a little to win trust, then ask for deposits. Stop, keep the evidence, and report it to your bank.`;
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'scam-fake-officer',
+    title: 'An "officer" says you are in trouble',
+    icon: '📞',
+    category: 'money',
+    trigger: 'random',
+    contexts: ['any'],
+    cooldownDays: 150,
+    text: 'A stern caller says an account in your name is under investigation. To clear your name you must move your savings to a "safe account" today, and you must not tell anyone.',
+    choices: [
+      { id: 'hang-up', label: 'Hang up and call your bank yourself', outcomes: [{ text: 'You call the number on the back of your card. Your accounts are fine. No real officer asks you to move money or keep secrets.', effect: { stats: { stress: -1 } } }] },
+      {
+        id: 'comply',
+        label: 'Do as they say, quickly',
+        outcomes: [
+          {
+            text: 'The "safe account" is theirs.',
+            effect: { stats: { stress: 15, happiness: -12 } },
+            apply: (s) => {
+              const lost = Math.min(s.finance.cash, 900);
+              if (lost > 0) spend(s, lost, 'scam');
+              return `${formatRM(lost)} gone before you could think. Pressure and secrecy are the giveaways. Call your bank right away to try to freeze the transfer.`;
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'scam-romance',
+    title: 'Your online match has an emergency',
+    icon: '💌',
+    category: 'money',
+    trigger: 'random',
+    contexts: ['any'],
+    cooldownDays: 180,
+    text: 'You have been chatting for weeks with someone lovely you have never met. Tonight they are stuck: a hospital bill, a frozen bank card, and could you send RM600? They will pay you back next week, promise.',
+    choices: [
+      { id: 'video-call', label: 'Suggest a video call first', outcomes: [{ text: 'Suddenly their camera is broken, then they go quiet. You are a little sad, and a lot richer than you would have been.', effect: { stats: { happiness: -2, stress: -1 } } }] },
+      {
+        id: 'send',
+        label: 'Send the money',
+        outcomes: [
+          {
+            text: 'They thank you warmly. The next emergency arrives two days later.',
+            effect: { stats: { stress: 10, happiness: -12 } },
+            apply: (s) => {
+              const lost = Math.min(s.finance.cash, 600);
+              if (lost > 0) spend(s, lost, 'scam');
+              return `${formatRM(lost)} sent to someone you have never seen. Being kind is never the mistake; sending money to someone you have not met is. Talk to someone you trust, and report the profile.`;
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'scam-hacked-friend',
+    title: 'A friend urgently needs RM300',
+    icon: '📱',
+    category: 'money',
+    trigger: 'random',
+    contexts: ['any'],
+    cooldownDays: 120,
+    text: 'Your friend messages: "Bro/sis, emergency, can transfer RM300 to this account? Not my usual one, will explain later." The typing feels a bit off.',
+    choices: [
+      { id: 'call', label: 'Call them on their normal number first', outcomes: [{ text: 'They pick up, confused: their account was hacked an hour ago. You both warn your group chat.', effect: { friends: 3, community: 1 } }] },
+      {
+        id: 'transfer',
+        label: 'Transfer it, they are your friend',
+        outcomes: [
+          {
+            text: 'Your actual friend calls later asking why you sent money to a stranger.',
+            effect: { stats: { stress: 8, happiness: -6 } },
+            apply: (s) => {
+              const lost = Math.min(s.finance.cash, 300);
+              if (lost > 0) spend(s, lost, 'scam');
+              return `${formatRM(lost)} gone to whoever took over the account. A quick call to verify is never rude.`;
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'scam-otp',
+    title: '"Please read us the 6-digit code"',
+    icon: '🔐',
+    category: 'money',
+    trigger: 'random',
+    contexts: ['any'],
+    cooldownDays: 150,
+    text: 'A caller from your "bank" says your account will be locked unless you confirm the 6-digit code they just sent to your phone.',
+    choices: [
+      { id: 'refuse', label: 'Never share it; hang up', outcomes: [{ text: 'Banks never ask for your one-time code. The SMS even said so in small print. Account safe.', effect: { stats: { stress: -1 } } }] },
+      {
+        id: 'share',
+        label: 'Read out the code',
+        outcomes: [
+          {
+            text: 'The call ends abruptly. A new device logs in to your banking app.',
+            effect: { stats: { stress: 14, happiness: -10 } },
+            apply: (s) => {
+              const lost = Math.min(s.finance.cash, 700);
+              if (lost > 0) spend(s, lost, 'scam');
+              return `${formatRM(lost)} transferred out. A one-time code is a key to your money: never share it with anyone. Call your bank's official line now.`;
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'insurance-offer',
     title: 'Medical card offer',
     icon: '🩹',
