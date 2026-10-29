@@ -197,6 +197,10 @@ export const ownershipActions: ActionDef[] = [
     title: (s) => (s.finance.insurance ? 'Cancel medical insurance' : 'Buy medical insurance / takaful'),
     description: 'RM150/month (fictional estimate). Covers big hospital bills in health events.',
     minutes: 30,
+    confirm: (s) =>
+      s.finance.insurance
+        ? 'You stop paying RM150/month, but big hospital bills in health events will no longer be covered. You can buy it again any time.'
+        : null,
     run: (s) => {
       s.finance.insurance = !s.finance.insurance;
       return [s.finance.insurance ? 'Covered. Peace of mind +1.' : 'Policy cancelled. Hope you stay healthy.'];
