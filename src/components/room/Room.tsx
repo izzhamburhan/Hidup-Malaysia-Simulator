@@ -2,6 +2,7 @@
 // and a short animation after each action.
 
 import { useEffect, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { foodById } from '../../data/foods';
 import { moodOf } from '../../engine/appearance';
 import type { Mood } from '../../engine/types';
@@ -82,10 +83,13 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
         </div>
 
         {/* Goal */}
-        <button type="button" onClick={onGoal} disabled={!onGoal} className="absolute left-3 right-14 top-3 z-20 rounded-2xl bg-white/80 px-3 py-2 text-left shadow-sm backdrop-blur-sm enabled:active:scale-[0.99]">
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">{greeting}</div>
-          <div className="font-display truncate text-[15px] font-black leading-tight text-ink">{title}</div>
-          <div className="truncate text-xs text-ink-soft">{detail}</div>
+        <button type="button" onClick={onGoal} disabled={!onGoal} className="absolute left-3 right-14 top-3 z-20 flex items-center gap-1 rounded-2xl bg-white/80 px-3 py-2 text-left shadow-sm backdrop-blur-sm enabled:active:scale-[0.99]">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[11px] font-bold uppercase tracking-[0.1em] text-teal">{greeting}</span>
+            <span className="font-display block truncate text-[15px] font-black leading-tight text-ink">{title}</span>
+            <span className="block truncate text-xs text-ink-soft">{detail}</span>
+          </span>
+          {onGoal && <ChevronRight size={18} className="shrink-0 text-teal" aria-hidden />}
         </button>
 
         {season && (
@@ -142,7 +146,7 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
             <span className={cx('inline-block text-[44px] leading-none', petBusy ? 'motion-hop' : 'cat-idle')} aria-hidden>
               🐈
             </span>
-            <span className="mt-0.5 rounded-full bg-black/30 px-1.5 text-[9px] font-bold uppercase tracking-wider text-white">{state.pet.name}</span>
+            <span className="mt-0.5 rounded-full bg-black/30 px-1.5 text-[11px] font-bold uppercase tracking-wider text-white">{state.pet.name}</span>
           </button>
         )}
 
@@ -180,7 +184,7 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
         {/* Lights down while sleeping (already dark at night) */}
         <div className={cx('pointer-events-none absolute inset-0 z-10 bg-[#0b1230] transition-opacity duration-700', motion === 'sleep' && light !== 'night' ? 'opacity-45' : 'opacity-0')} aria-hidden />
 
-        <div className="absolute bottom-2 left-3 z-20 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{room.label}</div>
+        <div className="absolute bottom-2 left-3 z-20 rounded-full bg-black/25 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">{room.label}</div>
       </section>
       <div className="mt-2 grid grid-cols-3 gap-2" role="toolbar" aria-label="Room">
         {(

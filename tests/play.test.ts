@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { chooseRoutineStep, runAutopilot, runRoutineStep } from '../src/engine/simulationEngine';
-import { primaryAction, quickActions } from '../src/engine/insights';
+import { primaryAction, primaryStep, quickActions } from '../src/engine/insights';
+import { companyById } from '../src/data/companies';
 import { jobEligibility, refreshListings } from '../src/engine/career';
 import { jobById } from '../src/data/jobs';
 import { at, makeGame } from './helpers';
@@ -115,6 +116,39 @@ describe('play suggestions', () => {
     s.stats.satiety = 90;
     s.career.applications.push({ id: 'a1', listingId: 'x', jobId: 'admin', companyId: 'tm', appliedDay: 0, respondDay: 0, status: 'interview', interviewDay: 0, offerSalary: 2500, score: 80 });
     expect(primaryAction(s)).toMatchObject({ id: 'attend-interview', param: 'a1' });
+  });
+
+  it('primary action: one offer names the company and salary, not a bare "Accept offer"', () => {
+    const s = at(makeGame(), 0, 10);
+    s.stats.satiety = 90;
+    s.career.applications.push({ id: 'a1', listingId: 'x', jobId: 'admin', companyId: 'tm', appliedDay: 0, respondDay: 0, status: 'offer', offerSalary: 2500, score: 80 });
+    const p = primaryAction(s);
+    expect(p).toMatchObject({ id: 'accept-offer', param: 'a1' });
+    expect(p?.title).toContain(companyById('tm')!.name);
+    expect(p?.title).toContain('2,500');
+    const step = primaryStep(s);
+    expect(step).toMatchObject({ kind: 'action' });
+  });
+
+  it('primary action: several offers point at comparing them in Life, never a blind accept', () => {
+    const s = at(makeGame(), 0, 10);
+    s.stats.satiety = 90;
+    s.career.applications.push(
+      { id: 'a1', listingId: 'x', jobId: 'admin', companyId: 'tm', appliedDay: 0, respondDay: 0, status: 'offer', offerSalary: 2500, score: 80 },
+      { id: 'a2', listingId: 'y', jobId: 'admin', companyId: 'tm', appliedDay: 0, respondDay: 0, status: 'offer', offerSalary: 2800, score: 70 },
+    );
+    expect(primaryAction(s)?.id).not.toBe('accept-offer');
+    expect(primaryStep(s)).toMatchObject({ kind: 'navigate', tab: 'life' });
+    const step = primaryStep(s);
+    expect(step?.kind === 'navigate' && step.title).toContain('2');
+  });
+
+  it('primary step does not mutate the state', () => {
+    const s = at(makeGame(), 0, 10);
+    s.career.applications.push({ id: 'a1', listingId: 'x', jobId: 'admin', companyId: 'tm', appliedDay: 0, respondDay: 0, status: 'offer', offerSalary: 2500, score: 80 });
+    const before = JSON.stringify(s);
+    primaryStep(s);
+    expect(JSON.stringify(s)).toBe(before);
   });
 
   it('quick actions: at most 6, unique, available first', () => {
