@@ -73,25 +73,25 @@ export function GameShell({ onExit }: { onExit: () => void }) {
     <div className="mx-auto min-h-screen max-w-lg pb-24" style={{ '--nav-h': `${navH}px` } as CSSProperties}>
       <header className={cx('header-tint sticky top-0 z-30 border-b border-ink/10 px-4 pb-2 pt-3 backdrop-blur', `header-tint-${daylight(state.clock.minute)}`)} data-daylight={daylight(state.clock.minute)}>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => go('home')} className="flex min-h-[44px] min-w-[44px] shrink-0 items-end justify-center rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label="Home">
+          <button type="button" onClick={() => go('home')} className="flex min-h-[44px] min-w-[44px] shrink-0 items-end justify-center rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label={t('nav.home')}>
             <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={30} />
           </button>
           <div className="min-w-0 flex-1">
             <div className="whitespace-nowrap text-[11px] font-semibold text-ink-soft">
               <StateFlag state={state.character.homeState} width={18} className="mr-1 align-[-2px]" />
-              Day {state.clock.day + 1} · {shortDate(state)}
+              {t('hud.day', { n: state.clock.day + 1 })} · {shortDate(state)}
             </div>
             <div className="font-display whitespace-nowrap text-2xl font-black leading-tight tabular-nums">
               {formatTime(state.clock.minute)}
               {state.mode === 'chaotic' && (
-                <span className="ml-1 text-base text-hibiscus" role="img" aria-label="Chaotic mode">
+                <span className="ml-1 text-base text-hibiscus" role="img" aria-label={t('hud.chaotic')}>
                   🌀
                 </span>
               )}
             </div>
           </div>
           <WalletFigure cash={state.finance.cash} label={t('hud.wallet')} animate={!settings.reducedMotion} />
-          <button type="button" onClick={() => setMenu(true)} className="flex h-11 w-11 items-center justify-center rounded-xl border border-ink/10 bg-white" aria-label="Open menu">
+          <button type="button" onClick={() => setMenu(true)} className="flex h-11 w-11 items-center justify-center rounded-xl border border-ink/10 bg-white" aria-label={t('hud.menuOpen')}>
             <Menu size={20} />
           </button>
         </div>
@@ -114,7 +114,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         {tab === 'settings' && <SettingsScreen onExit={onExit} />}
       </main>
 
-      <nav ref={navRef} className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 backdrop-blur safe-bottom" aria-label="Main">
+      <nav ref={navRef} className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 backdrop-blur safe-bottom" aria-label={t('nav.aria')}>
         <div className="mx-auto grid max-w-lg grid-cols-5">
           {NAV.map(({ id, label, icon: Icon }) => (
             <button
@@ -135,7 +135,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
 
       <Modal open={menu} onClose={() => setMenu(false)} title={t('menu.title')}>
         <p className="mb-3 text-sm font-semibold text-ink-soft">
-          {state.character.name} · Age {ageOf(state)} · {formatDate(state)}
+          {t('menu.who', { name: state.character.name, age: ageOf(state), date: formatDate(state) })}
         </p>
         <div className="grid grid-cols-2 gap-2">
           <MenuItem icon={<Trophy size={20} />} label={t('menu.goals')} onClick={() => go('goals')} />
@@ -199,6 +199,7 @@ function WalletFigure({ cash, label, animate }: { cash: number; label: string; a
     return () => clearTimeout(timer);
   }, [cash, animate]);
   const low = cash < 100;
+  const t = useT();
   return (
     <div className="shrink-0 text-right">
       <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft">{label}</div>
@@ -206,7 +207,7 @@ function WalletFigure({ cash, label, animate }: { cash: number; label: string; a
         key={flash?.key ?? 0}
         className={cx('font-display -mr-1 whitespace-nowrap rounded-md pl-1 pr-1 text-base font-black leading-tight tabular-nums', low ? 'text-hibiscus' : 'text-teal', flash && `wallet-flash-${flash.dir}`)}
       >
-        {low && <span aria-label="Low cash">! </span>}
+        {low && <span aria-label={t('hud.lowCash')}>! </span>}
         {formatRM(cash, cash < 10000 ? 2 : 0)}
       </div>
     </div>
@@ -215,6 +216,7 @@ function WalletFigure({ cash, label, animate }: { cash: number; label: string; a
 
 /** A header meter. In danger it shows a "!" beside the number, so colour is never the only signal. */
 function MiniMeter({ icon, name, value, invert = false }: { icon: string; name: string; value: number; invert?: boolean }) {
+  const t = useT();
   const v = Math.round(value);
   const bad = invert ? v >= 75 : v <= 20;
   return (
@@ -235,7 +237,7 @@ function MiniMeter({ icon, name, value, invert = false }: { icon: string; name: 
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={v}
-        aria-valuetext={`${v} out of 100${bad ? ', in danger' : ''}`}
+        aria-valuetext={`${t('hud.meter', { v })}${bad ? `, ${t('hud.danger')}` : ''}`}
         className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-paper-2"
       >
         <div className={cx('h-full rounded-full transition-all duration-500', bad ? 'bg-hibiscus' : invert ? 'bg-gold' : 'bg-teal-2')} style={{ width: `${v}%` }} />

@@ -230,4 +230,11 @@ describe('festive long-distance traffic jam event', () => {
     const family = at(makeGame({ backgroundId: 'fresh-home', homeState: 'Kelantan' }), DEEPAVALI, 8);
     expect(e.when!(family)).toBe(false);
   });
+
+  it('is not the Ramadan season: the jam belongs to the festive rush home', () => {
+    const e = eventById('festive-jam')!;
+    const RAMADAN = Math.round((Date.UTC(2027, 2, 1) - Date.UTC(2027, 0, 4)) / 86400000);
+    const far = at(makeGame({ backgroundId: 'renter', homeState: 'Kelantan' }), RAMADAN, 8);
+    expect(e.when!(far)).toBe(false);
+  });
 });

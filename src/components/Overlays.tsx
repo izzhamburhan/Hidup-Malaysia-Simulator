@@ -8,6 +8,7 @@ import { formatDate, formatDuration } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { useLoadedGame } from '../hooks/useGame';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useT } from '../hooks/useT';
 import { countUpValue, paydayFor } from '../lib/moments';
 import { Button, Modal, Pill, cx } from './ui';
 
@@ -24,13 +25,14 @@ const CATEGORY_TONE: Record<string, 'teal' | 'gold' | 'red' | 'green' | 'blue' |
 
 export function EventModal() {
   const { state, choose } = useLoadedGame();
+  const t = useT();
   const ev = currentEvent(state);
   if (!ev) return null;
   return (
     <Modal open dismissable={false} title={<span className="flex items-center gap-2"><span className="text-2xl">{ev.icon}</span>{ev.title}</span>}>
       <div className="mb-3 flex gap-2">
         <Pill tone={CATEGORY_TONE[ev.category] ?? 'neutral'}>{ev.category}</Pill>
-        {state.events.pending.length > 1 && <Pill>+{state.events.pending.length - 1} more</Pill>}
+        {state.events.pending.length > 1 && <Pill>{t('event.more', { n: state.events.pending.length - 1 })}</Pill>}
       </div>
       <p className="text-[15px] leading-relaxed">{ev.text}</p>
       <div className="mt-4 space-y-2">
@@ -60,6 +62,7 @@ export function EventModal() {
 
 export function ConfirmModal() {
   const { confirmFor, confirmPending, cancelPending } = useLoadedGame();
+  const t = useT();
   if (!confirmFor) return null;
   return (
     <Modal
@@ -69,9 +72,9 @@ export function ConfirmModal() {
       footer={
         <>
           <Button variant="secondary" onClick={cancelPending}>
-            Not now
+            {t('confirm.notNow')}
           </Button>
-          <Button onClick={confirmPending}>Confirm</Button>
+          <Button onClick={confirmPending}>{t('confirm.ok')}</Button>
         </>
       }
     >
@@ -80,8 +83,8 @@ export function ConfirmModal() {
         <p>{confirmFor.confirm}</p>
       </div>
       <p className="mt-3 text-xs text-ink-soft">
-        Takes {formatDuration(confirmFor.minutes)}
-        {confirmFor.cost > 0 ? ` · ${formatRM(confirmFor.cost)} up front` : ''}. All prices are fictional game estimates.
+        {t('confirm.takes', { time: formatDuration(confirmFor.minutes) })}
+        {confirmFor.cost > 0 ? ` · ${t('confirm.upfront', { amount: formatRM(confirmFor.cost) })}` : ''}. {t('confirm.fictional')}
       </p>
     </Modal>
   );
@@ -175,6 +178,7 @@ function CountUpRM({ value, decimals = 2 }: { value: number; decimals?: number }
 
 export function DayReportModal() {
   const { dayReport, dismissDayReport, state } = useLoadedGame();
+  const t = useT();
   if (!dayReport || state.events.pending.length) return null;
   const net = dayReport.earned - dayReport.spent;
   // Stagger: payday card first, then income, then body stats, then highlights (all well under a second).
@@ -185,13 +189,13 @@ export function DayReportModal() {
       open
       onClose={dismissDayReport}
       title={<span className="flex items-center gap-2"><Moon size={20} className="text-teal" /> {formatDate(state, dayReport.day)}</span>}
-      footer={<Button onClick={dismissDayReport}>Next day ☀️</Button>}
+      footer={<Button onClick={dismissDayReport}>{t('day.next')}</Button>}
     >
       {slip && (
         <div className="report-in mb-3 flex items-center gap-3 rounded-2xl bg-gold-soft p-3" style={stagger(0)}>
           <span className="coin-pop text-3xl" aria-hidden="true">🪙</span>
           <div className="min-w-0">
-            <div className="text-xs font-bold uppercase tracking-wider text-[#7a5a00]">Gaji masuk! Net pay</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-[#7a5a00]">{t('day.payday')}</div>
             <div className="text-2xl font-extrabold text-leaf">
               <CountUpRM value={slip.net} />
             </div>
@@ -199,15 +203,15 @@ export function DayReportModal() {
         </div>
       )}
       <div className="grid grid-cols-3 gap-2 text-center">
-        <Mini label="Earned" value={formatRM(dayReport.earned)} tone="text-leaf" delay={off} />
-        <Mini label="Spent" value={formatRM(dayReport.spent)} tone="text-hibiscus" delay={off + 60} />
-        <Mini label="Net" value={formatRM(net)} tone={net >= 0 ? 'text-leaf' : 'text-hibiscus'} delay={off + 120} />
-        <Mini label="Calories in*" value={`${dayReport.caloriesIn}`} delay={off + 220} />
-        <Mini label="Burned*" value={`${dayReport.caloriesOut}`} delay={off + 260} />
-        <Mini label="Last sleep" value={`${dayReport.sleepHours}h`} tone={dayReport.sleepHours < 6 ? 'text-hibiscus' : undefined} delay={off + 300} />
+        <Mini label={t('day.earned')} value={formatRM(dayReport.earned)} tone="text-leaf" delay={off} />
+        <Mini label={t('day.spent')} value={formatRM(dayReport.spent)} tone="text-hibiscus" delay={off + 60} />
+        <Mini label={t('day.net')} value={formatRM(net)} tone={net >= 0 ? 'text-leaf' : 'text-hibiscus'} delay={off + 120} />
+        <Mini label={t('day.kcalIn')} value={`${dayReport.caloriesIn}`} delay={off + 220} />
+        <Mini label={t('day.burned')} value={`${dayReport.caloriesOut}`} delay={off + 260} />
+        <Mini label={t('day.sleep')} value={`${dayReport.sleepHours}h`} tone={dayReport.sleepHours < 6 ? 'text-hibiscus' : undefined} delay={off + 300} />
       </div>
       <div className="report-in mt-3" style={stagger(off + 380)}>
-        <div className="text-xs font-bold uppercase tracking-wider text-ink-soft">Highlights</div>
+        <div className="text-xs font-bold uppercase tracking-wider text-ink-soft">{t('day.highlights')}</div>
         {dayReport.highlights.length ? (
           <ul className="mt-1 space-y-1 text-sm">
             {dayReport.highlights.map((h, i) => (
@@ -215,10 +219,10 @@ export function DayReportModal() {
             ))}
           </ul>
         ) : (
-          <p className="mt-1 text-sm text-ink-soft">A quiet day. Those count too.</p>
+          <p className="mt-1 text-sm text-ink-soft">{t('day.quiet')}</p>
         )}
       </div>
-      <p className="report-in mt-3 text-[11px] text-ink-soft" style={stagger(off + 380)}>*Calorie figures are rough game estimates, not nutrition advice.</p>
+      <p className="report-in mt-3 text-[11px] text-ink-soft" style={stagger(off + 380)}>{t('day.kcalNote')}</p>
     </Modal>
   );
 }

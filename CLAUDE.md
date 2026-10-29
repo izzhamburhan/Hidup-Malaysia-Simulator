@@ -104,21 +104,21 @@ SKILLS.md              index of every skill
 | System | State |
 | --- | --- |
 | Engine core (types, rng, calendar, core, time, daily) | done: seeded RNG, shared clock, passive needs, day/month/year processing |
-| Economy and payroll | done: monthly commitments, overdue debt, payslips (EPF/SOCSO/EIS/PCB simplified), EPF dividend, tax year + e-filing event; money sinks: fictional Dana Harapan Seri unit trust (seeded 2-7% yearly dividend), lifestyle upgrades, family duties, sedekah; a way out of broke (delivery gig, family top-up, calmer broke event) |
+| Economy and payroll | done: monthly commitments, overdue debt, payslips (EPF/SOCSO/EIS/PCB simplified), EPF dividend, tax year + e-filing event; money sinks: fictional Dana Harapan Seri unit trust (seeded 2-7% yearly dividend), lifestyle upgrades, family duties, sedekah; a way out of broke (delivery gig, family top-up, calmer broke event); the routine moves cash above about 3 months of bills into savings once a month |
 | Living (housing, transport) | done: 6 rentals incl. campus hostel, 3 properties with DSR check, 5 commute modes, 13 vehicles with loans, each drawn as a pixel-art body shape in its own colour (no logos or photos) |
 | Career | done: 47 jobs and 24 example employers, promotions up a 5-rung ladder with tougher bars and mastery-gated top rungs, occasional headhunt offers, skill mastery past 100, weekly job board, applications, interview event, offers/negotiation, shifts, overtime, leave, reviews, promotions |
 | Education | done: 40 institutions, 27 courses, classes, assignments, exams/GPA/CGPA, FYP, probation, graduation, PTPTN-style loan |
 | Social and feed | done: prospects, dating stages to marriage, breakups, family/friends drift, fictional feed with likes and invites |
-| Events | done: 108 events (88 random + 20 scheduled; includes 6 scam-awareness events and a festive traffic jam), modes, contexts, cooldowns, follow-ups, safety net |
-| Actions catalogue | done: 106 actions across 15 categories with availability reasons and confirmations |
+| Events | done: 111 events (90 random + 21 scheduled; includes 6 scam-awareness events, a festive traffic jam and banjir at home weighted by state and monsoon month), modes, contexts, cooldowns, follow-ups, safety net |
+| Actions catalogue | done: 108 actions across 15 categories with availability reasons and confirmations |
 | Achievements and endings | done: 46 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
 | Malaysia map | done: stylised pixel-tile map of the 16 states (`src/data/malaysia.ts`, not to scale) on a Life "Map" tab with pins for residence, kampung and campus; Jelajah Malaysia day trips (`trip-state`, road or flight from `geography.ts`) collect stamps and 3 achievements; moving state (`move-state`) with fictional cost and pay factors relative to Selangor; balik kampung cost and time follow the map; save v9 |
 | State flags | done: official flags of all 13 states and 3 federal territories (Wikimedia Commons, credited), flag grid in character creation, flag in the game header |
-| Festive seasons | done: 11 seasons on the simulated calendar (CNY, Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
+| Festive seasons | done: 12 seasons on the simulated calendar (CNY, Ramadan (festive only: pasar Ramadan and buka puasa for everyone, no fasting mechanic), Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
 | Starter quests | done: 6 quests for a new life (eat, move, career step, chat, me time, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
 | Chat | done: partner, Geng Lepak (friends) and family threads on the Feed tab; 16 scripted conversations, pick one of 3 replies, real effects on trust, friends and family, one reply per thread a day |
-| Bahasa Malaysia | beta: EN/BM switch on the landing screen and in Settings; menus, buttons, Home, room, daily banner and settings translated; stories, events and catalogue names still English |
+| Bahasa Malaysia | beta: EN/BM switch on the landing screen and in Settings; the UI chrome is translated (tutorial, overlays and day report, header, Act, Life tabs and bodies incl. the map, Money and payslip, Settings, Landing, offers sheet); stories, events, catalogue names and the Goals, Report, character creation, chat and mini-game screens are still English |
 | Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot; a slim strip on the landing page opens an explainer sheet with Start/Continue; a compact in-run banner with goal, "My life" exit and Share |
 | Ending collection | done: endings found across all lives (own LocalStorage key), Goals gallery with hints, "new ending found" on the Report |
 | Mini-games | done: Kejar Bas, Teh Tarik and Ingat Order from the room's Games button; score becomes a capped mood reward (first 3 plays a day). Action games: 23 everyday actions (run, workout, gym, sports, work, overtime, hustle, mamak, classes, study, assignment, FYP, self-study, CV, apply, interview, friend, partner and family chats) open a 5-10 second game first (tap race, timing bar, memory, pour, quick maths, pick a reply); the score adds a small capped bonus through `performAction` options, Skip does the action as normal, and Settings can turn them off |
@@ -131,7 +131,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 45 Vitest files, 370 tests |
+| Tests | done: 48 Vitest files, 410 tests |
 
 ## Commands
 

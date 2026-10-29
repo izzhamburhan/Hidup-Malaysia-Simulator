@@ -92,11 +92,27 @@ export function kampungRoute(state: GameState): { from: string; to: string } | n
   return { from, to };
 }
 
-function againstSelangor(factor: number, what: string): string {
+export type CompareTier = 'same' | 'bitHigher' | 'higher' | 'bitLower' | 'lower';
+
+/** How a state's factor compares with Selangor (factor 1): the one rule the English and Malay notes share. */
+export function compareTier(factor: number): CompareTier {
   const diff = factor - 1;
-  if (Math.abs(diff) < 0.03) return `${what}: about the same as Selangor.`;
+  if (Math.abs(diff) < 0.03) return 'same';
   const small = Math.abs(diff) < 0.1;
-  return `${what}: ${small ? 'a bit ' : ''}${diff > 0 ? 'higher' : 'lower'} than Selangor.`;
+  if (diff > 0) return small ? 'bitHigher' : 'higher';
+  return small ? 'bitLower' : 'lower';
+}
+
+const TIER_TEXT: Record<CompareTier, string> = {
+  same: 'about the same as Selangor.',
+  bitHigher: 'a bit higher than Selangor.',
+  higher: 'higher than Selangor.',
+  bitLower: 'a bit lower than Selangor.',
+  lower: 'lower than Selangor.',
+};
+
+function againstSelangor(factor: number, what: string): string {
+  return `${what}: ${TIER_TEXT[compareTier(factor)]}`;
 }
 
 /** "Cost of living: a bit higher than Selangor." The factor is a fictional game estimate. */
