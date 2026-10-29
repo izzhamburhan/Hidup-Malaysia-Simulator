@@ -1,6 +1,8 @@
 // Love life and family actions.
 
+import { BUKA_PUASA, PASAR_RAMADAN } from '../../data/festive';
 import { addMemory, adjustFamily, applyStats, canAfford, formatRM, round2, spend } from '../core';
+import { bukaPuasa, bukaPuasaReason, isRamadan, pasarRamadan, pasarRamadanReason } from '../festive';
 import { isWeekend } from '../calendar';
 import { tripMinutes, travelBetween } from '../geography';
 import { currentHome } from '../living';
@@ -293,6 +295,34 @@ export const peopleActions: ActionDef[] = [
       adjustFamily(s, a >= 300 ? 6 : 3);
       applyStats(s, { happiness: 3 });
     },
+  },
+  // --- Ramadan, festive only (everyone is welcome; nothing assumes anyone fasts) ---
+  {
+    id: 'pasar-ramadan',
+    category: 'food',
+    icon: '🥘',
+    title: 'Pasar Ramadan',
+    description: `A bag of bazaar food, ${hoursLabel(PASAR_RAMADAN.from, PASAR_RAMADAN.to)} during Ramadan (${formatRM(PASAR_RAMADAN.price)}, fictional estimate). Everyone is welcome to browse.`,
+    minutes: PASAR_RAMADAN.minutes,
+    cost: PASAR_RAMADAN.price,
+    energy: -2,
+    contexts: ['food', 'social'],
+    visible: isRamadan,
+    available: pasarRamadanReason,
+    run: pasarRamadan,
+  },
+  {
+    id: 'buka-puasa',
+    category: 'social',
+    icon: '🌙',
+    title: 'Buka puasa gathering',
+    description: BUKA_PUASA.description,
+    minutes: BUKA_PUASA.minutes,
+    energy: 0,
+    contexts: ['social', 'family'],
+    visible: isRamadan,
+    available: bukaPuasaReason,
+    run: bukaPuasa,
   },
   {
     id: 'parent-allowance',

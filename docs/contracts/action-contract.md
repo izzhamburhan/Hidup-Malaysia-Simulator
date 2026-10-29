@@ -102,6 +102,17 @@ interface ActionView {
     - Jelajah Malaysia achievements (`jelajah-first`, `jelajah-8`, `jelajah-all`) count
       `geography.visitedStates`: trip stamps plus the state you live in.
 
+13. **Ramadan is festive only.** The `ramadan` season (`src/data/festive.ts`, own `window` on the
+    simulated calendar: 21 February to 17 March, anchored on Hari Raya Aidilfitri, ending where the
+    Raya season starts) has a crescent and stars garland, festive wishes with no packet, and two
+    actions in `peopleActions.ts`, both visible only during the season. `pasar-ramadan` (category
+    `food`) is open 4-7 PM, costs `PASAR_RAMADAN.price` (fictional estimate, `canAfford` checked),
+    adds a little satiety and happiness, and has a small seeded chance of a fun find line.
+    `buka-puasa` (category `social`) is open 6:30-8:30 PM, is free, and raises friends, family
+    (and a partner's trust and satisfaction), happiness and calm. Each is once a day (flags
+    `pasar-ramadan-day`, `buka-puasa-day`) and explains itself when unavailable. There is no fasting
+    mechanic, no rule about eating, and the game never assumes the player or any NPC observes.
+
 ## Tests
 
 Each new action has tests for: the happy path through `performAction` with a fixed seed, at least
