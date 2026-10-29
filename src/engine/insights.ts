@@ -89,6 +89,13 @@ export type LifeTabId = 'career' | 'study' | 'food' | 'fitness' | 'people' | 'ho
  */
 export const ALL_LIFE_TABS: LifeTabId[] = ['career', 'study', 'food', 'fitness', 'people', 'home', 'transport', 'hustle', 'shop', 'map'];
 
+/** The Life tab that matches the player's stage of life: it comes right after the map. */
+export function stageTab(s: GameState): LifeTabId {
+  if (s.education.status === 'studying') return 'study';
+  if (!s.career.job && (s.character.lifeStage === 'entrepreneur' || s.hustles.length > 0)) return 'hustle';
+  return 'career';
+}
+
 export function rankLifeTabs(s: GameState): LifeTabId[] {
   const studying = s.education.status === 'studying';
   const jobless = !s.career.job && !studying && s.character.lifeStage !== 'retired';
@@ -105,6 +112,11 @@ export function rankLifeTabs(s: GameState): LifeTabId[] {
     // The developer wants the map first on Life, always.
     map: 1000,
   };
+  // Then the tab for the player's stage of life (Study, Hustle or Career), and Career right behind
+  // it when the stage tab is Study or Hustle (internships, a backup job). The rest by relevance.
+  const stage = stageTab(s);
+  score[stage] = 500;
+  if (stage !== 'career') score.career = 400;
   return [...ALL_LIFE_TABS].sort((a, b) => score[b] - score[a]);
 }
 
