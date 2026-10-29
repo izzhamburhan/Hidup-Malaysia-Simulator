@@ -22,6 +22,7 @@ import { OrgBadge } from '../components/OrgBadge';
 import { NpcAvatar } from '../components/PixelAvatar';
 import { ActionCard, VariantRow } from '../components/ActionCard';
 import { CareerApplications, hasLiveApplications } from '../components/CareerApplications';
+import { PixelMap } from '../components/PixelMap';
 import { Button, Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, StatBar, Tabs, cx } from '../components/ui';
 
 type Sub = LifeTabId;
@@ -36,6 +37,7 @@ const LABELS: Record<Sub, string> = {
   transport: '🚗 Transport',
   hustle: '🛠️ Hustle',
   shop: '🛒 Shop',
+  map: '🗺️ Map',
 };
 
 export function LifeScreen() {
@@ -59,6 +61,7 @@ export function LifeScreen() {
         {sub === 'transport' && <TransportTab />}
         {sub === 'hustle' && <HustleTab />}
         {sub === 'shop' && <ShopTab />}
+        {sub === 'map' && <PixelMap />}
       </div>
     </div>
   );
