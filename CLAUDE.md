@@ -130,7 +130,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 35 Vitest files, 239 tests |
+| Tests | done: 36 Vitest files, 244 tests |
 
 ## Commands
 
