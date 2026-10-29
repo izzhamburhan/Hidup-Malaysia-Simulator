@@ -41,7 +41,7 @@ export function StarterQuests({ go, open, onToggle }: { go: (tab: QuestTab) => v
           <button
             type="button"
             onClick={() => claim(ready.quest.id)}
-            className="min-h-[44px] shrink-0 rounded-full bg-teal px-3 text-[13px] font-bold text-white shadow-sm active:scale-95"
+            className="hit-44 h-9 shrink-0 rounded-full bg-teal px-3.5 text-[13px] font-bold text-white shadow-sm active:scale-95"
           >
             {t('quests.claim', { n: QUEST_REWARD.cash })}
           </button>
@@ -63,12 +63,12 @@ export function StarterQuests({ go, open, onToggle }: { go: (tab: QuestTab) => v
                   {!got && <span className="block text-[11px] leading-tight text-ink-soft">{quest.hint}</span>}
                 </span>
                 {done && !got && (
-                  <button type="button" onClick={() => claim(quest.id)} className="min-h-[44px] shrink-0 rounded-full bg-teal px-4 text-sm font-bold text-white shadow-sm active:scale-95">
+                  <button type="button" onClick={() => claim(quest.id)} className="hit-44 h-9 shrink-0 rounded-full bg-teal px-3.5 text-sm font-bold text-white shadow-sm active:scale-95">
                     {t('quests.claim', { n: QUEST_REWARD.cash })}
                   </button>
                 )}
                 {!done && quest.tab !== 'home' && (
-                  <button type="button" onClick={() => go(quest.tab)} className="min-h-[44px] shrink-0 rounded-full border border-teal/30 px-4 text-sm font-bold text-teal active:scale-95">
+                  <button type="button" onClick={() => go(quest.tab)} className="hit-44 h-9 shrink-0 rounded-full border border-teal/30 px-3.5 text-sm font-bold text-teal active:scale-95">
                     {t('quests.go')}
                   </button>
                 )}
