@@ -137,7 +137,10 @@ function CareerTab() {
       <SectionTitle>Skills</SectionTitle>
       <Card className="grid grid-cols-2 gap-x-4 gap-y-2">
         {SKILL_KEYS.map((k) => (
-          <StatBar key={k} label={k[0].toUpperCase() + k.slice(1)} value={state.skills[k]} tone="sky" />
+          <div key={k}>
+            <StatBar label={k[0].toUpperCase() + k.slice(1)} value={state.skills[k]} tone="sky" />
+            {state.skills[k] >= 100 && state.mastery[k] >= 1 && <div className="mt-0.5 text-[11px] font-semibold text-teal">Mastery {Math.floor(state.mastery[k])}</div>}
+          </div>
         ))}
         <StatBar label="CV quality" value={state.career.cvQuality} tone="gold" />
       </Card>

@@ -892,7 +892,7 @@ export const events: GameEventDef[] = [
     category: 'commute',
     trigger: 'random',
     contexts: ['commute'],
-    cooldownDays: 8,
+    cooldownDays: 30,
     when: (s) => s.transport.mode === 'public',
     text: '"We apologise for the inconvenience. Due to a technical issue, services are delayed." The platform fills up like a sardine tin.',
     choices: [
@@ -1073,7 +1073,7 @@ export const events: GameEventDef[] = [
     category: 'opportunity',
     trigger: 'random',
     contexts: ['work', 'any'],
-    cooldownDays: 60,
+    cooldownDays: 120,
     weight: 0.7,
     when: (s) => hasJob(s) && s.career.experienceDays >= 60,
     text: '"Hi! I came across your profile and think you\'d be a GREAT fit for an exciting opportunity." Could be real. Let\'s find out.',
@@ -1255,7 +1255,7 @@ export const events: GameEventDef[] = [
     category: 'money',
     trigger: 'random',
     contexts: ['night', 'home', 'shopping'],
-    cooldownDays: 21,
+    cooldownDays: 60,
     text: '12:00 AM. MEGA FLASH SALE. "Up to 90% off!" The cart has 11 items you didn\'t know you needed an hour ago.',
     choices: [
       { id: 'checkout', label: 'Check out everything', cost: 280, outcomes: [{ text: 'Dopamine hit! Seven parcels are on their way. You\'ll forget what three of them are.', effect: { stats: { happiness: 6 } } }] },
@@ -1294,7 +1294,7 @@ export const events: GameEventDef[] = [
     category: 'money',
     trigger: 'random',
     contexts: ['any'],
-    cooldownDays: 30,
+    cooldownDays: 90,
     text: 'An SMS: "Your parcel is held at customs. Pay RM2.50 handling fee to release: hxxp://parcel-myy-release.co". Then a call from an "officer" who knows your full name.',
     choices: [
       { id: 'report', label: 'Ignore, block, and report', outcomes: [{ text: 'Blocked and reported. You warn the family group chat too.', effect: { family: 2, community: 2, stats: { stress: -1 } } }] },
@@ -1385,7 +1385,7 @@ export const events: GameEventDef[] = [
     category: 'family',
     trigger: 'random',
     contexts: ['family', 'home', 'any'],
-    cooldownDays: 45,
+    cooldownDays: 90,
     text: 'The family group chat: "Kenduri this Saturday at Tok\'s house in {home}! Everyone come, need help with the cooking." 23 relatives have replied with stickers.',
     choices: [
       { id: 'help', label: 'Go early and help cook', cost: 60, outcomes: [{ text: 'You stir a giant pot of rendang for three hours. The aunties approve of you now.', effect: { family: 10, skills: { cooking: 2 }, stats: { energy: -14, happiness: 6, satiety: 30 }, minutes: 300 }, apply: (s) => sawFamily(s) }] },
@@ -1498,7 +1498,7 @@ export const events: GameEventDef[] = [
     category: 'social',
     trigger: 'random',
     contexts: ['night', 'social', 'home'],
-    cooldownDays: 7,
+    cooldownDays: 45,
     text: '{friend}: "Mamak? 10 PM. Same place." It\'s already 9:45 PM.',
     choices: [
       { id: 'go', label: 'Go', cost: 15, outcomes: [{ text: 'Roti tisu, Milo ais, and a two-hour debate about nothing. Perfect.', effect: { friends: 5, stats: { happiness: 6, stress: -4, satiety: 20, energy: -6 }, minutes: 120 }, apply: (s) => sawFriends(s) }] },
@@ -1513,7 +1513,7 @@ export const events: GameEventDef[] = [
     category: 'social',
     trigger: 'random',
     contexts: ['social', 'any'],
-    cooldownDays: 30,
+    cooldownDays: 120,
     text: 'It\'s {friend}\'s birthday! The group is planning a surprise dinner with a cake that has a slightly unflattering photo of them on it.',
     choices: [
       { id: 'join', label: 'Join and chip in for the gift', cost: 70, outcomes: [{ text: 'The surprise works. {friend} cries, laughs, then eats the cake with their own face on it.', effect: { friends: 7, stats: { happiness: 6, satiety: 25 }, minutes: 180 }, apply: (s) => sawFriends(s) }] },
@@ -1749,7 +1749,7 @@ export const events: GameEventDef[] = [
     category: 'housing',
     trigger: 'random',
     contexts: ['home'],
-    cooldownDays: 45,
+    cooldownDays: 90,
     when: hasHousemates,
     text: 'Your housemate {friend} hasn\'t paid their share of the bills for two months. The electricity company doesn\'t care about excuses.',
     choices: [
@@ -1797,7 +1797,7 @@ export const events: GameEventDef[] = [
     category: 'housing',
     trigger: 'random',
     contexts: ['home'],
-    cooldownDays: 60,
+    cooldownDays: 120,
     text: 'Scheduled water disruption for 24 hours in your area. You find out after you\'ve applied shampoo.',
     choices: [
       { id: 'bottled', label: 'Buy bottled water', cost: 20, outcomes: [{ text: 'You rinse with mineral water. Fancy, in a sad way.', effect: { stats: { stress: 2 } } }] },
@@ -1812,7 +1812,7 @@ export const events: GameEventDef[] = [
     category: 'housing',
     trigger: 'random',
     contexts: ['home', 'night'],
-    cooldownDays: 30,
+    cooldownDays: 120,
     text: 'It\'s 1 AM. Your neighbour is renovating? Moving furniture? Bowling? The thumps continue.',
     choices: [
       { id: 'talk', label: 'Knock and ask nicely', outcomes: [{ weight: 2, text: 'They apologise. They were assembling a wardrobe for their kid. It stops.', effect: { community: 2, stats: { stress: -2 } } }, { weight: 1, text: 'They shrug. It continues for another hour.', effect: { stats: { stress: 4, energy: -5 } } }] },
@@ -1846,7 +1846,7 @@ export const events: GameEventDef[] = [
     category: 'civic',
     trigger: 'random',
     contexts: ['home', 'any'],
-    cooldownDays: 45,
+    cooldownDays: 120,
     text: 'The residents\' association is organising a gotong-royong this Saturday morning: clear drains, cut grass, then free nasi lemak.',
     choices: [
       { id: 'join', label: 'Join in', outcomes: [{ text: 'Three hours of honest work, a sunburnt neck, and the best nasi lemak of your life.', effect: { community: 6, friends: 2, stats: { fitness: 2, energy: -12, happiness: 5, satiety: 25 }, minutes: 180 }, apply: (s) => communityAct(s) }] },
@@ -1892,7 +1892,7 @@ export const events: GameEventDef[] = [
     category: 'civic',
     trigger: 'random',
     contexts: ['commute', 'any'],
-    cooldownDays: 60,
+    cooldownDays: 150,
     text: 'There\'s a pothole on your road so deep it has its own ecosystem. Everyone swerves. Nobody reports it.',
     choices: [
       { id: 'report', label: 'Report it via the council\'s complaint app', outcomes: [{ text: 'Two weeks later, it\'s patched. You feel like a superhero.', effect: { community: 4, minutes: 10 }, apply: (s) => communityAct(s) }] },
@@ -1978,7 +1978,7 @@ export const events: GameEventDef[] = [
     trigger: 'random',
     contexts: ['home', 'commute'],
     weight: 3,
-    cooldownDays: 20,
+    cooldownDays: 150,
     when: (s) => !s.pet,
     text: 'A chubby ginger cat follows you all the way home and sits at your door, meowing like he pays rent. The neighbours call him Oyen.',
     choices: [
@@ -2062,7 +2062,7 @@ export const events: GameEventDef[] = [
     category: 'opportunity',
     trigger: 'random',
     contexts: ['any', 'home'],
-    cooldownDays: 30,
+    cooldownDays: 90,
     when: (s) => s.skills.tech >= 25 || s.skills.creative >= 25,
     text: (s) =>
       s.skills.tech >= s.skills.creative
@@ -2177,7 +2177,7 @@ export const events: GameEventDef[] = [
     category: 'world',
     trigger: 'random',
     contexts: ['any'],
-    cooldownDays: 45,
+    cooldownDays: 90,
     text: '37 degrees. The air feels like a hairdryer. Even the cats are lying flat.',
     choices: [
       { id: 'hydrate', label: 'Stay hydrated, cold drinks', cost: 10, outcomes: [{ text: 'Air bandung ais saves the day.', effect: { stats: { health: 2, happiness: 2 } } }] },
