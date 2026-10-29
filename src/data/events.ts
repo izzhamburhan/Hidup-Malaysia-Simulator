@@ -13,6 +13,7 @@ import { breakUp, deepTalk, meetSomeone } from '../engine/social';
 import { adoptPet } from '../engine/pet';
 import { PET } from './pets';
 import { chance, pick, randInt } from '../engine/rng';
+import { backgroundById } from './backgrounds';
 import { companies } from './companies';
 import { jobById, jobs } from './jobs';
 import { housingById } from './housing';
@@ -1374,6 +1375,67 @@ export const events: GameEventDef[] = [
         ],
       },
       { id: 'ignore', label: 'Ignore, the T&C has 14 pages', outcomes: [{ text: 'You close the app. Your money stays liquid (and spendable).', effect: {} }] },
+    ],
+  },
+  {
+    id: 'family-topup',
+    title: 'Mak can tell something is off',
+    icon: '💌',
+    category: 'money',
+    trigger: 'random',
+    contexts: ['any'],
+    cooldownDays: 60,
+    weight: 6,
+    when: (s) => {
+      const overdue = s.finance.debts.filter((d) => d.kind === 'overdue').reduce((sum, d) => sum + d.balance, 0);
+      const brokeLast = s.events.cooldowns.broke;
+      const supported = backgroundById(s.character.backgroundId).familyAllowance > 0 && (isStudying(s) || s.housing.optionId === 'family') && !hasJob(s);
+      return s.finance.cash < 50 && overdue >= 100 && !supported && (brokeLast === undefined || s.clock.day - brokeLast >= 14);
+    },
+    text: 'Mak calls "just to ask if you ate". Then, gently: "Money tight, is it? Abah and I put a little aside. Take it, we don\'t need to talk about it. Well, maybe a little."',
+    choices: [
+      {
+        id: 'gift',
+        label: 'Accept RM300 and listen to the advice',
+        hint: 'Family +, stress -. Pride takes a small hit, and you will hear about eating properly.',
+        outcomes: [
+          {
+            text: 'RM300 lands in ten minutes. The call lasts forty. You promise to eat vegetables and to visit soon.',
+            effect: { cash: 300, family: 3, stats: { stress: -6, happiness: -2 }, minutes: 30 },
+            apply: (s) => sawFamily(s),
+          },
+        ],
+      },
+      {
+        id: 'loan',
+        label: 'Take RM400 as a loan and repay RM50 a month',
+        hint: 'Family +. You keep your pride, but it is a small monthly commitment.',
+        outcomes: [
+          {
+            text: '"Pay back when you can, no rush." You set RM50 a month anyway. Abah approves of the spreadsheet.',
+            effect: {
+              cash: 400,
+              family: 2,
+              stats: { stress: -4 },
+              addDebt: { kind: 'family', label: 'Borrowed from Mak and Abah', amount: 400, monthlyPayment: 50, annualRate: 0 },
+              minutes: 30,
+            },
+            apply: (s) => sawFamily(s),
+          },
+        ],
+      },
+      {
+        id: 'decline',
+        label: 'Thank Mak and say you will manage',
+        hint: 'Free. Pride intact, wallet still thin.',
+        outcomes: [
+          {
+            text: '"Okay, but the offer stands." You hang up feeling proud and a little hungry. Maybe a delivery gig tomorrow.',
+            effect: { family: 1, stats: { happiness: 1, stress: 2 }, minutes: 15 },
+            apply: (s) => sawFamily(s),
+          },
+        ],
+      },
     ],
   },
 
