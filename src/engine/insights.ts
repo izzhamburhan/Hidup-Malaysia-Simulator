@@ -102,7 +102,8 @@ export function rankLifeTabs(s: GameState): LifeTabId[] {
     transport: s.career.job && !s.transport.vehicleId ? 55 : 20,
     hustle: s.hustles.length > 0 ? 50 : 8,
     shop: 12,
-    map: 4,
+    // The developer wants the map first on Life, always.
+    map: 1000,
   };
   return [...ALL_LIFE_TABS].sort((a, b) => score[b] - score[a]);
 }

@@ -11,22 +11,23 @@ describe('rankLifeTabs (orders, never removes, Life sub-tabs)', () => {
     expect(new Set(order)).toEqual(new Set(ALL));
   });
 
-  it('puts Career first for an unemployed, non-studying player', () => {
+  it('puts the Map tab first, always', () => {
+    expect(rankLifeTabs(makeGame())[0]).toBe('map');
+    expect(rankLifeTabs(makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs' }))[0]).toBe('map');
+    expect(rankLifeTabs(makeGame({ lifeStage: 'working', jobId: 'swe' }))[0]).toBe('map');
+  });
+
+  it('puts Career right after the map for an unemployed, non-studying player', () => {
     const s = makeGame({ lifeStage: 'fresh_grad' });
     expect(s.career.job).toBeNull();
     expect(s.education.status).not.toBe('studying');
-    expect(rankLifeTabs(s)[0]).toBe('career');
+    expect(rankLifeTabs(s)[1]).toBe('career');
   });
 
   it('puts Study above Career while the player is actively studying', () => {
     const s = makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs' });
     const order = rankLifeTabs(s);
     expect(order.indexOf('study')).toBeLessThan(order.indexOf('career'));
-  });
-
-  it('keeps the Map tab last so it never displaces the working tabs', () => {
-    expect(rankLifeTabs(makeGame()).at(-1)).toBe('map');
-    expect(rankLifeTabs(makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs' })).at(-1)).toBe('map');
   });
 
   it('moves Hustle above Shop once the player has a side hustle, and below it otherwise', () => {
