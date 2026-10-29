@@ -575,7 +575,8 @@ export const events: GameEventDef[] = [
     contexts: ['family', 'commute'],
     weight: 3,
     cooldownDays: 25,
-    when: (s) => festiveSeason(s) !== null && s.housing.optionId !== 'family' && isLongDistance(s.location.state, s.character.homeState),
+    // The rush home is a festival thing; the Ramadan season itself is not a travel peak.
+    when: (s) => (festiveSeason(s)?.id ?? 'ramadan') !== 'ramadan' && s.housing.optionId !== 'family' && isLongDistance(s.location.state, s.character.homeState),
     text: 'The whole country is balik kampung at the same time. The highway to {home} is one long red line on the map, and the family chat keeps asking "Dah sampai mana?"',
     choices: [
       {
