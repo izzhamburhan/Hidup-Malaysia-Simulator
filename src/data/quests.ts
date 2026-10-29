@@ -35,7 +35,16 @@ export const QUESTS: Quest[] = [
     tab: 'feed',
     done: (s) => Object.keys(s.flags).some((k) => /^chat-(partner|friends|family)-day$/.test(k)),
   },
-  { id: 'home', icon: '🛋️', title: 'Make it yours', hint: 'Buy something from Decor, or adopt Oyen.', tab: 'home', done: (s) => s.decor.owned.length > 0 || !!s.pet },
+  // Id stays 'home' so claims in existing saves still match. Any one of these counts, and
+  // most are free: nobody has to buy decor.
+  {
+    id: 'home',
+    icon: '🎮',
+    title: 'Me time',
+    hint: 'Do something just for you: play a mobile game, take a trip, decorate, or adopt Oyen.',
+    tab: 'home',
+    done: (s) => s.counters.gamingHours > 0 || s.counters.trips > 0 || s.decor.owned.length > 0 || !!s.pet,
+  },
   { id: 'day', icon: '🌅', title: 'Survive day one', hint: 'Make it to tomorrow (End day works).', tab: 'home', done: (s) => s.clock.day >= 1 },
 ];
 

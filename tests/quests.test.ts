@@ -19,6 +19,18 @@ describe('starter quests', () => {
     expect(questStatus(s)!.every((q) => q.done)).toBe(true);
   });
 
+  it('Me time can be done for free, without buying decor', () => {
+    const done = (s: ReturnType<typeof makeGame>) => questStatus(s)!.find((q) => q.quest.id === 'home')!.done;
+    const s = makeGame({ seed: 4 });
+    expect(done(s)).toBe(false);
+    s.counters.gamingHours = 1;
+    expect(done(s)).toBe(true);
+    const t = makeGame({ seed: 4 });
+    t.counters.trips = 1;
+    expect(done(t)).toBe(true);
+    expect(s.decor.owned).toHaveLength(0);
+  });
+
   it('claims once through the engine', () => {
     const s = makeGame({ seed: 4 });
     s.counters.mealsEaten = 1;
