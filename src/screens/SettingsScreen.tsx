@@ -92,7 +92,7 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
             <span className="text-sm font-semibold">{t('settings.language')}</span>
             <div className="flex rounded-full bg-paper-2 p-0.5 text-xs font-bold" role="group" aria-label="Language / Bahasa">
               {(['en', 'ms'] as const).map((l) => (
-                <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'min-h-[44px] rounded-full bg-teal px-3 text-white' : 'min-h-[44px] px-3 text-ink-soft'}>
+                <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'hit-44 h-8 rounded-full bg-teal px-3 text-white' : 'hit-44 h-8 px-3 text-ink-soft'}>
                   {l === 'en' ? 'English' : 'Bahasa Malaysia'}
                 </button>
               ))}
