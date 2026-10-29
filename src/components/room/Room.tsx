@@ -83,7 +83,7 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
         </div>
 
         {/* Goal */}
-        <button type="button" onClick={onGoal} disabled={!onGoal} className="absolute left-3 right-14 top-3 z-20 flex items-center gap-1 rounded-2xl bg-white/80 px-3 py-2 text-left shadow-sm backdrop-blur-sm enabled:active:scale-[0.99]">
+        <button type="button" onClick={onGoal} disabled={!onGoal} className="songket-edge-left absolute left-3 right-14 top-3 z-20 flex items-center gap-1 rounded-2xl bg-gold-soft/95 py-2 pl-4 pr-3 text-left shadow-[0_2px_8px_rgba(29,27,22,0.18)] backdrop-blur-sm enabled:active:scale-[0.99]">
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[11px] font-bold uppercase tracking-[0.1em] text-teal">{greeting}</span>
             <span className="font-display block truncate text-[15px] font-black leading-tight text-ink">{title}</span>

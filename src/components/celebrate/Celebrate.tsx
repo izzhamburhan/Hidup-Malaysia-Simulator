@@ -57,7 +57,7 @@ export function Celebrate() {
         <div className="anim-pop relative flex items-center gap-3 rounded-3xl border-2 border-gold bg-white p-4 shadow-xl">
           <span className="celebrate-icon flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gold-soft text-4xl">{c.icon}</span>
           <div className="min-w-0 flex-1">
-            <div className="font-display text-lg font-black leading-tight text-ink">{c.title}</div>
+            <div className="font-pixel text-2xl font-bold leading-tight text-ink">{c.title}</div>
             <div className="text-sm text-ink-soft">{c.sub}</div>
             {more > 0 && <div className="mt-0.5 text-xs font-bold text-teal">+{more} more in your log</div>}
           </div>

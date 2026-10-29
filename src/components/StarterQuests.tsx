@@ -25,7 +25,7 @@ export function StarterQuests({ go, open, onToggle }: { go: (tab: QuestTab) => v
   };
 
   return (
-    <section id="starter-quests" className="scroll-mt-24 rounded-2xl border border-teal/25 bg-white shadow-sm">
+    <section id="starter-quests" className="songket-edge scroll-mt-24 rounded-2xl border border-gold/50 bg-gold-soft shadow-[0_2px_8px_rgba(29,27,22,0.12)]">
       <div className="flex items-center gap-2 pr-2">
         <button type="button" onClick={onToggle} aria-expanded={open} aria-controls="starter-quests-list" className="flex min-h-[48px] min-w-0 flex-1 items-center gap-2 rounded-2xl px-3 text-left">
           <span aria-hidden>🎯</span>
@@ -54,7 +54,7 @@ export function StarterQuests({ go, open, onToggle }: { go: (tab: QuestTab) => v
           </div>
           <ul className="space-y-1.5">
             {list.map(({ quest, done, claimed: got }) => (
-              <li key={quest.id} className={cx('flex items-center gap-2 rounded-xl px-2 py-1.5', done && !got ? 'bg-gold-soft' : got ? 'opacity-55' : '')}>
+              <li key={quest.id} className={cx('flex items-center gap-2 rounded-xl px-2 py-1.5', done && !got ? 'bg-white' : got ? 'opacity-55' : '')}>
                 <span className="text-xl" aria-hidden>
                   {got ? '✅' : quest.icon}
                 </span>

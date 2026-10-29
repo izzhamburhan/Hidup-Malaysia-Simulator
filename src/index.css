@@ -22,6 +22,76 @@
   --font-display: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
 
+/* ---- UI v4-A: pixel display font and header tint (self-hosted, OFL-1.1; see Settings > Credits) ----
+   Pixelify Sans is used for the clock, wallet, landing title and big-moment titles only; body text
+   keeps the system face. Pixel faces stay crisp at multiples of 8px (16, 24, 32, 48), so those are
+   the sizes the components use. font-display: swap shows the fallback until the font arrives. */
+@font-face {
+  font-family: "Pixelify Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/pixelify-sans-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Pixelify Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/pixelify-sans-latin-700-normal.woff2") format("woff2");
+}
+
+.font-pixel {
+  font-family: "Pixelify Sans", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: none;
+}
+
+/* Header follows the time of day (daylight() in room/activity.ts). Subtle tints of the paper
+   colour. Worst-case contrast on the tints: ink 13.7, ink-soft 6.2, teal 9.5, hibiscus 4.1 (large
+   wallet text only; small "in danger" numbers use #9a3412, 5.8). The wallet flash peaks at 18%. */
+.header-tint {
+  transition: background-color 0.7s ease;
+}
+.header-tint-morning {
+  background-color: rgba(253, 244, 214, 0.95);
+}
+.header-tint-day {
+  background-color: rgba(251, 247, 239, 0.95);
+}
+.header-tint-dusk {
+  background-color: rgba(250, 230, 213, 0.95);
+}
+.header-tint-night {
+  background-color: rgba(228, 229, 238, 0.95);
+}
+
+/* Wallet flash: a brief tint when cash changes (green up, red down). */
+@keyframes wallet-flash-up {
+  0% { background-color: rgba(47, 125, 79, 0.18); }
+  100% { background-color: rgba(47, 125, 79, 0); }
+}
+@keyframes wallet-flash-down {
+  0% { background-color: rgba(194, 65, 12, 0.18); }
+  100% { background-color: rgba(194, 65, 12, 0); }
+}
+.wallet-flash-up {
+  animation: wallet-flash-up 0.9s ease-out both;
+}
+.wallet-flash-down {
+  animation: wallet-flash-down 0.9s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-tint {
+    transition: none;
+  }
+  .wallet-flash-up,
+  .wallet-flash-down {
+    animation: none;
+  }
+}
+/* ---- end UI v4-A ---- */
+
 html,
 body,
 #root {
@@ -45,6 +115,63 @@ body {
     linear-gradient(-45deg, transparent 75%, rgba(231, 180, 50, 0.16) 75%);
   background-size: 18px 18px;
   background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+}
+
+/* UI v4: songket edge and chip. The .songket diamond motif, drawn at a small scale in teal on gold as a
+   thin band. It is an edge or an accent only, never a fill behind text. Static, so reduced motion needs nothing.
+   .songket-edge: band along the top of a hero card (the host needs position and a radius). */
+.songket-edge {
+  position: relative;
+}
+.songket-edge::before,
+.songket-chip {
+  background-color: var(--color-gold);
+  background-image:
+    linear-gradient(45deg, rgba(15, 61, 62, 0.7) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(15, 61, 62, 0.7) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(15, 61, 62, 0.7) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(15, 61, 62, 0.7) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+.songket-edge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  pointer-events: none;
+}
+/* .songket-edge-left: the same band down the left edge of a compact row (the host must be positioned). */
+.songket-edge-left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 5px;
+  border-top-left-radius: inherit;
+  border-bottom-left-radius: inherit;
+  pointer-events: none;
+  background-color: var(--color-gold);
+  background-image:
+    linear-gradient(45deg, rgba(15, 61, 62, 0.7) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(15, 61, 62, 0.7) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(15, 61, 62, 0.7) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(15, 61, 62, 0.7) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+/* .songket-chip: a small inline accent beside a section title. */
+.songket-chip {
+  display: inline-block;
+  width: 18px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 1px;
 }
 
 @keyframes rise {
@@ -94,6 +221,49 @@ body {
 .safe-bottom {
   padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
 }
+
+/* V4-C moments: day report stagger and payday coin pop. Opacity and transform only;
+   content is always in the DOM. Delay comes from --d on each element. Switched off by
+   .reduced-motion (above) and prefers-reduced-motion (below), so everything shows at once. */
+@keyframes report-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes coin-pop {
+  0% {
+    transform: scale(0.6) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+.report-in {
+  animation: report-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.coin-pop {
+  display: inline-block;
+  animation: coin-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-in,
+  .coin-pop {
+    animation: none;
+  }
+}
+/* end V4-C moments */
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;

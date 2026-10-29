@@ -52,7 +52,7 @@ export function CareerApplications() {
       <div className="space-y-2">
         {live.map((a) =>
           a.status === 'offer' ? (
-            <Card key={a.id} className="p-3">
+            <Card key={a.id} tier="hero" className="p-3 pt-4">
               <div className="flex items-center gap-3">
                 <OrgBadge text={companyById(a.companyId)?.badge ?? '?'} kind={companyById(a.companyId)?.fictional ? 'fictional' : 'company'} size={40} title={companyById(a.companyId)?.name} />
                 <div className="min-w-0 flex-1">

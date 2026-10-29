@@ -12,6 +12,7 @@ import { StateFlag } from '../components/StateFlag';
 import { moodOf } from '../engine/appearance';
 import { ConfirmModal, DayReportModal, EventModal, FeedbackToast } from '../components/Overlays';
 import { Modal, cx } from '../components/ui';
+import { daylight } from '../components/room/activity';
 import { ActionGame } from '../components/minigames/ActionGame';
 import { Tutorial } from '../components/Tutorial';
 import { FeedbackSheet, feedbackAvailable } from '../components/FeedbackSheet';
@@ -70,7 +71,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
 
   return (
     <div className="mx-auto min-h-screen max-w-lg pb-24" style={{ '--nav-h': `${navH}px` } as CSSProperties}>
-      <header className="sticky top-0 z-30 border-b border-ink/10 bg-paper/95 px-4 pb-2 pt-3 backdrop-blur">
+      <header className={cx('header-tint sticky top-0 z-30 border-b border-ink/10 px-4 pb-2 pt-3 backdrop-blur', `header-tint-${daylight(state.clock.minute)}`)} data-daylight={daylight(state.clock.minute)}>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => go('home')} className="flex min-h-[44px] min-w-[44px] shrink-0 items-end justify-center rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label="Home">
             <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={30} />
@@ -89,13 +90,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
               )}
             </div>
           </div>
-          <div className="shrink-0 text-right">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft">{t('hud.wallet')}</div>
-            <div className={cx('font-display whitespace-nowrap text-base font-black tabular-nums', state.finance.cash < 100 ? 'text-hibiscus' : 'text-teal')}>
-              {state.finance.cash < 100 && <span aria-label="Low cash">! </span>}
-              {formatRM(state.finance.cash, state.finance.cash < 10000 ? 2 : 0)}
-            </div>
-          </div>
+          <WalletFigure cash={state.finance.cash} label={t('hud.wallet')} animate={!settings.reducedMotion} />
           <button type="button" onClick={() => setMenu(true)} className="flex h-11 w-11 items-center justify-center rounded-xl border border-ink/10 bg-white" aria-label="Open menu">
             <Menu size={20} />
           </button>
@@ -190,6 +185,34 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   );
 }
 
+/** Wallet figure in the pixel face. Flashes green or red briefly when cash changes (UI-only, read from state). */
+function WalletFigure({ cash, label, animate }: { cash: number; label: string; animate: boolean }) {
+  const prev = useRef(cash);
+  const [flash, setFlash] = useState<{ dir: 'up' | 'down'; key: number } | null>(null);
+  useEffect(() => {
+    const before = prev.current;
+    prev.current = cash;
+    if (before === cash || !animate) return;
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    setFlash((f) => ({ dir: cash > before ? 'up' : 'down', key: (f?.key ?? 0) + 1 }));
+    const timer = setTimeout(() => setFlash(null), 900);
+    return () => clearTimeout(timer);
+  }, [cash, animate]);
+  const low = cash < 100;
+  return (
+    <div className="shrink-0 text-right">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft">{label}</div>
+      <div
+        key={flash?.key ?? 0}
+        className={cx('font-display -mr-1 whitespace-nowrap rounded-md pl-1 pr-1 text-base font-black leading-tight tabular-nums', low ? 'text-hibiscus' : 'text-teal', flash && `wallet-flash-${flash.dir}`)}
+      >
+        {low && <span aria-label="Low cash">! </span>}
+        {formatRM(cash, cash < 10000 ? 2 : 0)}
+      </div>
+    </div>
+  );
+}
+
 /** A header meter. In danger it shows a "!" beside the number, so colour is never the only signal. */
 function MiniMeter({ icon, name, value, invert = false }: { icon: string; name: string; value: number; invert?: boolean }) {
   const v = Math.round(value);
@@ -201,7 +224,7 @@ function MiniMeter({ icon, name, value, invert = false }: { icon: string; name: 
           <span aria-hidden>{icon} </span>
           {name}
         </span>
-        <span className={cx('tabular-nums', bad && 'font-bold text-hibiscus')}>
+        <span className={cx('tabular-nums', bad && 'font-bold text-[#9a3412]')}>
           {bad && <span aria-hidden>! </span>}
           {v}
         </span>
