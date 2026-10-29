@@ -2,13 +2,19 @@
 
 import { foodById, portions } from '../../data/foods';
 import { gymById, gyms } from '../../data/lifestyle';
-import { addSkills, applyStats, clamp, formatRM, highlight, round2, spend } from '../core';
+import { MALAYSIA, mapStateByName } from '../../data/malaysia';
+import { addMemory, addSkills, applyStats, canAfford, clamp, formatRM, highlight, round2, spend } from '../core';
 import { MINUTES_PER_DAY } from '../calendar';
+import { isWorkday, onLeave } from '../career';
+import { tripMinutes, travelBetween, visitedStates } from '../geography';
 import { currentHome } from '../living';
 import { chance } from '../rng';
 import { meetSomeone, refreshFeed } from '../social';
 import type { GameState } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
+
+/** Minutes spent at the other end of a state trip (the travel each way is added on top). */
+const TRIP_STAY_MINUTES = 240;
 
 function parseFood(param?: string) {
   const [foodId, portionId] = (param ?? '').split(':');
@@ -452,6 +458,47 @@ export const lifeActions: ActionDef[] = [
       applyStats(s, { happiness: 14, stress: -14, energy: -18 });
       highlight(s, 'Road trip!');
       return ['Bad singalongs, good food, great memories.'];
+    },
+  },
+  {
+    id: 'trip-state',
+    category: 'leisure',
+    icon: '🧭',
+    dedicated: true,
+    title: (_s, p) => `Trip to ${mapStateByName(p)?.name ?? 'another state'}`,
+    description: (s, p) => {
+      const target = mapStateByName(p);
+      if (!target) return 'Pick a state on the map to visit.';
+      const t = travelBetween(s.location.state, target.name);
+      return `${target.blurb} ${t.mode === 'flight' ? 'Flight' : 'Road'} there and back about ${formatRM(t.cost)}.`;
+    },
+    minutes: (s, p) => tripMinutes(travelBetween(s.location.state, p ?? ''), TRIP_STAY_MINUTES),
+    cost: (s, p) => (mapStateByName(p) ? travelBetween(s.location.state, p ?? '').cost : 0),
+    energy: -15,
+    contexts: ['social', 'commute'],
+    available: (s, p) => {
+      const target = mapStateByName(p);
+      if (!target) return 'Pick a state from the map to visit.';
+      if (target.name === s.location.state) return `You already live in ${target.name}. Pick somewhere new to visit.`;
+      if (isWorkday(s) && !onLeave(s)) return 'Trips are for weekends, public holidays or annual leave days.';
+      if (!withinHours(s, 6, 11)) return 'Leave early: 6–11 AM.';
+      const cost = travelBetween(s.location.state, target.name).cost;
+      if (!canAfford(s, cost)) return `Not enough cash for the trip (about ${formatRM(cost)}).`;
+      return needEnergy(s, 25);
+    },
+    run: (s, p) => {
+      const target = mapStateByName(p)!;
+      spend(s, travelBetween(s.location.state, target.name).cost, `trip to ${target.name}`);
+      s.counters.trips += 1;
+      applyStats(s, { happiness: 12, stress: -10, energy: -15 });
+      const lines = [`Selamat tiba di ${target.name}! ${target.blurb}`];
+      if (s.travel.stamps[target.name] === undefined) {
+        s.travel.stamps[target.name] = s.clock.day;
+        addMemory(s, `First trip to ${target.name}`);
+        highlight(s, `New stamp: ${target.name}`);
+        lines.push(`New stamp for ${target.name}! You have visited ${visitedStates(s).length} of ${MALAYSIA.length} states and territories.`);
+      }
+      return lines;
     },
   },
   {
