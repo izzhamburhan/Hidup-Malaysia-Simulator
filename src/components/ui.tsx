@@ -32,11 +32,24 @@ export function Button({ variant = 'primary', className, children, ...rest }: Bu
   );
 }
 
-export function Card({ className, children, onClick }: { className?: string; children: ReactNode; onClick?: () => void }) {
+/**
+ * Two tiers. `plain` (default) is the quiet card: white, a soft shadow and no border, so spacing does
+ * the grouping (a caller that passes its own `border-*` colour still gets a border). `hero` marks a
+ * moment worth a look: gold tint, thin songket band along the top edge, a slightly stronger shadow.
+ */
+export function Card({ className, children, onClick, tier = 'plain' }: { className?: string; children: ReactNode; onClick?: () => void; tier?: 'plain' | 'hero' }) {
+  const own = className ?? '';
   return (
     <div
       onClick={onClick}
-      className={cx('rounded-2xl border border-ink/10 p-4 shadow-[0_1px_0_rgba(29,27,22,0.04)]', !/\bbg-/.test(className ?? '') && 'bg-white', className)}
+      className={cx(
+        'rounded-2xl p-4',
+        tier === 'hero'
+          ? 'songket-edge border border-gold/50 shadow-[0_2px_8px_rgba(29,27,22,0.12)]'
+          : cx('shadow-[0_1px_3px_rgba(29,27,22,0.08)]', /\bborder-/.test(own) ? 'border' : 'border-0'),
+        !/\bbg-/.test(own) && (tier === 'hero' ? 'bg-gold-soft' : 'bg-white'),
+        className,
+      )}
     >
       {children}
     </div>
@@ -46,7 +59,10 @@ export function Card({ className, children, onClick }: { className?: string; chi
 export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="mb-2 mt-5 flex items-center justify-between first:mt-0">
-      <h2 className="font-display text-xs font-bold uppercase tracking-[0.14em] text-ink-soft">{children}</h2>
+      <h2 className="font-display flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-ink-soft">
+        <span className="songket-chip" aria-hidden="true" />
+        {children}
+      </h2>
       {action}
     </div>
   );
