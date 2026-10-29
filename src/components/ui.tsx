@@ -1,3 +1,4 @@
+import { useEffect, useId, useRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { X } from 'lucide-react';
 
@@ -73,21 +74,79 @@ export function Pill({ children, tone = 'neutral', className }: { children: Reac
     neutral: 'bg-paper-2 text-ink-soft',
     teal: 'bg-teal-soft text-teal',
     gold: 'bg-gold-soft text-[#7a5a00]',
-    red: 'bg-hibiscus-soft text-hibiscus',
-    green: 'bg-leaf-soft text-leaf',
+    red: 'bg-hibiscus-soft text-[#9a3412]',
+    green: 'bg-leaf-soft text-[#256b43]',
     blue: 'bg-sky-soft text-sky',
   };
   return <span className={cx('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold', tones[tone], className)}>{children}</span>;
 }
 
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function Modal({ open, onClose, title, children, footer, dismissable = true }: { open: boolean; onClose?: () => void; title?: ReactNode; children: ReactNode; footer?: ReactNode; dismissable?: boolean }) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // Focus management: move focus into the sheet on open, trap Tab, restore on close.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const sheet = sheetRef.current;
+    if (sheet) {
+      const first = sheet.querySelector<HTMLElement>(FOCUSABLE);
+      (first ?? sheet).focus({ preventScroll: true });
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (dismissable && onCloseRef.current) {
+          e.stopPropagation();
+          onCloseRef.current();
+        }
+        return;
+      }
+      if (e.key !== 'Tab' || !sheetRef.current) return;
+      const items = Array.from(sheetRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (items.length === 0) {
+        e.preventDefault();
+        sheetRef.current.focus();
+        return;
+      }
+      const firstEl = items[0];
+      const lastEl = items[items.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === firstEl || active === sheetRef.current || !sheetRef.current.contains(active))) {
+        e.preventDefault();
+        lastEl.focus();
+      } else if (!e.shiftKey && (active === lastEl || !sheetRef.current.contains(active))) {
+        e.preventDefault();
+        firstEl.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      if (previous && previous.isConnected) previous.focus({ preventScroll: true });
+    };
+  }, [open, dismissable]);
+
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" onClick={dismissable ? onClose : undefined}>
-      <div className="anim-rise max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-paper p-5 shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-0 sm:items-center sm:p-4" onClick={dismissable ? onClose : undefined}>
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        tabIndex={-1}
+        className="anim-rise max-h-[90dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl bg-paper p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl outline-none sm:rounded-3xl sm:pb-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto -mt-2 mb-3 h-1 w-10 rounded-full bg-ink/20 sm:hidden" aria-hidden="true" />
         {(title || (dismissable && onClose)) && (
           <div className="mb-3 flex items-start justify-between gap-3">
-            <div className="font-display text-lg font-bold leading-tight text-ink">{title}</div>
+            <div id={titleId} className="font-display text-lg font-bold leading-tight text-ink">{title}</div>
             {dismissable && onClose && (
               <button type="button" onClick={onClose} className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-paper-2" aria-label="Close">
                 <X size={20} />
