@@ -1,12 +1,14 @@
 // Global overlays: event decisions, action confirmations, feedback toasts and
 // end-of-day reports.
 
-import { useEffect } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { AlertTriangle, Moon } from 'lucide-react';
 import { currentEvent } from '../engine/simulationEngine';
 import { formatDate, formatDuration } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { useLoadedGame } from '../hooks/useGame';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+import { countUpValue, paydayFor } from '../lib/moments';
 import { Button, Modal, Pill, cx } from './ui';
 
 const CATEGORY_TONE: Record<string, 'teal' | 'gold' | 'red' | 'green' | 'blue' | 'neutral'> = {
@@ -140,10 +142,44 @@ function formatDelta(label: string, value: number, unit?: string): string {
   return `${label} ${sign}${Math.abs(value) < 1 ? value.toFixed(1) : Math.round(value)}`;
 }
 
+/**
+ * A money figure that counts up from RM0 to `value` (about a second, ease-out) and lands
+ * exactly on it. Screen readers get the exact figure at once; the moving digits are
+ * aria-hidden. Shown instantly under reduced motion.
+ */
+function CountUpRM({ value, decimals = 2 }: { value: number; decimals?: number }) {
+  const reduced = useReducedMotion();
+  const [shown, setShown] = useState(reduced ? value : 0);
+  useEffect(() => {
+    if (reduced) {
+      setShown(value);
+      return;
+    }
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const v = countUpValue(value, now - start);
+      setShown(v);
+      if (v < value) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, reduced]);
+  return (
+    <>
+      <span className="sr-only">{formatRM(value, decimals)}</span>
+      <span aria-hidden="true" className="tabular-nums">{formatRM(shown, decimals)}</span>
+    </>
+  );
+}
+
 export function DayReportModal() {
   const { dayReport, dismissDayReport, state } = useLoadedGame();
   if (!dayReport || state.events.pending.length) return null;
   const net = dayReport.earned - dayReport.spent;
+  // Stagger: payday card first, then income, then body stats, then highlights (all well under a second).
+  const slip = paydayFor(state, dayReport.day);
+  const off = slip ? 80 : 0;
   return (
     <Modal
       open
@@ -151,15 +187,26 @@ export function DayReportModal() {
       title={<span className="flex items-center gap-2"><Moon size={20} className="text-teal" /> {formatDate(state, dayReport.day)}</span>}
       footer={<Button onClick={dismissDayReport}>Next day ☀️</Button>}
     >
+      {slip && (
+        <div className="report-in mb-3 flex items-center gap-3 rounded-2xl bg-gold-soft p-3" style={stagger(0)}>
+          <span className="coin-pop text-3xl" aria-hidden="true">🪙</span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#7a5a00]">Gaji masuk! Net pay</div>
+            <div className="text-2xl font-extrabold text-leaf">
+              <CountUpRM value={slip.net} />
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-3 gap-2 text-center">
-        <Mini label="Earned" value={formatRM(dayReport.earned)} tone="text-leaf" />
-        <Mini label="Spent" value={formatRM(dayReport.spent)} tone="text-hibiscus" />
-        <Mini label="Net" value={formatRM(net)} tone={net >= 0 ? 'text-leaf' : 'text-hibiscus'} />
-        <Mini label="Calories in*" value={`${dayReport.caloriesIn}`} />
-        <Mini label="Burned*" value={`${dayReport.caloriesOut}`} />
-        <Mini label="Last sleep" value={`${dayReport.sleepHours}h`} tone={dayReport.sleepHours < 6 ? 'text-hibiscus' : undefined} />
+        <Mini label="Earned" value={formatRM(dayReport.earned)} tone="text-leaf" delay={off} />
+        <Mini label="Spent" value={formatRM(dayReport.spent)} tone="text-hibiscus" delay={off + 60} />
+        <Mini label="Net" value={formatRM(net)} tone={net >= 0 ? 'text-leaf' : 'text-hibiscus'} delay={off + 120} />
+        <Mini label="Calories in*" value={`${dayReport.caloriesIn}`} delay={off + 220} />
+        <Mini label="Burned*" value={`${dayReport.caloriesOut}`} delay={off + 260} />
+        <Mini label="Last sleep" value={`${dayReport.sleepHours}h`} tone={dayReport.sleepHours < 6 ? 'text-hibiscus' : undefined} delay={off + 300} />
       </div>
-      <div className="mt-3">
+      <div className="report-in mt-3" style={stagger(off + 380)}>
         <div className="text-xs font-bold uppercase tracking-wider text-ink-soft">Highlights</div>
         {dayReport.highlights.length ? (
           <ul className="mt-1 space-y-1 text-sm">
@@ -171,14 +218,18 @@ export function DayReportModal() {
           <p className="mt-1 text-sm text-ink-soft">A quiet day. Those count too.</p>
         )}
       </div>
-      <p className="mt-3 text-[11px] text-ink-soft">*Calorie figures are rough game estimates, not nutrition advice.</p>
+      <p className="report-in mt-3 text-[11px] text-ink-soft" style={stagger(off + 380)}>*Calorie figures are rough game estimates, not nutrition advice.</p>
     </Modal>
   );
 }
 
-function Mini({ label, value, tone }: { label: string; value: string; tone?: string }) {
+function stagger(ms: number): CSSProperties {
+  return { '--d': `${ms}ms` } as CSSProperties;
+}
+
+function Mini({ label, value, tone, delay = 0 }: { label: string; value: string; tone?: string; delay?: number }) {
   return (
-    <div className="rounded-xl bg-white p-2">
+    <div className="report-in rounded-xl bg-white p-2" style={stagger(delay)}>
       <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">{label}</div>
       <div className={cx('text-sm font-bold tabular-nums', tone)}>{value}</div>
     </div>

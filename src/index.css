@@ -152,6 +152,49 @@ body {
   padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
 }
 
+/* V4-C moments: day report stagger and payday coin pop. Opacity and transform only;
+   content is always in the DOM. Delay comes from --d on each element. Switched off by
+   .reduced-motion (above) and prefers-reduced-motion (below), so everything shows at once. */
+@keyframes report-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes coin-pop {
+  0% {
+    transform: scale(0.6) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+.report-in {
+  animation: report-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.coin-pop {
+  display: inline-block;
+  animation: coin-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-in,
+  .coin-pop {
+    animation: none;
+  }
+}
+/* end V4-C moments */
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
