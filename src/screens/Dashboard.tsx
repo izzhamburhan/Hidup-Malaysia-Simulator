@@ -131,7 +131,7 @@ export function Dashboard({ go }: { go: (t: Tab) => void }) {
         className="fixed inset-x-0 z-20 border-t border-ink/10 bg-paper/95 backdrop-blur"
         style={{ bottom: 'var(--nav-h, 64px)' }}
         role="region"
-        aria-label="Next step and time controls"
+        aria-label={t('home.bar')}
       >
         <div className="mx-auto max-w-lg space-y-2 px-4 py-2">
           {state.flags.chapterOffered && !state.ending ? (
@@ -197,6 +197,7 @@ function BigButton({ onClick, icon, title, sub, disabled }: { onClick: () => voi
 }
 
 function RoundButton({ view, onClick }: { view: ActionView; onClick: () => void }) {
+  const t = useT();
   return (
     <button
       type="button"
@@ -215,7 +216,7 @@ function RoundButton({ view, onClick }: { view: ActionView; onClick: () => void 
       </span>
       <span className={cx('mt-1.5 line-clamp-2 text-[11px] font-bold leading-tight', !view.available && 'text-ink-soft')}>{view.title}</span>
       <span className={cx('line-clamp-2 text-[11px] font-semibold leading-tight', view.available ? 'text-ink-soft' : 'text-hibiscus')}>
-        {view.available ? meta(view) || 'Instant' : (view.reason ?? 'Locked')}
+        {view.available ? meta(view) || t('home.instant') : (view.reason ?? t('home.locked'))}
       </span>
     </button>
   );
@@ -248,6 +249,7 @@ function Chip({ children, onClick }: { children: React.ReactNode; onClick: () =>
 
 function Details({ go }: { go: (t: Tab) => void }) {
   const { state } = useLoadedGame();
+  const t = useT();
   const job = state.career.job;
   const edu = state.education;
   const home = currentHome(state);
@@ -255,45 +257,45 @@ function Details({ go }: { go: (t: Tab) => void }) {
   const next = upcoming(state);
   return (
     <div className="space-y-1">
-      <SectionTitle>Life stats</SectionTitle>
+      <SectionTitle>{t('home.stats')}</SectionTitle>
       <Card className="grid grid-cols-2 gap-x-4 gap-y-3">
-        <StatBar label="Health" value={state.stats.health} tone="leaf" />
-        <StatBar label="Fitness" value={state.stats.fitness} tone="sky" />
-        <StatBar label="Happiness" value={state.stats.happiness} tone="gold" />
-        <StatBar label="Stress" value={state.stats.stress} tone="hibiscus" invert />
-        <StatBar label="Reputation" value={state.stats.reputation} />
-        <StatBar label="Energy" value={state.stats.energy} tone="teal" />
+        <StatBar label={t('life.fit.health')} value={state.stats.health} tone="leaf" />
+        <StatBar label={t('life.fit.fitness')} value={state.stats.fitness} tone="sky" />
+        <StatBar label={t('stat.happiness')} value={state.stats.happiness} tone="gold" />
+        <StatBar label={t('hud.stress')} value={state.stats.stress} tone="hibiscus" invert />
+        <StatBar label={t('life.hustle.rep')} value={state.stats.reputation} />
+        <StatBar label={t('hud.energy')} value={state.stats.energy} tone="teal" />
       </Card>
-      <SectionTitle>Snapshot</SectionTitle>
+      <SectionTitle>{t('home.snapshot')}</SectionTitle>
       <div className="grid grid-cols-2 gap-2">
-        <Snap icon="💰" label="Net worth" value={formatRM(netWorth(state))} sub={`Debt ${formatRM(totalDebt(state))}`} onClick={() => go('money')} />
+        <Snap icon="💰" label={t('home.netWorth')} value={formatRM(netWorth(state))} sub={t('home.debtSub', { amount: formatRM(totalDebt(state)) })} onClick={() => go('money')} />
         <Snap
           icon={job ? '💼' : edu.status === 'studying' ? '🎒' : '🔎'}
-          label={job ? job.title : edu.status === 'studying' ? `Semester ${edu.semester}/${edu.totalSemesters}` : 'Job status'}
-          value={job ? (job.schedule === 'parttime' ? `${formatRM(job.shiftPay)}/shift` : `${formatRM(job.monthlySalary)}/mo`) : edu.status === 'studying' ? `CGPA ${edu.gpaHistory.length ? edu.cgpa.toFixed(2) : '—'}` : 'Unemployed'}
-          sub={job ? companyById(job.companyId)?.name : 'Life → Career'}
+          label={job ? job.title : edu.status === 'studying' ? t('life.study.semester', { n: edu.semester, total: edu.totalSemesters }) : t('home.jobStatus')}
+          value={job ? (job.schedule === 'parttime' ? t('life.perShift', { amount: formatRM(job.shiftPay) }) : t('money.perMonth', { amount: formatRM(job.monthlySalary) })) : edu.status === 'studying' ? `CGPA ${edu.gpaHistory.length ? edu.cgpa.toFixed(2) : '—'}` : t('home.unemployed')}
+          sub={job ? companyById(job.companyId)?.name : t('home.lifeCareer')}
           onClick={() => go('life')}
         />
-        <Snap icon={home.icon} label="Home" value={home.name} sub={home.rent ? `${formatRM(home.rent)}/mo` : home.owned ? 'Owned' : 'Rent-free'} onClick={() => go('life')} />
+        <Snap icon={home.icon} label={t('nav.home')} value={home.name} sub={home.rent ? t('money.perMonth', { amount: formatRM(home.rent) }) : home.owned ? t('home.owned') : t('home.rentFree')} onClick={() => go('life')} />
         <Snap
           icon={vehicle ? <VehicleSprite shape={vehicle.shape} color={vehicle.color} size={22} /> : transportModeInfo(state.transport.mode).icon}
-          label="Commute · love"
+          label={t('home.commuteLove')}
           value={vehicle?.name ?? transportModeInfo(state.transport.mode).label}
           sub={relationshipStatus(state)}
           onClick={() => go('life')}
         />
       </div>
-      <SectionTitle>Coming up</SectionTitle>
+      <SectionTitle>{t('home.coming')}</SectionTitle>
       <Card className="divide-y divide-ink/5 py-1">
         {next.length === 0 ? (
-          <p className="py-2 text-sm text-ink-soft">Nothing scheduled in the next month.</p>
+          <p className="py-2 text-sm text-ink-soft">{t('home.nothing')}</p>
         ) : (
           next.map((u, i) => (
             <div key={i} className="flex items-center gap-3 py-2 text-sm">
               <span className="text-lg">{u.icon}</span>
               <span className="flex-1">{u.label}</span>
               <span className="text-xs font-semibold text-ink-soft">
-                {u.day === state.clock.day ? 'Today' : u.day === state.clock.day + 1 ? 'Tomorrow' : formatDate(state, u.day).split(',')[1]}
+                {u.day === state.clock.day ? t('home.today') : u.day === state.clock.day + 1 ? t('home.tomorrow') : formatDate(state, u.day).split(',')[1]}
               </span>
             </div>
           ))

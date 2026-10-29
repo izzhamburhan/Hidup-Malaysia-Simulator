@@ -4,29 +4,28 @@ import { listActions, type ActionView } from '../engine/simulationEngine';
 import type { ActionCategory } from '../engine/actions';
 import { useLoadedGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
+import type { StringKey } from '../i18n';
 import { ActionCard, VariantRow, variantTitle } from '../components/ActionCard';
 import { cx, EmptyState, SectionTitle, Tabs } from '../components/ui';
 import { quickActions } from '../engine/insights';
 
-const GROUPS: { id: 'all' | ActionCategory; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'daily', label: '😴 Daily' },
-  { id: 'work', label: '💼 Work' },
-  { id: 'study', label: '🎒 Study' },
-  { id: 'career', label: '📈 Grow' },
-  { id: 'fitness', label: '🏋️ Fitness' },
-  { id: 'leisure', label: '🎮 Leisure' },
-  { id: 'social', label: '🫖 Social' },
-  { id: 'love', label: '💞 Love' },
-  { id: 'family', label: '🏡 Family' },
-  { id: 'money', label: '💰 Money' },
-  { id: 'hustle', label: '🛠️ Hustle' },
-  { id: 'home', label: '🏠 Home' },
-  { id: 'transport', label: '🚗 Transport' },
-  { id: 'civic', label: '🏛️ Civic' },
+const GROUPS: { id: 'all' | ActionCategory; icon: string; key: StringKey }[] = [
+  { id: 'all', icon: '', key: 'act.cat.all' },
+  { id: 'daily', icon: '😴 ', key: 'act.cat.daily' },
+  { id: 'work', icon: '💼 ', key: 'act.cat.work' },
+  { id: 'study', icon: '🎒 ', key: 'act.cat.study' },
+  { id: 'career', icon: '📈 ', key: 'act.cat.career' },
+  { id: 'fitness', icon: '🏋️ ', key: 'act.cat.fitness' },
+  { id: 'leisure', icon: '🎮 ', key: 'act.cat.leisure' },
+  { id: 'social', icon: '🫖 ', key: 'act.cat.social' },
+  { id: 'love', icon: '💞 ', key: 'act.cat.love' },
+  { id: 'family', icon: '🏡 ', key: 'act.cat.family' },
+  { id: 'money', icon: '💰 ', key: 'act.cat.money' },
+  { id: 'hustle', icon: '🛠️ ', key: 'act.cat.hustle' },
+  { id: 'home', icon: '🏠 ', key: 'act.cat.home' },
+  { id: 'transport', icon: '🚗 ', key: 'act.cat.transport' },
+  { id: 'civic', icon: '🏛️ ', key: 'act.cat.civic' },
 ];
-
-const LABELS = Object.fromEntries(GROUPS.map((g) => [g.id, g.label]));
 
 export function ActScreen() {
   const { state } = useLoadedGame();
@@ -40,7 +39,8 @@ export function ActScreen() {
   const suggested = useMemo(() => quickActions(state).filter((v) => v.available).slice(0, 4), [state]);
   const t = useT();
   const present = new Set(views.map((v) => v.category));
-  const tabs = GROUPS.filter((g) => g.id === 'all' || present.has(g.id as ActionCategory));
+  const tabs = GROUPS.filter((g) => g.id === 'all' || present.has(g.id as ActionCategory)).map((g) => ({ id: g.id, label: `${g.icon}${t(g.key)}` }));
+  const LABELS = Object.fromEntries(tabs.map((g) => [g.id, g.label]));
 
   const filtered = views.filter((v) => (group === 'all' || v.category === group) && (!onlyAvailable || v.available));
   // Group variants of the same action into one row.
@@ -61,7 +61,7 @@ export function ActScreen() {
       </label>
       {group === 'all' && suggested.length > 0 && (
         <section className="mt-2">
-          <SectionTitle>Suggested</SectionTitle>
+          <SectionTitle>{t('act.suggested')}</SectionTitle>
           <div className="grid gap-2">
             {suggested.map((v) => (
               <ActionCard key={`${v.id}:${v.param ?? ''}`} view={v} compact />
@@ -69,7 +69,7 @@ export function ActScreen() {
           </div>
         </section>
       )}
-      {rows.length === 0 && <div className="mt-4"><EmptyState icon="⏳" title="Nothing available right now">Try waiting an hour, or check a different category.</EmptyState></div>}
+      {rows.length === 0 && <div className="mt-4"><EmptyState icon="⏳" title={t('act.nothing')}>{t('act.nothing.hint')}</EmptyState></div>}
       {categories.map((cat) => {
         const catRows = rows.filter((r) => r.category === cat);
         const expanded = group !== 'all' || open.has(cat);

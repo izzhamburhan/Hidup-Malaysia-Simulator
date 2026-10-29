@@ -2,20 +2,23 @@
 
 import { useState } from 'react';
 import type { Appearance } from '../engine/types';
+import { useT } from '../hooks/useT';
+import type { StringKey } from '../i18n';
 import { track } from '../lib/analytics';
 import { PixelAvatar } from './PixelAvatar';
 import { Button, Modal } from './ui';
 
-const STEPS = [
-  { icon: '👋', title: 'This is you', text: 'Your character lives one simulated day at a time. Their face shows how they feel: tired, stressed, happy or unwell.' },
-  { icon: '▶️', title: 'The big button', text: 'It always does the most sensible thing right now: go to work, attend class, eat, go to an interview or sleep. Tap it and see what happens.' },
-  { icon: '🧩', title: 'Quick tiles', text: 'The six tiles change with the time of day. Every action costs time, and often money or energy. The numbers on each tile tell you how much.' },
-  { icon: '⏭️', title: 'Let time pass', text: 'Next does one sensible activity. End day and Week live on your routine and stop whenever something needs your decision.' },
-  { icon: '🧭', title: 'Bigger decisions', text: 'Use the tabs below for the big stuff: job board, payslips, moving house, buying a car, dating and side hustles. Bills are paid on the 1st, salary arrives at month end.' },
+const STEPS: { icon: string; title: StringKey; text: StringKey }[] = [
+  { icon: '👋', title: 'tut.1.title', text: 'tut.1.text' },
+  { icon: '▶️', title: 'tut.2.title', text: 'tut.2.text' },
+  { icon: '🧩', title: 'tut.3.title', text: 'tut.3.text' },
+  { icon: '⏭️', title: 'tut.4.title', text: 'tut.4.text' },
+  { icon: '🧭', title: 'tut.5.title', text: 'tut.5.text' },
 ];
 
 export function Tutorial({ open, onClose, appearance }: { open: boolean; onClose: () => void; appearance: Appearance }) {
   const [step, setStep] = useState(0);
+  const t = useT();
   const s = STEPS[step];
   const last = step === STEPS.length - 1;
   const finish = (completed: boolean) => {
@@ -27,18 +30,18 @@ export function Tutorial({ open, onClose, appearance }: { open: boolean; onClose
     <Modal
       open={open}
       onClose={() => finish(false)}
-      title={`How to play (${step + 1}/${STEPS.length})`}
+      title={t('tut.title', { n: step + 1, total: STEPS.length })}
       footer={
         <>
           <Button variant="ghost" onClick={() => finish(false)}>
-            Skip
+            {t('tut.skip')}
           </Button>
           {step > 0 && (
             <Button variant="secondary" onClick={() => setStep(step - 1)}>
-              Back
+              {t('tut.back')}
             </Button>
           )}
-          <Button onClick={() => (last ? finish(true) : setStep(step + 1))}>{last ? "Let's go!" : 'Next'}</Button>
+          <Button onClick={() => (last ? finish(true) : setStep(step + 1))}>{last ? t('tut.go') : t('tut.next')}</Button>
         </>
       }
     >
@@ -47,8 +50,8 @@ export function Tutorial({ open, onClose, appearance }: { open: boolean; onClose
           {step === 0 ? <PixelAvatar appearance={appearance} mood="happy" size={88} bob /> : <span className="mb-6 text-5xl">{s.icon}</span>}
         </div>
         <div>
-          <div className="font-display text-lg font-bold">{s.title}</div>
-          <p className="mt-1 text-sm leading-relaxed text-ink-soft">{s.text}</p>
+          <div className="font-display text-lg font-bold">{t(s.title)}</div>
+          <p className="mt-1 text-sm leading-relaxed text-ink-soft">{t(s.text)}</p>
         </div>
       </div>
       <div className="mt-4 flex justify-center gap-1.5" aria-hidden>

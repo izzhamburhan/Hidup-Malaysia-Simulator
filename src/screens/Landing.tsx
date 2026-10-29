@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Info, Play, Plus, ShieldCheck } from 'lucide-react';
 import { useGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
+import type { StringKey } from '../i18n';
 import { Button, Modal } from '../components/ui';
 import { formatDate } from '../engine/calendar';
 import { formatRM } from '../engine/core';
@@ -10,13 +11,13 @@ import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
 import { PrivacyNotice } from '../components/PrivacyNotice';
 
-const FEATURES = [
-  ['🎓', 'Study at UM, UTM, MMU and 21 more'],
-  ['💼', 'Job hunt at PETRONAS, Maybank, AirAsia…'],
-  ['🧾', 'Payslips with EPF, SOCSO, EIS & PCB'],
-  ['🍛', 'Nasi lemak, gym streaks & calories'],
-  ['💞', 'Dating, family & balik kampung'],
-  ['🚗', 'Myvi loans, tolls & traffic jams'],
+const FEATURES: [string, StringKey][] = [
+  ['🎓', 'land.feat.1'],
+  ['💼', 'land.feat.2'],
+  ['🧾', 'land.feat.3'],
+  ['🍛', 'land.feat.4'],
+  ['💞', 'land.feat.5'],
+  ['🚗', 'land.feat.6'],
 ];
 
 export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onContinue: () => void; onDaily: () => void }) {
@@ -40,7 +41,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
           ))}
         </div>
         <div className="relative mt-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gold">Life simulator · Malaysia</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gold">{t('land.eyebrow')}</p>
           <h1 className="font-pixel mt-2 font-bold text-5xl leading-[0.95]">
             HIDUP
             <br />
@@ -67,7 +68,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
             <span className="flex-1">
               <span className="block font-bold">{t('land.continue', { name: main.character.name })}</span>
               <span className="block text-xs text-ink-soft">
-                Day {main.clock.day + 1} · {formatDate(main)} · {formatRM(main.finance.cash)} · {main.mode === 'chaotic' ? 'Chaotic' : 'Realistic'}
+                {t('hud.day', { n: main.clock.day + 1 })} · {formatDate(main)} · {formatRM(main.finance.cash)} · {main.mode === 'chaotic' ? t('land.mode.chaotic') : t('land.mode.realistic')}
               </span>
             </span>
           </button>
@@ -77,7 +78,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
         </Button>
         {boot?.status === 'corrupt' && (
           <p className="rounded-xl bg-hibiscus-soft p-3 text-sm text-hibiscus">
-            Your previous save could not be read ({boot.error}). It was set aside safely; you can start a new life.
+            {t('land.corrupt', { error: boot.error ?? '' })}
           </p>
         )}
         <button
@@ -98,12 +99,12 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
       </div>
 
       <section className="mt-5 grid grid-cols-2 gap-1.5">
-        {FEATURES.map(([icon, text]) => (
-          <div key={text} className="flex items-center gap-2 rounded-xl bg-white px-2.5 py-2 text-xs shadow-sm">
+        {FEATURES.map(([icon, key]) => (
+          <div key={key} className="flex items-center gap-2 rounded-xl bg-white px-2.5 py-2 text-xs shadow-sm">
             <span className="text-base" aria-hidden>
               {icon}
             </span>
-            <span className="font-medium leading-snug">{text}</span>
+            <span className="font-medium leading-snug">{t(key)}</span>
           </div>
         ))}
       </section>
@@ -112,15 +113,14 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
         <p className="flex gap-1.5">
           <ShieldCheck size={14} className="mt-0.5 shrink-0" />
           <span>
-            Runs entirely in your browser. No account, no ads, no tracking cookies; your save stays on this device.{' '}
+            {t('land.local')}{' '}
             <button type="button" onClick={() => setPrivacy(true)} className="font-semibold text-teal underline">
-              Privacy
+              {t('land.privacy')}
             </button>
           </span>
         </p>
         <p>
-          Real universities and companies appear as names only and do not imply vacancies, fees or rankings. Salaries, prices and calories are fictional game estimates. Payroll is a simplified simulation, not
-          an official KWSP, PERKESO or LHDN calculation. Politics are fictional.
+          {t('land.disclaimer')}
         </p>
       </footer>
       <PrivacyNotice open={privacy} onClose={() => setPrivacy(false)} />
@@ -137,7 +137,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
         footer={
           <>
             <Button variant="secondary" onClick={() => setDailyInfo(false)}>
-              Not now
+              {t('confirm.notNow')}
             </Button>
             <Button
               onClick={() => {
@@ -162,19 +162,19 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
       <Modal
         open={confirmNew}
         onClose={() => setConfirmNew(false)}
-        title="Start a new life?"
+        title={t('land.newlife.title')}
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirmNew(false)}>
-              Keep current life
+              {t('land.keep')}
             </Button>
             <Button variant="danger" onClick={() => { setConfirmNew(false); onNew(); }}>
-              Start over
+              {t('land.startover')}
             </Button>
           </>
         }
       >
-        <p className="text-sm text-ink-soft">Starting a new game will replace {main?.character.name}'s saved life on this device once you create the new character. You can export a backup in Settings first.</p>
+        <p className="text-sm text-ink-soft">{t('land.newlife.body', { name: main?.character.name ?? '' })}</p>
       </Modal>
     </main>
   );
