@@ -245,6 +245,31 @@ export function generateFeedPosts(state: GameState): void {
   }
 }
 
+/**
+ * Scrolling the feed pulls in up to three fresh posts from friends and the town (no invitations,
+ * so scrolling can't farm events). Same no-repeat window as the daily posts. Returns how many arrived.
+ */
+export function refreshFeed(state: GameState): number {
+  let added = 0;
+  for (let i = 0; i < 3; i++) {
+    if (chance(state, 0.3)) {
+      const w = pickFresh(state, worldPosts, (p) => p.text);
+      if (w) {
+        addPost(state, { author: w.author, handle: `@${handleOf(w.author)}`, text: w.text, kind: 'world', likes: randInt(state, 20, 900) });
+        added++;
+      }
+    } else {
+      const author = pick(state, npcNames);
+      const text = pickFresh(state, friendPosts, (t) => t);
+      if (text) {
+        addPost(state, { author, handle: `@${handleOf(author)}`, text, kind: 'friend', likes: randInt(state, 2, 240) });
+        added++;
+      }
+    }
+  }
+  return added;
+}
+
 export function likePost(state: GameState, postId: string): string {
   const post = state.feed.find((p) => p.id === postId);
   if (!post) return 'Post not found.';

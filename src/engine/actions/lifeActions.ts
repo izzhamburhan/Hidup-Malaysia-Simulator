@@ -6,7 +6,7 @@ import { addSkills, applyStats, clamp, formatRM, highlight, round2, spend } from
 import { MINUTES_PER_DAY } from '../calendar';
 import { currentHome } from '../living';
 import { chance } from '../rng';
-import { meetSomeone } from '../social';
+import { meetSomeone, refreshFeed } from '../social';
 import type { GameState } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
 
@@ -564,11 +564,13 @@ export const lifeActions: ActionDef[] = [
     dedicated: true,
     run: (s) => {
       applyStats(s, { happiness: 1 });
+      const fresh = refreshFeed(s);
+      const news = fresh ? `${fresh} new post${fresh > 1 ? 's' : ''} in your feed.` : "You're all caught up. Nothing new for now.";
       if (s.flags.comparisonAnxiety !== false && s.stats.happiness < 55 && chance(s, 0.5)) {
         applyStats(s, { stress: 3, happiness: -4 });
-        return ['Everyone seems to be on holiday, engaged or promoted. Comparison anxiety +1. (Their lives have bad days too.)'];
+        return [news, 'Everyone seems to be on holiday, engaged or promoted. Comparison anxiety +1. (Their lives have bad days too.)'];
       }
-      return [];
+      return [news];
     },
   },
 ];
