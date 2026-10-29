@@ -115,7 +115,7 @@ SKILLS.md              index of every skill
 | State flags | done: official flags of all 13 states and 3 federal territories (Wikimedia Commons, credited), flag grid in character creation, flag in the game header |
 | Festive seasons | done: 11 seasons on the simulated calendar (CNY, Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
-| Starter quests | done: 6 quests for a new life (eat, move, career step, chat, make it yours, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
+| Starter quests | done: 6 quests for a new life (eat, move, career step, chat, me time, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
 | Chat | done: partner, Geng Lepak (friends) and family threads on the Feed tab; 16 scripted conversations, pick one of 3 replies, real effects on trust, friends and family, one reply per thread a day |
 | Bahasa Malaysia | beta: EN/BM switch on the landing screen and in Settings; menus, buttons, Home, room, daily banner and settings translated; stories, events and catalogue names still English |
 | Daily challenge | done: 7 scenarios, one per date and the same for everyone (date picks scenario and seed), 7-day run in its own save slot; a slim strip on the landing page opens an explainer sheet with Start/Continue; a compact in-run banner with goal, "My life" exit and Share |
@@ -130,7 +130,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 34 Vitest files, 222 tests |
+| Tests | done: 34 Vitest files, 231 tests |
 
 ## Commands
 

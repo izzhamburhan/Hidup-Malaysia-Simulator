@@ -7,7 +7,7 @@ import { listActions, viewAction } from '../engine/simulationEngine';
 import type { Payslip } from '../engine/types';
 import { useLoadedGame } from '../hooks/useGame';
 import { OrgBadge } from '../components/OrgBadge';
-import { ActionCard, VariantRow } from '../components/ActionCard';
+import { ActionCard, VariantRow, variantTitle } from '../components/ActionCard';
 import { Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, Tabs, cx } from '../components/ui';
 
 type View = 'overview' | 'payslip' | 'debts';
@@ -83,7 +83,7 @@ function Overview() {
       <div className="grid gap-2">
         {[...groups.entries()].map(([id, views]) =>
           views.length > 1 ? (
-            <VariantRow key={id} views={views} icon={views[0].icon} title={views[0].title.replace(/RM[\d,]+/, '…')} description={views[0].description} />
+            <VariantRow key={id} views={views} icon={views[0].icon} title={variantTitle(views[0])} description={views[0].description} />
           ) : (
             <ActionCard key={id} view={views[0]} />
           ),

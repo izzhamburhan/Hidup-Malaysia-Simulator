@@ -34,7 +34,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
         <div className="songket absolute inset-0 opacity-40" aria-hidden />
         <div className="absolute right-3 top-3 z-10 flex rounded-full bg-white/15 p-0.5 text-[11px] font-bold" role="group" aria-label="Language / Bahasa">
           {(['en', 'ms'] as const).map((l) => (
-            <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'rounded-full bg-white px-2.5 py-0.5 text-teal' : 'px-2.5 py-0.5 text-white/80'}>
+            <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'min-h-[44px] min-w-[44px] rounded-full bg-white px-3 text-teal' : 'min-h-[44px] min-w-[44px] px-3 text-white/80'}>
               {l === 'en' ? 'EN' : 'BM'}
             </button>
           ))}

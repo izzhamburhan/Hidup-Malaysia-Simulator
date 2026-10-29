@@ -75,9 +75,11 @@ action has `variants`. Unavailable actions are included with `available: false` 
 
 ### `runAutopilot(state, days)`
 
-Lives up to `days` routine days on a fixed policy defined in the engine (eat when hungry, work or
-attend class on the right days, study, gym, keep in touch with a partner, sleep at night, chill
-otherwise). It never chooses for the player: it **stops early** when an event becomes pending or
+Lives up to `days` routine days on a fixed policy defined in the engine (eat when hungry, go to an
+interview on its day, work or attend class on the right days, study, job-hunt when unemployed and
+not studying (at most one application a day, 9 AM to 5 PM, to the best-matching listing, while
+fewer than 3 are active and no offer is waiting), gym, keep in touch with a partner, sleep at night,
+chill otherwise). It never chooses for the player: offers are never accepted or declined, and it **stops early** when an event becomes pending or
 the chapter ends, and reports `interrupted: true`. Refused (same state, `ok: false`) when an event
 is already pending or the chapter has ended. Used by tests and `sim_autopilot` for balancing.
 
@@ -107,6 +109,7 @@ Added for the Home play screen (plan: `docs/plans/one-tap-play-and-pages.md`).
 | Function | Module | Contract |
 | --- | --- | --- |
 | `chooseRoutineStep(state)` | `simulationEngine.ts` | Pure. Returns the routine's next move: `{ kind: 'action', id, param?, once? }`, `{ kind: 'sleep' }` (sleep until about 7 AM, at least 6 h), `{ kind: 'wake' }` (before 6 AM: sleep until 7 AM) or `{ kind: 'wait' }` (one hour). Only returns actions whose `describeAction` view is available. |
+| `chooseRoutineStep(state)` | `simulationEngine.ts` | Pure. Returns the routine's next move: `{ kind: 'action', id, param?, once? }`, `{ kind: 'sleep' }` (sleep until about 7 AM, at least 6 h), `{ kind: 'wake' }` (before 6 AM: sleep until 7 AM) or `{ kind: 'wait' }` (one hour). Only returns actions whose `describeAction` view is available. Job listings are ranked by `listingsByMatch` (`career.ts`), the same ranking `bestListing` uses. |
 | `runRoutineStep(state)` | `simulationEngine.ts` | The "Next" button. Same result shape and guarantees as `performAction` (input not mutated, deterministic, events roll, achievements update). Fails with the engine's reason when an event is pending or the chapter has ended. `runAutopilot` is built from the same chooser. |
 | `primaryAction(state)` | `insights.ts` | Pure. The single most sensible available `ActionView` right now (rest when exhausted, eat when starving, interview, offer, work or class, sleep at night, assignment, side hustle, best job application), or `null` when the routine step is the best move. |
 | `quickActions(state)` | `insights.ts` | Pure. At most six unique `ActionView`s for the play tiles, available ones first. Meal tiles carry the dish's emoji. |

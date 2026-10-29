@@ -55,7 +55,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
     <div className="mx-auto min-h-screen max-w-lg pb-24">
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-paper/95 px-4 pb-2 pt-3 backdrop-blur">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => go('home')} className="shrink-0 rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label="Home">
+          <button type="button" onClick={() => go('home')} className="flex min-h-[44px] min-w-[44px] shrink-0 items-end justify-center rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label="Home">
             <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={30} />
           </button>
           <div className="min-w-0 flex-1">
@@ -70,7 +70,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
             <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft">{t('hud.wallet')}</div>
             <div className={cx('font-display whitespace-nowrap text-base font-black tabular-nums', state.finance.cash < 100 ? 'text-hibiscus' : 'text-teal')}>{formatRM(state.finance.cash, 2)}</div>
           </div>
-          <button type="button" onClick={() => setMenu(true)} className="rounded-xl border border-ink/10 bg-white p-2" aria-label="Open menu">
+          <button type="button" onClick={() => setMenu(true)} className="flex h-11 w-11 items-center justify-center rounded-xl border border-ink/10 bg-white" aria-label="Open menu">
             <Menu size={20} />
           </button>
         </div>
@@ -166,7 +166,7 @@ function MiniMeter({ label, value, invert = false }: { label: string; value: num
   const bad = invert ? v >= 75 : v <= 20;
   return (
     <div>
-      <div className="flex justify-between text-[10px] font-semibold text-ink-soft">
+      <div className="flex justify-between text-[11px] font-semibold text-ink-soft">
         <span className="truncate">{label}</span>
         <span className={cx('tabular-nums', bad && 'text-hibiscus')}>{v}</span>
       </div>

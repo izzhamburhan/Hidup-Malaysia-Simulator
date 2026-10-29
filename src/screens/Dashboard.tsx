@@ -173,7 +173,7 @@ function RoundButton({ view, onClick }: { view: ActionView; onClick: () => void 
         <span className={cx(!view.available && 'opacity-50 grayscale')}>{view.icon}</span>
       </span>
       <span className={cx('mt-1.5 line-clamp-2 text-[11px] font-bold leading-tight', !view.available && 'text-ink-soft')}>{view.title}</span>
-      <span className={cx('line-clamp-1 text-[10px] font-semibold leading-tight', view.available ? 'text-ink-soft' : 'text-hibiscus')}>
+      <span className={cx('line-clamp-2 text-[11px] font-semibold leading-tight', view.available ? 'text-ink-soft' : 'text-hibiscus')}>
         {view.available ? meta(view) || 'Instant' : (view.reason ?? 'Locked')}
       </span>
     </button>

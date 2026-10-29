@@ -60,7 +60,7 @@ export function VariantRow({ views, icon, title, description }: { views: ActionV
         <div className="min-w-0 flex-1">
           <div className={cx('text-sm font-semibold leading-tight', !anyAvailable && 'text-ink-soft')}>{title}</div>
           <div className="mt-0.5 text-xs leading-snug text-ink-soft">{description}</div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="mt-2 flex flex-wrap gap-2">
             {views.map((v) => (
               <button
                 key={v.param ?? v.id}
@@ -69,7 +69,7 @@ export function VariantRow({ views, icon, title, description }: { views: ActionV
                 aria-disabled={!v.available}
                 title={v.reason ?? v.title}
                 className={cx(
-                  'rounded-full border px-3 py-1 text-xs font-semibold transition',
+                  'min-h-[44px] rounded-full border px-4 text-sm font-semibold transition',
                   v.available ? 'border-teal/30 bg-teal-soft text-teal hover:bg-teal hover:text-white' : 'border-ink/10 bg-paper-2 text-ink-soft/70',
                 )}
               >
@@ -104,4 +104,27 @@ function shortTitle(v: ActionView): string {
   if (v.id === 'shopping') return v.param === 'spree' ? 'Spree (RM350)' : 'Window';
   if (v.id === 'work-hustle') return v.title.replace('Work on ', '');
   return v.title.replace(/^.*?:\s*/, '');
+}
+
+/** Name for a row of variants (sleep lengths, amounts), shared by the Act and Money tabs. */
+export function variantTitle(v: ActionView): string {
+  const titles: Record<string, string> = {
+    sleep: 'Sleep',
+    wait: 'Wait',
+    overtime: 'Overtime',
+    study: 'Study',
+    'pc-gaming': 'PC gaming',
+    shopping: 'Go shopping',
+    'online-course': 'Paid online course (RM180)',
+    'self-study': 'Free self-study',
+    date: 'Go on a date',
+    wedding: 'Plan the wedding',
+    save: 'Move cash to savings',
+    withdraw: 'Withdraw from savings',
+    'emergency-deposit': 'Top up emergency fund',
+    'give-parents': 'Give parents money',
+    'parent-allowance': 'Monthly allowance for parents',
+    'work-hustle': 'Work on a side hustle',
+  };
+  return titles[v.id] ?? v.title;
 }

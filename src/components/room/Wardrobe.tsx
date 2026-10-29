@@ -76,7 +76,7 @@ function Tile({ label, preview, active, lockedBy, onClick }: { label: string; pr
         <PixelAvatar appearance={preview} size={44} title={label} />
       </span>
       <span className="mt-0.5 line-clamp-1 text-[11px] font-semibold leading-tight">{lockedBy ? `🔒 ${label}` : label}</span>
-      {lockedBy && <span className="line-clamp-2 text-[9px] font-semibold leading-tight text-hibiscus">Unlock: {lockedBy}</span>}
+      {lockedBy && <span className="line-clamp-2 text-[10px] font-semibold leading-tight text-hibiscus">Unlock: {lockedBy}</span>}
     </button>
   );
 }

@@ -3,7 +3,7 @@ import { listActions, type ActionView } from '../engine/simulationEngine';
 import type { ActionCategory } from '../engine/actions';
 import { useLoadedGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
-import { ActionCard, VariantRow } from '../components/ActionCard';
+import { ActionCard, VariantRow, variantTitle } from '../components/ActionCard';
 import { EmptyState, SectionTitle, Tabs } from '../components/ui';
 
 const GROUPS: { id: 'all' | ActionCategory; label: string }[] = [
@@ -73,26 +73,4 @@ export function ActScreen() {
       ))}
     </div>
   );
-}
-
-function variantTitle(v: ActionView): string {
-  const titles: Record<string, string> = {
-    sleep: 'Sleep',
-    wait: 'Wait',
-    overtime: 'Overtime',
-    study: 'Study',
-    'pc-gaming': 'PC gaming',
-    shopping: 'Go shopping',
-    'online-course': 'Paid online course (RM180)',
-    'self-study': 'Free self-study',
-    date: 'Go on a date',
-    wedding: 'Plan the wedding',
-    save: 'Move cash to savings',
-    withdraw: 'Withdraw from savings',
-    'emergency-deposit': 'Top up emergency fund',
-    'give-parents': 'Give parents money',
-    'parent-allowance': 'Monthly allowance for parents',
-    'work-hustle': 'Work on a side hustle',
-  };
-  return titles[v.id] ?? v.title;
 }

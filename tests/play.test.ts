@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { chooseRoutineStep, runRoutineStep } from '../src/engine/simulationEngine';
+import { chooseRoutineStep, runAutopilot, runRoutineStep } from '../src/engine/simulationEngine';
 import { primaryAction, quickActions } from '../src/engine/insights';
-import { refreshListings } from '../src/engine/career';
+import { jobEligibility, refreshListings } from '../src/engine/career';
+import { jobById } from '../src/data/jobs';
 import { at, makeGame } from './helpers';
 
 describe('routine step (Next button)', () => {
@@ -33,6 +34,47 @@ describe('routine step (Next button)', () => {
     const s = makeGame();
     s.events.pending.push({ eventId: 'burnout' });
     expect(runRoutineStep(s).feedback.ok).toBe(false);
+  });
+
+  it('job-hunts when unemployed: one application a day to the best match', () => {
+    const s = at(makeGame(), 0, 10);
+    s.stats.satiety = 90;
+    refreshListings(s);
+    const step = chooseRoutineStep(s);
+    expect(step).toMatchObject({ kind: 'action', id: 'apply-job', once: 'routineApply' });
+    // Eligible listings come first: no internship applications from a graduate.
+    const listing = s.career.listings.find((l) => step.kind === 'action' && l.id === step.param)!;
+    expect(jobEligibility(s, jobById(listing.jobId)!).ok).toBe(s.career.listings.some((l) => jobEligibility(s, jobById(l.jobId)!).ok));
+    const r = runRoutineStep(s);
+    expect(r.state.career.applications).toHaveLength(1);
+    // Already applied today: the routine moves on to something else.
+    expect(chooseRoutineStep(r.state)).not.toMatchObject({ id: 'apply-job' });
+  });
+
+  it('goes to an interview on its day', () => {
+    const s = at(makeGame(), 0, 9);
+    s.stats.satiety = 90;
+    s.career.applications.push({ id: 'a1', listingId: 'x', jobId: 'admin', companyId: 'tm', appliedDay: 0, respondDay: 0, status: 'interview', interviewDay: 0, offerSalary: 2500, score: 80 });
+    expect(chooseRoutineStep(s)).toMatchObject({ kind: 'action', id: 'attend-interview', param: 'a1' });
+  });
+
+  it('leaves job offers to the player', () => {
+    const s = at(makeGame(), 0, 10);
+    s.stats.satiety = 90;
+    refreshListings(s);
+    s.career.applications.push({ id: 'a1', listingId: 'x', jobId: 'admin', companyId: 'tm', appliedDay: 0, respondDay: 0, status: 'offer', offerSalary: 2500, score: 80 });
+    const step = chooseRoutineStep(s);
+    expect(step).not.toMatchObject({ id: 'apply-job' });
+    expect(step).not.toMatchObject({ id: 'accept-offer' });
+  });
+
+  it('a fresh graduate on autopilot sends applications', () => {
+    let s = makeGame({ seed: 3 });
+    for (let i = 0; i < 30 && s.clock.day < 21; i++) {
+      if (s.events.pending.length) s.events.pending = [];
+      s = runAutopilot(s, 21 - s.clock.day).state;
+    }
+    expect(s.career.applications.length).toBeGreaterThan(0);
   });
 
   it('is deterministic', () => {

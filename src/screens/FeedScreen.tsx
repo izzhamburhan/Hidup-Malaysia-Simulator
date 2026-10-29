@@ -73,7 +73,7 @@ export function FeedScreen() {
                   <button
                     type="button"
                     onClick={() => interact('like', p.id)}
-                    className={cx('inline-flex items-center gap-1 text-xs font-semibold', p.liked ? 'text-hibiscus' : 'text-ink-soft')}
+                    className={cx('-ml-2 inline-flex min-h-[44px] items-center gap-1 px-2 text-sm font-semibold', p.liked ? 'text-hibiscus' : 'text-ink-soft')}
                     aria-pressed={p.liked}
                   >
                     <Heart size={14} fill={p.liked ? 'currentColor' : 'none'} /> {p.likes}
@@ -85,6 +85,7 @@ export function FeedScreen() {
                       onClick={() => interact('invite', p.id)}
                       className={cx(
                         'rounded-full px-3 py-1 text-xs font-semibold',
+                        'min-h-[44px] rounded-full px-4 text-sm font-semibold',
                         p.invite.used ? 'bg-paper-2 text-ink-soft' : 'bg-teal text-white hover:bg-teal-2 disabled:bg-teal/40',
                       )}
                     >
