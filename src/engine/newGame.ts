@@ -4,6 +4,7 @@ import { backgroundById, lifeStageById } from '../data/backgrounds';
 import { companies } from '../data/companies';
 import { courseById, courses } from '../data/courses';
 import { housingById } from '../data/housing';
+import { DEFAULT_RESIDENCE, mapStateByName } from '../data/malaysia';
 import { hustleDefs } from '../data/lifestyle';
 import { jobById, type Job } from '../data/jobs';
 import { universities } from '../data/universities';
@@ -15,7 +16,7 @@ import { isValidAppearance, randomAppearance } from './appearance';
 import { generateFeedPosts } from './social';
 import type { GameState, NewGameOptions, Skills } from './types';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 export const START_DATE = '2027-01-04';
 export const START_MINUTE = 7 * 60;
 
@@ -35,6 +36,8 @@ export function emptyState(): GameState {
     stats: { energy: 80, health: 75, fitness: 40, stress: 25, happiness: 60, reputation: 50, satiety: 55 },
     skills,
     mastery: Object.fromEntries(Object.keys(skills).map((k) => [k, 0])) as Skills,
+    location: { state: DEFAULT_RESIDENCE },
+    travel: { stamps: {} },
     finance: {
       cash: 0,
       savings: 0,
@@ -195,6 +198,8 @@ export function newGame(options: NewGameOptions): GameState {
   }
 
   refreshListings(s);
+  // Living with family means living in your home state; otherwise the Klang Valley.
+  s.location = { state: s.housing.optionId === 'family' && mapStateByName(s.character.homeState) ? s.character.homeState : DEFAULT_RESIDENCE };
   generateFeedPosts(s);
   log(s, 'system', `Welcome to HIDUP MALAYSIA, ${s.character.name}! ${s.mode === 'chaotic' ? 'Chaotic mode: expect the unexpected.' : 'Realistic mode.'}`);
   log(s, 'system', 'Tip: every action costs time. Eat, sleep, work, and watch your money on bills day (1st of the month).');

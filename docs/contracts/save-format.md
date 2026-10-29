@@ -155,3 +155,12 @@ rule with a varying yearly dividend; never real fund data, never spendable cash 
 senior roles and hustle tiers. `migrations[7]` sets `unitTrust` to 0 unless a number is already
 stored and gives every skill key a mastery of 0; cash and skills are untouched. Test:
 `tests/save.test.ts` ("migrates a v7 save to v8 with an empty unit trust and no mastery yet").
+
+## Version 9 (Malaysia map)
+
+`GameState` gains `location: { state }` (where the player lives, a `MALAYSIA` state name in
+`src/data/malaysia.ts`) and `travel: { stamps: Record<string, number> }` (state name to the day of
+the first Jelajah trip there). `migrations[8]` puts lives that stay with family (`housing.optionId`
+`'family'`) in their home state and everyone else in Selangor, the baseline whose fictional cost and
+pay factors are 1, so no existing player's prices change; stamps start empty. Test:
+`tests/malaysiaMap.test.ts` ("migrates a v8 save").
