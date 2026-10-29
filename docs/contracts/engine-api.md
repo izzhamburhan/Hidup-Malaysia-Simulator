@@ -79,7 +79,10 @@ Lives up to `days` routine days on a fixed policy defined in the engine (eat whe
 interview on its day, work or attend class on the right days, study, job-hunt when unemployed and
 not studying (at most one application a day, 9 AM to 5 PM, to the best-matching listing, while
 fewer than 3 are active and no offer is waiting), gym, keep in touch with a partner, sleep at night,
-chill otherwise). It never chooses for the player: offers are never accepted or declined, and it **stops early** when an event becomes pending or
+save surplus cash, chill otherwise). The saving step runs once per calendar month, in free time: if
+wallet cash exceeds a buffer of max(RM1,000, 3 x `monthlyCommitmentTotal`) and no overdue debt is
+open, it moves the excess (rounded down to RM50) into savings through the `save` action
+(`surplusToSave`, flag `routineSaved`); EPF and unit trust are never touched. It never chooses for the player: offers are never accepted or declined, and it **stops early** when an event becomes pending or
 the chapter ends, and reports `interrupted: true`. Refused (same state, `ok: false`) when an event
 is already pending or the chapter has ended. Used by tests and `sim_autopilot` for balancing.
 

@@ -241,7 +241,8 @@ export const workActions: ActionDef[] = [
     available: (s) => needEnergy(s, 12),
     run: (s, p) => {
       const skill = (p ?? 'tech') as SkillKey;
-      addSkills(s, { [skill]: 2 });
+      // Free study slows near the top: x (1 - skill/120), never below x0.15 (on top of the shared curve).
+      addSkills(s, { [skill]: 2 }, Math.max(0.15, 1 - s.skills[skill] / 120));
       applyStats(s, { energy: -8 });
       return [`${skill} skill now ${Math.round(s.skills[skill])}.`];
     },
