@@ -47,6 +47,20 @@ export const foods: Food[] = [
   { id: 'zus-coffee', name: 'ZUS Coffee (iced latte)', icon: '☕', category: 'drink', calories: 200, price: 9.9, satiety: 6, energy: 9, health: -0.2, happiness: 6, minutes: 10, meal: false },
   { id: 'kopi-kenangan', name: 'Kopi Kenangan (iced coffee)', icon: '☕', category: 'drink', calories: 210, price: 10.9, satiety: 6, energy: 9, health: -0.3, happiness: 6, minutes: 10, meal: false },
   { id: 'chagee-tea', name: 'Chagee (milk tea)', icon: '🧋', category: 'drink', calories: 260, price: 13.9, satiety: 7, energy: 4, health: -0.4, happiness: 7, minutes: 15, meal: false },
+  { id: 'cendol', name: 'Cendol', icon: '🍧', category: 'snack', calories: 350, price: 4, satiety: 12, energy: 4, health: -0.3, happiness: 6, minutes: 10, meal: false },
+  { id: 'ais-kacang', name: 'Ais kacang (ABC)', icon: '🍨', category: 'snack', calories: 300, price: 6, satiety: 12, energy: 4, health: -0.3, happiness: 6, minutes: 10, meal: false },
+  { id: 'rojak', name: 'Rojak buah', icon: '🍍', category: 'snack', calories: 300, price: 7, satiety: 18, energy: 4, health: 0.1, happiness: 4, minutes: 10, meal: false },
+  { id: 'popiah', name: 'Popiah (2 rolls)', icon: '🌯', category: 'snack', calories: 250, price: 4, satiety: 18, energy: 4, health: 0.2, happiness: 3, minutes: 10, meal: false },
+  { id: 'apam-balik', name: 'Apam balik', icon: '🥞', category: 'snack', calories: 380, price: 5, satiety: 18, energy: 4, health: -0.4, happiness: 5, minutes: 10, meal: false },
+  { id: 'mee-rebus', name: 'Mee rebus', icon: '🍜', category: 'noodles', calories: 560, price: 7, satiety: 45, energy: 7, health: -0.2, happiness: 4, minutes: 20, meal: true },
+  { id: 'nasi-kerabu', name: 'Nasi kerabu', icon: '🍚', category: 'rice', calories: 600, price: 9, satiety: 52, energy: 8, health: 0.2, happiness: 5, minutes: 20, meal: true },
+  { id: 'nasi-goreng-kampung', name: 'Nasi goreng kampung', icon: '🍳', category: 'rice', calories: 640, price: 8, satiety: 50, energy: 8, health: -0.4, happiness: 4, minutes: 20, meal: true },
+  { id: 'nasi-dagang', name: 'Nasi dagang', icon: '🐟', category: 'breakfast', calories: 650, price: 9, satiety: 52, energy: 8, health: -0.2, happiness: 5, minutes: 20, meal: true },
+  { id: 'lontong', name: 'Lontong', icon: '🥥', category: 'breakfast', calories: 520, price: 7, satiety: 45, energy: 7, health: -0.2, happiness: 4, minutes: 20, meal: true },
+  { id: 'roti-john', name: 'Roti john', icon: '🥖', category: 'snack', calories: 620, price: 7, satiety: 45, energy: 6, health: -0.5, happiness: 5, minutes: 15, meal: true },
+  { id: 'murtabak', name: 'Murtabak', icon: '🥙', category: 'mamak', calories: 700, price: 9, satiety: 50, energy: 7, health: -0.6, happiness: 5, minutes: 20, meal: true },
+  { id: 'sirap-bandung', name: 'Sirap bandung', icon: '🌸', category: 'drink', calories: 230, price: 2.5, satiety: 5, energy: 4, health: -0.3, happiness: 4, minutes: 10, meal: false },
+  { id: 'teh-o-ais', name: 'Teh O ais limau', icon: '🧊', category: 'drink', calories: 90, price: 2.5, satiety: 3, energy: 5, health: 0, happiness: 3, minutes: 10, meal: false },
 ];
 
 export const foodById = (id: string | null | undefined) => foods.find((f) => f.id === id);
