@@ -61,30 +61,31 @@ export function VariantRow({ views, icon, title, description }: { views: ActionV
         <div className="min-w-0 flex-1">
           <div className={cx('text-sm font-semibold leading-tight', !anyAvailable && 'text-ink-soft')}>{title}</div>
           <div className="mt-0.5 text-xs leading-snug text-ink-soft">{description}</div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {views.map((v) => (
-              <button
-                key={v.param ?? v.id}
-                type="button"
-                onClick={() => request(v)}
-                aria-disabled={!v.available}
-                title={v.reason ?? v.title}
-                className={cx(
-                  'min-h-[44px] rounded-full border px-4 text-sm font-semibold transition',
-                  v.available ? 'border-teal/30 bg-teal-soft text-teal hover:bg-teal hover:text-white' : 'border-ink/10 bg-paper-2 text-ink-soft/70',
-                )}
-              >
-                {variantLabel(v)}
-              </button>
-            ))}
-          </div>
-          {reason && (
-            <div className="mt-1 flex items-start gap-1 text-[11px] font-medium text-hibiscus">
-              <Lock size={11} className="mt-0.5 shrink-0" /> {reason}
-            </div>
-          )}
         </div>
       </div>
+      {/* Full card width: the pills start under the icon instead of leaving that column empty. */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {views.map((v) => (
+          <button
+            key={v.param ?? v.id}
+            type="button"
+            onClick={() => request(v)}
+            aria-disabled={!v.available}
+            title={v.reason ?? v.title}
+            className={cx(
+              'hit-44 h-9 rounded-full border px-3.5 text-sm font-semibold transition',
+              v.available ? 'border-teal/30 bg-teal-soft text-teal hover:bg-teal hover:text-white' : 'border-ink/10 bg-paper-2 text-ink-soft/70',
+            )}
+          >
+            {variantLabel(v)}
+          </button>
+        ))}
+      </div>
+      {reason && (
+        <div className="mt-2 flex items-start gap-1 text-[11px] font-medium text-hibiscus">
+          <Lock size={11} className="mt-0.5 shrink-0" /> {reason}
+        </div>
+      )}
     </div>
   );
 }

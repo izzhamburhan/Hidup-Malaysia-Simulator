@@ -454,3 +454,17 @@ body {
     animation: none;
   }
 }
+
+/* Compact controls: drawn small (about 36px) but keep a 44px tap area (WCAG 2.5.5, Apple HIG). */
+.hit-44 {
+  position: relative;
+}
+.hit-44::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
