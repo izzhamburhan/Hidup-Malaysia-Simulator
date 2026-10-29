@@ -42,6 +42,13 @@ Versions: `ui-v3-ux-cleanup` (live) is the revert point; this ships as `ui-v4-vi
 8. Payday shows a quick coin count-up of the net pay.
 9. Both are skipped (shown instantly) when the reducedMotion setting or prefers-reduced-motion is on.
 
+## As built
+
+- Pixelify Sans draws "5" close to "S"/"8" at 16px (seen in a 3x zoom of the header: the
+  game held RM405.00, the header looked like RM408.00). Money and time must be unambiguous, so
+  the clock and wallet stay in the plain display font; the pixel face is used for the landing
+  title and celebration titles only. Header tint and wallet flash ship as planned.
+
 ## Validation
 
 `npm run check` in each worktree; after merge `npm run check`, headless Edge 360x640 screenshots

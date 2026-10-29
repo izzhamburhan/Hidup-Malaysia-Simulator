@@ -131,7 +131,7 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
       <SectionTitle>Credits</SectionTitle>
       <Card className="mb-3 space-y-1 text-xs text-ink-soft">
         <p>
-          <span className="font-pixel text-base font-bold text-ink">Pixelify Sans</span> is the pixel display font for the clock, wallet and titles. Copyright 2021 The Pixelify Sans Project Authors, used under the SIL Open Font
+          <span className="font-pixel text-base font-bold text-ink">Pixelify Sans</span> is the pixel display font for titles (numbers stay in a plain font so every digit is unambiguous). Copyright 2021 The Pixelify Sans Project Authors, used under the SIL Open Font
           License 1.1.{' '}
           <a href="./fonts/PixelifySans-OFL.txt" target="_blank" rel="noreferrer" className="font-semibold text-teal underline">
             Read the licence

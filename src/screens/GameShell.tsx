@@ -81,7 +81,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
               <StateFlag state={state.character.homeState} width={18} className="mr-1 align-[-2px]" />
               Day {state.clock.day + 1} · {shortDate(state)}
             </div>
-            <div className="font-pixel whitespace-nowrap text-base font-normal leading-tight tabular-nums">
+            <div className="font-display whitespace-nowrap text-2xl font-black leading-tight tabular-nums">
               {formatTime(state.clock.minute)}
               {state.mode === 'chaotic' && (
                 <span className="ml-1 text-base text-hibiscus" role="img" aria-label="Chaotic mode">
@@ -204,7 +204,7 @@ function WalletFigure({ cash, label, animate }: { cash: number; label: string; a
       <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft">{label}</div>
       <div
         key={flash?.key ?? 0}
-        className={cx('font-pixel -mr-1 whitespace-nowrap rounded-md pl-1 pr-1 text-base font-bold leading-tight tabular-nums', low ? 'text-hibiscus' : 'text-teal', flash && `wallet-flash-${flash.dir}`)}
+        className={cx('font-display -mr-1 whitespace-nowrap rounded-md pl-1 pr-1 text-base font-black leading-tight tabular-nums', low ? 'text-hibiscus' : 'text-teal', flash && `wallet-flash-${flash.dir}`)}
       >
         {low && <span aria-label="Low cash">! </span>}
         {formatRM(cash, cash < 10000 ? 2 : 0)}
