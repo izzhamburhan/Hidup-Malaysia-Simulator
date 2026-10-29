@@ -77,6 +77,11 @@ interface ActionView {
     time costs, a cap of `GIG_MAX_HOURS_PER_DAY` hours a day, and no overlap with class or a
     full-time shift before 5 PM. It names no brand and never appears on a payslip.
 
+11. **Moving state is a major decision.** `move-state` (param = state name) confirms its moving
+    cost, that rent and bills follow the new state's fictional cost factor, that new job offers
+    follow its pay factor, and that a job is resigned (no remote work in v1). Details in
+    `engine-api.md`, "Moving to another state".
+
 ## Tests
 
 Each new action has tests for: the happy path through `performAction` with a fixed seed, at least
