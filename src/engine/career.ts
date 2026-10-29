@@ -9,6 +9,7 @@ import { isWeekend } from './calendar';
 import { chance, nextRandom, pick, randInt, randRange } from './rng';
 import type { Employment, GameState, JobListing, JobSchedule } from './types';
 import { isHoliday } from './holidays';
+import { payFactor } from './living';
 
 export const REVIEW_INTERVAL_DAYS = 182;
 const LISTING_LIFETIME = 14;
@@ -60,7 +61,7 @@ function salaryFor(state: GameState, job: Job, company: Company): number {
   const [lo, hi] = job.salaryRange;
   const expBoost = Math.min(0.35, state.career.experienceDays / 365 / 10);
   const base = lo + (hi - lo) * randRange(state, 0.05, 0.6);
-  return Math.round((base * company.payFactor * (1 + expBoost)) / 50) * 50;
+  return Math.round((base * company.payFactor * payFactor(state) * (1 + expBoost)) / 50) * 50;
 }
 
 /** Refresh the job board (weekly). Listings mix eligible and stretch roles. */

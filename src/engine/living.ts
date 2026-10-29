@@ -1,9 +1,38 @@
 // Housing and transport helpers shared by actions, the economy and the UI.
 
 import { housingById, propertyById } from '../data/housing';
+import { mapStateByName } from '../data/malaysia';
 import { transportModeInfo, vehicleById } from '../data/vehicles';
 import { applyStats, spend } from './core';
 import type { GameState } from './types';
+
+/** Fictional living-cost factor of the residence state (Selangor = 1; unknown state = 1). */
+export function costFactor(state: GameState): number {
+  return mapStateByName(state.location.state)?.costFactor ?? 1;
+}
+
+/** Fictional factor on new job offers of the residence state (Selangor = 1; unknown state = 1). */
+export function payFactor(state: GameState): number {
+  return mapStateByName(state.location.state)?.payFactor ?? 1;
+}
+
+/** A catalogue price scaled by the residence state's cost factor, whole RM. */
+export function scaledCost(state: GameState, amount: number): number {
+  return Math.round(amount * costFactor(state));
+}
+
+/** Game rule for what moving house costs; moving to another state costs more by distance. */
+export const MOVING_STATE_COST = { sameRegion: 300, otherRegion: 700, acrossSea: 1800 } as const;
+
+/** Moving cost to another state: same region cheapest, across the South China Sea dearest (fictional). */
+export function movingStateCost(state: GameState, target: string | undefined): number {
+  const from = mapStateByName(state.location.state);
+  const to = mapStateByName(target);
+  if (!from || !to) return 0;
+  if (from.region === to.region) return MOVING_STATE_COST.sameRegion;
+  if (from.region === 'borneo' || to.region === 'borneo') return MOVING_STATE_COST.acrossSea;
+  return MOVING_STATE_COST.otherRegion;
+}
 
 export interface HomeInfo {
   name: string;
@@ -42,9 +71,9 @@ export function currentHome(state: GameState): HomeInfo {
   return {
     name: h.name,
     icon: h.icon,
-    rent: h.rent,
-    utilities: h.utilities,
-    internet: h.internet,
+    rent: scaledCost(state, h.rent),
+    utilities: scaledCost(state, h.utilities),
+    internet: scaledCost(state, h.internet),
     maintenance: 0,
     commute: h.commute,
     comfort: h.comfort + (state.inventory.items.includes('furniture') && !h.familyHome ? 1 : 0),
