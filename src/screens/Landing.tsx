@@ -7,6 +7,8 @@ import { Button, Modal } from '../components/ui';
 import { formatDate } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { Skyline } from '../components/Skyline';
+
+const TEXT_SAFE_MASK = 'linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.25) 14%, rgba(0,0,0,0.25) 62%, #000 82%)';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
 import { PrivacyNotice } from '../components/PrivacyNotice';
@@ -32,7 +34,13 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col px-4 pb-8 pt-6">
       <div className="relative overflow-hidden rounded-3xl bg-teal px-5 pb-0 pt-3 text-white shadow-lg">
-        <div className="songket absolute inset-0 opacity-40" aria-hidden />
+        {/* The motif fades to a quarter behind the title and tagline so the text stays easy to read. */}
+        <div
+          className="songket absolute inset-0 opacity-40"
+          style={{ maskImage: TEXT_SAFE_MASK, WebkitMaskImage: TEXT_SAFE_MASK }}
+          aria-hidden
+        />
+        <div className="songket-band absolute inset-x-0 top-0 opacity-50" aria-hidden />
         <div className="relative z-10 ml-auto flex w-fit rounded-full bg-white/15 p-0.5 text-[11px] font-bold" role="group" aria-label="Language / Bahasa">
           {(['en', 'ms'] as const).map((l) => (
             <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'hit-44 h-8 min-w-[44px] rounded-full bg-white px-3 text-teal' : 'hit-44 h-8 min-w-[44px] px-3 text-white/80'}>
@@ -47,7 +55,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
             <br />
             MALAYSIA
           </h1>
-          <p className="mt-3 max-w-xs text-sm text-white/85">{t('land.tagline')}</p>
+          <p className="mt-3 max-w-xs text-[15px] font-medium leading-snug text-white">{t('land.tagline')}</p>
         </div>
         <Skyline />
       </div>
