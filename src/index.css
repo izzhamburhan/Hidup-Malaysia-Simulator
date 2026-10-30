@@ -107,14 +107,20 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Songket-inspired motif (an original drawing, not a copy of any specific cloth): a woven-gold
+   diamond lattice with a small four-petal star flower (bunga tabur) in each diamond and dots where
+   the threads cross. Faint gold, so text on top keeps its contrast. */
 .songket {
-  background-image:
-    linear-gradient(45deg, rgba(231, 180, 50, 0.16) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(231, 180, 50, 0.16) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(231, 180, 50, 0.16) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(231, 180, 50, 0.16) 75%);
-  background-size: 18px 18px;
-  background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cg fill='none' stroke='%23e7b432' stroke-opacity='0.55' stroke-width='1.2'%3E%3Cpath d='M18 3 33 18 18 33 3 18Z'/%3E%3Cpath d='M18 9 27 18 18 27 9 18Z' stroke-opacity='0.3'/%3E%3C/g%3E%3Cg fill='%23e7b432'%3E%3Cpath fill-opacity='0.8' d='M18 13.5 19.3 16.7 22.5 18 19.3 19.3 18 22.5 16.7 19.3 13.5 18 16.7 16.7Z'/%3E%3Ccircle cx='0' cy='0' r='1.6' fill-opacity='0.7'/%3E%3Ccircle cx='36' cy='0' r='1.6' fill-opacity='0.7'/%3E%3Ccircle cx='0' cy='36' r='1.6' fill-opacity='0.7'/%3E%3Ccircle cx='36' cy='36' r='1.6' fill-opacity='0.7'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 36px 36px;
+}
+
+/* A row of pucuk rebung (bamboo-shoot) triangles, the classic songket border, as a woven band. */
+.songket-band {
+  height: 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='12' viewBox='0 0 20 12'%3E%3Cpath d='M0 12 10 0 20 12Z' fill='none' stroke='%23e7b432' stroke-width='1.2'/%3E%3Cpath d='M5.5 12 10 6 14.5 12Z' fill='%23e7b432'/%3E%3C/svg%3E");
+  background-size: 20px 12px;
+  background-repeat: repeat-x;
 }
 
 /* UI v4: songket edge and chip. The .songket diamond motif, drawn at a small scale in teal on gold as a

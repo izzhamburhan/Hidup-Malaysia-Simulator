@@ -33,6 +33,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
     <main className="mx-auto flex min-h-screen max-w-lg flex-col px-4 pb-8 pt-6">
       <div className="relative overflow-hidden rounded-3xl bg-teal px-5 pb-0 pt-3 text-white shadow-lg">
         <div className="songket absolute inset-0 opacity-40" aria-hidden />
+        <div className="songket-band absolute inset-x-0 top-0 opacity-50" aria-hidden />
         <div className="relative z-10 ml-auto flex w-fit rounded-full bg-white/15 p-0.5 text-[11px] font-bold" role="group" aria-label="Language / Bahasa">
           {(['en', 'ms'] as const).map((l) => (
             <button key={l} type="button" onClick={() => setSettings({ language: l })} aria-pressed={settings.language === l} className={settings.language === l ? 'hit-44 h-8 min-w-[44px] rounded-full bg-white px-3 text-teal' : 'hit-44 h-8 min-w-[44px] px-3 text-white/80'}>
