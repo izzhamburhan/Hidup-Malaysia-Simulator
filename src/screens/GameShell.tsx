@@ -74,7 +74,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
       <header className={cx('header-tint sticky top-0 z-30 border-b border-ink/10 px-4 pb-2 pt-3 backdrop-blur', `header-tint-${daylight(state.clock.minute)}`)} data-daylight={daylight(state.clock.minute)}>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => go('home')} className="flex min-h-[44px] min-w-[44px] shrink-0 items-end justify-center rounded-xl bg-paper-2 px-0.5 pt-0.5" aria-label={t('nav.home')}>
-            <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={30} />
+            <PixelAvatar appearance={state.character.appearance} gender={state.character.gender} mood={moodOf(state)} size={30} />
           </button>
           <div className="min-w-0 flex-1">
             <div className="whitespace-nowrap text-[11px] font-semibold text-ink-soft">
@@ -169,6 +169,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
       <Tutorial
         open={tutorial && !state.events.pending.length}
         appearance={state.character.appearance}
+        gender={state.character.gender}
         onClose={() => {
           setTutorial(false);
           if (!settings.tutorialSeen) setSettings({ tutorialSeen: true });

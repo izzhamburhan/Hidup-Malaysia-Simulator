@@ -4,7 +4,8 @@
 import { memo } from 'react';
 import { hairColors, outfitColors, skinTones } from '../data/appearance';
 import { appearanceFromName } from '../engine/appearance';
-import type { Appearance, Mood } from '../engine/types';
+import { npcGender } from '../data/lifestyle';
+import type { Appearance, Gender, Mood } from '../engine/types';
 import { cx } from './ui';
 
 const W = 18;
@@ -24,7 +25,8 @@ function shade(hex: string, amount: number): string {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 }
 
-function paint(a: Appearance, mood: Mood): Grid {
+function paint(a: Appearance, mood: Mood, gender?: Gender | null): Grid {
+  const feminine = gender === 'female';
   const g: Grid = Array.from({ length: H }, () => Array<string | null>(W).fill(null));
   // Everything is drawn with a 1-pixel margin so the outline fits.
   const set = (row: number, col: number, color: string) => {
@@ -232,6 +234,12 @@ function paint(a: Appearance, mood: Mood): Grid {
     }
   }
 
+  // Softer hairline for women: locks framing the face on the shorter styles.
+  if (feminine && a.headwear !== 'tudung' && !['long', 'bald', 'bun'].includes(a.hair)) {
+    rect(4, 3, 7, 3, hair);
+    rect(4, 12, 7, 12, hair);
+  }
+
   // Headwear.
   if (a.headwear === 'tudung') {
     const cloth2 = outfitColors[(a.outfitColor + 3) % outfitColors.length];
@@ -274,7 +282,7 @@ function paint(a: Appearance, mood: Mood): Grid {
   // Face: eyes, mouth, mood details. Darker skin tones get a lighter mouth for contrast.
   const eyeL = 6;
   const eyeR = 9;
-  const mouth = a.skin >= 4 ? '#e9a99a' : DARK;
+  const mouth = feminine ? (a.skin >= 4 ? '#f2b3c0' : '#d9577a') : a.skin >= 4 ? '#e9a99a' : DARK;
   if (a.glasses) {
     for (const c of [5, 6, 9, 10]) {
       set(5, c, DARK);
@@ -282,6 +290,11 @@ function paint(a: Appearance, mood: Mood): Grid {
     }
     set(6, 7, DARK);
     set(6, 8, DARK);
+  }
+  // Lashes above both eyes.
+  if (feminine) {
+    set(5, eyeL - 1, DARK);
+    set(5, eyeR + 1, DARK);
   }
   if (mood === 'tired') {
     set(6, eyeL - 1, DARK);
@@ -357,21 +370,23 @@ function rects(grid: Grid) {
 }
 
 /** The sprite as horizontal runs of one colour, for drawing outside SVG (the share image). */
-export function avatarCells(appearance: Appearance, mood: Mood = 'neutral') {
-  return { width: W, height: H, cells: rects(paint(appearance, mood)) };
+export function avatarCells(appearance: Appearance, mood: Mood = 'neutral', gender?: Gender | null) {
+  return { width: W, height: H, cells: rects(paint(appearance, mood, gender)) };
 }
 
 export interface PixelAvatarProps {
   appearance: Appearance;
   mood?: Mood;
+  /** Adds the feminine cues to the sprite; cosmetic only. */
+  gender?: Gender | null;
   size?: number;
   bob?: boolean;
   className?: string;
   title?: string;
 }
 
-export const PixelAvatar = memo(function PixelAvatar({ appearance, mood = 'neutral', size = 64, bob = false, className, title }: PixelAvatarProps) {
-  const cells = rects(paint(appearance, mood));
+export const PixelAvatar = memo(function PixelAvatar({ appearance, mood = 'neutral', gender, size = 64, bob = false, className, title }: PixelAvatarProps) {
+  const cells = rects(paint(appearance, mood, gender));
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
@@ -393,7 +408,7 @@ export const PixelAvatar = memo(function PixelAvatar({ appearance, mood = 'neutr
 export function NpcAvatar({ name, size = 36, className }: { name: string; size?: number; className?: string }) {
   return (
     <span className={cx('inline-flex shrink-0 items-end justify-center overflow-hidden rounded-xl bg-paper-2', className)} style={{ width: size, height: size }}>
-      <PixelAvatar appearance={appearanceFromName(name)} size={size * 0.9} title={name} />
+      <PixelAvatar appearance={appearanceFromName(name)} gender={npcGender(name)} size={size * 0.9} title={name} />
     </span>
   );
 }

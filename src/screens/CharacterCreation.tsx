@@ -304,7 +304,7 @@ export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDo
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-paper/95 px-4 pt-3 backdrop-blur safe-bottom">
         <div className="mx-auto flex max-w-lg items-center gap-3">
-          <PixelAvatar appearance={appearance} mood="happy" size={36} />
+          <PixelAvatar appearance={appearance} gender={gender} mood="happy" size={36} />
           <div className="min-w-0 flex-1 text-xs text-ink-soft">
             <div className="truncate font-semibold text-ink">
               {bg.icon} {stageDef.name}, {age}

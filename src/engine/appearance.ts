@@ -1,6 +1,7 @@
 // Pixel character appearance helpers. Appearance is cosmetic and uses its own
 // seeded generator, so it never consumes state.rng or changes simulation results.
 
+import { npcGender } from '../data/lifestyle';
 import { festiveOutfits, genderLooks, hairColors, hairStyles, headwears, lockedHeadwears, lockedOutfits, outfitColors, outfits, skinTones } from '../data/appearance';
 import { seedFromString } from './rng';
 import type { Appearance, GameState, Gender, Mood } from './types';
@@ -14,6 +15,10 @@ function generator(seed: number): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+/** The palette size before the pastels were added: the ungendered roll keeps picking from it so old looks never change. */
+const LEGACY_HAIR_COLORS = 5;
+const LEGACY_OUTFIT_COLORS = 8;
 
 /** Without a gender the result is the long-standing one (NPC faces depend on it). */
 export function randomAppearance(seed: number, gender?: Gender | null): Appearance {
@@ -39,9 +44,9 @@ export function randomAppearance(seed: number, gender?: Gender | null): Appearan
   return {
     skin: idx(skinTones.length),
     hair: hairStyles[idx(hairStyles.length)].id,
-    hairColor: idx(hairColors.length),
+    hairColor: idx(LEGACY_HAIR_COLORS),
     outfit: outfits[idx(outfits.length)].id,
-    outfitColor: idx(outfitColors.length),
+    outfitColor: idx(LEGACY_OUTFIT_COLORS),
     headwear,
     glasses: r() < 0.25,
   };
@@ -50,6 +55,7 @@ export function randomAppearance(seed: number, gender?: Gender | null): Appearan
 /** Deterministic look for an NPC from their name (same name, same face). */
 export function appearanceFromName(name: string): Appearance {
   return randomAppearance(seedFromString(name));
+  return randomAppearance(seedFromString(name), npcGender(name));
 }
 
 export function isValidAppearance(a: unknown): a is Appearance {

@@ -18,7 +18,7 @@ export function AvatarEditor({ value, onChange, preview, onPreview, gender }: { 
     <div className="rounded-2xl border border-ink/10 bg-white p-3">
       <div className="flex items-end gap-3">
         <div className="relative flex h-36 w-32 shrink-0 items-end justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-teal-soft to-paper-2">
-          <PixelAvatar appearance={value} mood={preview} size={112} bob />
+          <PixelAvatar appearance={value} mood={preview} gender={gender} size={112} bob />
         </div>
         <div className="flex-1 space-y-2">
           <Button variant="secondary" className="w-full" onClick={() => onChange(randomAppearance(Math.floor(Math.random() * 1e9), gender))}>

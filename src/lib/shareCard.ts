@@ -4,7 +4,7 @@ import { avatarCells } from '../components/PixelAvatar';
 import { GAME_URL } from '../config';
 import { formatRM } from '../engine/core';
 import type { LifeReport } from '../engine/endings';
-import type { Appearance, Mood } from '../engine/types';
+import type { Appearance, Gender, Mood } from '../engine/types';
 
 const fit = (text: string, max = 34) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
 
@@ -57,7 +57,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): st
 }
 
 /** Browser only. Resolves to a PNG blob of the card. */
-export async function renderShareCard(report: LifeReport, appearance: Appearance, mood: Mood): Promise<Blob> {
+export async function renderShareCard(report: LifeReport, appearance: Appearance, mood: Mood, gender?: Gender | null): Promise<Blob> {
   const W = 1080;
   const H = 1350;
   const canvas = document.createElement('canvas');
@@ -105,7 +105,7 @@ export async function renderShareCard(report: LifeReport, appearance: Appearance
   }
 
   // Character, on a soft panel on the right.
-  const sprite = avatarCells(appearance, mood);
+  const sprite = avatarCells(appearance, mood, gender);
   const px = 18;
   const sx = W - 80 - sprite.width * px;
   const sy = 170;

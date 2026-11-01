@@ -155,7 +155,7 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
           <div className="room-shadow mx-auto" aria-hidden />
           <div key={playing?.key ?? 'idle'} className={cx('relative', travels && `travel-${motion}`)}>
             <div className={cx('origin-bottom', motion === 'idle' ? 'avatar-bob' : `motion-${motion}`)}>
-              <PixelAvatar appearance={state.character.appearance} mood={motion === 'sleep' ? 'tired' : mood} size={140} title={`${state.character.name} feels ${mood}`} />
+              <PixelAvatar appearance={state.character.appearance} gender={state.character.gender} mood={motion === 'sleep' ? 'tired' : mood} size={140} title={`${state.character.name} feels ${mood}`} />
             </div>
             {held && (
               <span className={cx('absolute -right-2 bottom-[26%] text-4xl', motion === 'eat' ? 'held-eat' : 'held-bob')} aria-hidden>

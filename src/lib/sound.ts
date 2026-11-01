@@ -96,7 +96,7 @@ export const FANFARE: Note[] = [...seq([523, 659, 784], 0.1, 0.12, 'square', 0.0
 type AudioCtor = typeof AudioContext;
 let ctx: AudioContext | null = null;
 
-function context(): AudioContext | null {
+export function context(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   const AC: AudioCtor | undefined = window.AudioContext ?? (window as unknown as { webkitAudioContext?: AudioCtor }).webkitAudioContext;
   if (!AC) return null;

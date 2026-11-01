@@ -4,9 +4,10 @@ import type { Gender, Headwear, HairStyle, Outfit } from '../engine/types';
 
 export const skinTones = ['#f9d9bf', '#efc09a', '#d9a274', '#b97d52', '#8f5a35', '#64391f'];
 
-export const hairColors = ['#1b1512', '#3b2618', '#6b4226', '#a8763e', '#5b5b5b'];
+// The first entries are the original palette (saved looks index into it); the soft pastels are appended.
+export const hairColors = ['#1b1512', '#3b2618', '#6b4226', '#a8763e', '#5b5b5b', '#d9c19a', '#6d2a3a', '#e8a0bf', '#b8a4e3', '#8fc9c0'];
 
-export const outfitColors = ['#0f3d3e', '#c2410c', '#2563a8', '#2f7d4f', '#e7b432', '#7c3aed', '#be185d', '#475569'];
+export const outfitColors = ['#0f3d3e', '#c2410c', '#2563a8', '#2f7d4f', '#e7b432', '#7c3aed', '#be185d', '#475569', '#f4b6c2', '#b8d8ba', '#c7b8ea', '#f6d6a8', '#a8d5e2', '#e8e0d0', '#d98e8e', '#8aa6a3'];
 
 export const hairStyles: { id: HairStyle; label: string }[] = [
   { id: 'short', label: 'Short' },

@@ -21,7 +21,7 @@ export function ReportScreen() {
 
   const shareImage = async () => {
     try {
-      const blob = await renderShareCard({ ...report, ending }, state.character.appearance, moodOf(state));
+      const blob = await renderShareCard({ ...report, ending }, state.character.appearance, moodOf(state), state.character.gender);
       const file = new File([blob], 'hidup-malaysia.png', { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: 'HIDUP MALAYSIA', text: `My life in HIDUP MALAYSIA: ${ending.title}. ${GAME_URL}` });
@@ -80,7 +80,7 @@ export function ReportScreen() {
           <div className="mt-2 flex items-end justify-between">
             <div className="text-5xl">{ending.icon}</div>
             <div className="-mb-1 rounded-2xl bg-white/10 px-2 pt-2">
-              <PixelAvatar appearance={state.character.appearance} mood={moodOf(state)} size={72} />
+              <PixelAvatar appearance={state.character.appearance} gender={state.character.gender} mood={moodOf(state)} size={72} />
             </div>
           </div>
           <div className="font-display mt-1 text-3xl font-black leading-tight">{ending.title}</div>

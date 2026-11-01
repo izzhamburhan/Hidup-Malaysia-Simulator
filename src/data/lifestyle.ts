@@ -183,5 +183,16 @@ export const npcNames = [
   'Iqbal', 'Sofea', 'Marcus', 'Anis', 'Vinod', 'Qistina',
 ];
 
+/** Women among `npcNames`; everyone else in the list is a man. Used for who you meet and how they look. */
+const femaleNpcNames = new Set([
+  'Nurul', 'Wei Ling', 'Farah', 'Mei Xin', 'Kavitha', 'Siti', 'Priya', 'Aisyah', 'Deepa', 'Hui Min', 'Balqis', 'Liyana', 'Shalini', 'Sofea', 'Anis', 'Qistina',
+]);
+
+/** Gender of a catalogue name, or null for any other name (family, feed handles). */
+export function npcGender(name: string): 'male' | 'female' | null {
+  if (!npcNames.includes(name)) return null;
+  return femaleNpcNames.has(name) ? 'female' : 'male';
+}
+
 export const traits = ['funny', 'ambitious', 'chill', 'caring', 'adventurous', 'introverted', 'foodie', 'sporty', 'artsy', 'nerdy'];
 export const interests = ['hiking', 'K-dramas', 'football', 'cooking', 'photography', 'gaming', 'cafe hopping', 'reading', 'badminton', 'music festivals'];

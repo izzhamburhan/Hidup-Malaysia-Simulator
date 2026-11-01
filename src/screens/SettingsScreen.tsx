@@ -8,6 +8,7 @@ import { IosInstallHelp, useInstall } from '../components/InstallBanner';
 import { Button, Card, Disclaimer, KeyValue, Modal, SectionTitle } from '../components/ui';
 import { PrivacyNotice } from '../components/PrivacyNotice';
 import { analyticsConfigured } from '../lib/analytics';
+import { STATIONS, startMusic } from '../lib/music';
 
 export function SettingsScreen({ onExit }: { onExit: () => void }) {
   const { state, settings, setSettings, interact, exportSave, importSave, resetAll, lastSavedAt, saveError } = useLoadedGame();
@@ -108,6 +109,38 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
         />
         <Toggle label={t('settings.actionGames')} hint={t('settings.actionGames.hint')} checked={settings.actionGames} onChange={(v) => setSettings({ actionGames: v })} />
         <Toggle label={t('settings.sound')} hint={t('settings.sound.hint')} checked={settings.sound} onChange={(v) => setSettings({ sound: v })} />
+        <Toggle label={t('settings.music')} hint={t('settings.music.hint')} checked={settings.music} onChange={(v) => setSettings({ music: v })} />
+        {settings.music && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={t('settings.music.station')}>
+              {STATIONS.map((st) => (
+                <button
+                  key={st.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={settings.musicStation === st.id}
+                  onClick={() => {
+                    setSettings({ musicStation: st.id });
+                    startMusic(st.id, settings.musicVolume);
+                  }}
+                  className={settings.musicStation === st.id ? 'hit-44 flex items-center gap-3 rounded-2xl border-2 border-teal bg-teal-soft p-2.5 text-left' : 'hit-44 flex items-center gap-3 rounded-2xl border-2 border-transparent bg-paper-2 p-2.5 text-left'}
+                >
+                  <span className="text-2xl" aria-hidden>
+                    {st.icon}
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold">{st.name}</span>
+                    <span className="block text-xs text-ink-soft">{st.blurb}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+            <label className="flex items-center gap-3 text-sm font-semibold">
+              {t('settings.music.volume')}
+              <input type="range" min={0} max={1} step={0.05} value={settings.musicVolume} onChange={(e) => setSettings({ musicVolume: Number(e.target.value) })} className="flex-1 accent-teal" aria-label={t('settings.music.volume')} />
+            </label>
+          </div>
+        )}
         <Toggle label={t('settings.vibration')} hint={t('settings.vibration.hint')} checked={settings.vibration} onChange={(v) => setSettings({ vibration: v })} />
         <Toggle label={t('settings.motion')} hint={t('settings.motion.hint')} checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
         <Toggle label={t('settings.tutorial')} hint={t('settings.tutorial.hint')} checked={!settings.tutorialSeen} onChange={(v) => setSettings({ tutorialSeen: !v })} />

@@ -68,7 +68,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
             className="anim-pop flex w-full items-center gap-3 rounded-2xl border-2 border-teal bg-white p-4 text-left shadow-sm transition hover:bg-teal-soft"
           >
             <span className="relative flex h-14 w-12 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-teal-soft">
-              <PixelAvatar appearance={main.character.appearance} mood={moodOf(main)} size={44} />
+              <PixelAvatar appearance={main.character.appearance} gender={main.character.gender} mood={moodOf(main)} size={44} />
               <span className="absolute bottom-0.5 right-0.5 rounded-full bg-teal p-0.5 text-white">
                 <Play size={10} />
               </span>

@@ -1,7 +1,7 @@
 // Relationships (dating, partners, family, friends) and the fictional social feed.
 
 import { friendPosts, invitePosts, worldPosts } from '../data/feed';
-import { interests, npcNames, traits } from '../data/lifestyle';
+import { interests, npcGender, npcNames, traits } from '../data/lifestyle';
 import { addMemory, addPost, adjustFamily, applyStats, clamp, handleOf, highlight, log, nextId, playerPost, round2 } from './core';
 import { queueEvent } from './events';
 import { chance, nextRandom, pick, randInt } from './rng';
@@ -26,7 +26,9 @@ export function meetSomeone(state: GameState, where: string): string | null {
   if (r.partner && r.partner.stage !== 'talking') return null;
   if (r.prospects.length >= 3) r.prospects.pop();
   const taken = new Set([r.partner?.name, ...r.prospects.map((p) => p.name), ...r.exes]);
-  const names = npcNames.filter((n) => !taken.has(n));
+  // You meet the other gender; a life with no gender chosen (older saves) can meet anyone.
+  const mine = state.character.gender;
+  const names = npcNames.filter((n) => !taken.has(n) && (!mine || npcGender(n) !== mine));
   if (!names.length) return null;
   const person = {
     id: nextId(state, 'npc'),
