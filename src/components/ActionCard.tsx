@@ -96,10 +96,11 @@ export function VariantRow({ views, icon, title, description }: { views: ActionV
 function variantLabel(v: ActionView, stop: string): string {
   const p = v.param ?? '';
   if (/^\d+$/.test(p)) {
-    if (['save', 'withdraw', 'emergency-deposit', 'give-parents'].includes(v.id)) return formatRM(Number(p));
+    if (['save', 'withdraw', 'emergency-deposit', 'give-parents', 'unit-trust-deposit', 'unit-trust-withdraw', 'sedekah'].includes(v.id)) return formatRM(Number(p));
     if (v.id === 'parent-allowance') return Number(p) ? `${formatRM(Number(p))}/mo` : stop;
     return `${p}h`;
   }
+  if (p === 'all') return 'All';
   return shortTitle(v);
 }
 

@@ -56,6 +56,7 @@ export function FeedScreen() {
               {p.kind === 'player' ? (
                 <span className="inline-flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-teal-soft">
                   <PixelAvatar appearance={state.character.appearance} mood="happy" size={36} />
+                  <PixelAvatar appearance={state.character.appearance} gender={state.character.gender} mood="happy" size={36} />
                 </span>
               ) : p.kind === 'world' ? (
                 <div className={cx('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white', AVATAR_COLORS[p.author.length % AVATAR_COLORS.length])}>{p.author[0]}</div>

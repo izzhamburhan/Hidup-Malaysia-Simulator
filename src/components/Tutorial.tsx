@@ -1,7 +1,7 @@
 // First-game "how to play" overlay. Five short steps; can be reopened from the menu.
 
 import { useState } from 'react';
-import type { Appearance } from '../engine/types';
+import type { Appearance, Gender } from '../engine/types';
 import { useT } from '../hooks/useT';
 import type { StringKey } from '../i18n';
 import { track } from '../lib/analytics';
@@ -16,7 +16,7 @@ const STEPS: { icon: string; title: StringKey; text: StringKey }[] = [
   { icon: '🧭', title: 'tut.5.title', text: 'tut.5.text' },
 ];
 
-export function Tutorial({ open, onClose, appearance }: { open: boolean; onClose: () => void; appearance: Appearance }) {
+export function Tutorial({ open, onClose, appearance, gender }: { open: boolean; onClose: () => void; appearance: Appearance; gender?: Gender | null }) {
   const [step, setStep] = useState(0);
   const t = useT();
   const s = STEPS[step];
@@ -47,7 +47,7 @@ export function Tutorial({ open, onClose, appearance }: { open: boolean; onClose
     >
       <div className="flex items-center gap-4">
         <div className="flex h-28 w-24 shrink-0 items-end justify-center overflow-hidden rounded-2xl bg-teal-soft">
-          {step === 0 ? <PixelAvatar appearance={appearance} mood="happy" size={88} bob /> : <span className="mb-6 text-5xl">{s.icon}</span>}
+          {step === 0 ? <PixelAvatar appearance={appearance} gender={gender} mood="happy" size={88} bob /> : <span className="mb-6 text-5xl">{s.icon}</span>}
         </div>
         <div>
           <div className="font-display text-lg font-bold">{t(s.title)}</div>

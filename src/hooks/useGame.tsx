@@ -33,9 +33,15 @@ export interface Settings {
   installDismissed: boolean;
   /** Offer a quick mini-game before everyday actions (always skippable). */
   actionGames: boolean;
+  /** Background lofi music (synthesised, starts on the first tap). */
+  music: boolean;
+  /** Which lofi station plays (see STATIONS in src/lib/music.ts). */
+  musicStation: string;
+  /** Music volume, 0 to 1. */
+  musicVolume: number;
 }
 
-const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true, music: true, musicStation: 'warung-hujan', musicVolume: 0.5 };
 
 /** In-game days that count as retention milestones in analytics. */
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];

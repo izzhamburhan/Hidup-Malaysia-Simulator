@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { activityFor } from '../components/room/activity';
+import { startMusic, stopMusic } from '../lib/music';
 import { ERROR_SOUND, SOUNDS, buzz, playNotes, unlockAudio } from '../lib/sound';
 import { useLoadedGame } from './useGame';
 
@@ -8,6 +9,21 @@ export function useGameSounds(): void {
   const { lastActivity, feedback, settings } = useLoadedGame();
 
   useEffect(() => unlockAudio(), []);
+
+  // Background lofi. Browsers keep audio locked until a tap, so start on the first pointerdown if needed.
+  useEffect(() => {
+    if (!settings.music) {
+      stopMusic();
+      return;
+    }
+    const start = () => startMusic(settings.musicStation, settings.musicVolume);
+    start();
+    window.addEventListener('pointerdown', start, { once: true, passive: true });
+    return () => window.removeEventListener('pointerdown', start);
+  }, [settings.music, settings.musicStation, settings.musicVolume]);
+
+  // Leaving the game screen (back to the landing page) ends the music.
+  useEffect(() => () => stopMusic(), []);
 
   useEffect(() => {
     if (!lastActivity) return;
