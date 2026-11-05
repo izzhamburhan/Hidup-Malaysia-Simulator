@@ -6,6 +6,7 @@
 import { foodById } from '../data/foods';
 import { actionById, actionCatalogue, dyn, type ActionDef, type ActionView } from './actions';
 import { applyActionGame } from './actionGames';
+import { trackSpend } from './budget';
 import { canAfford, formatRM, log, netWorth, round2, totalDebt, SKILL_KEYS } from './core';
 import { monthKey } from './calendar';
 import { monthlyCommitmentTotal } from './economy';
@@ -119,10 +120,16 @@ export function listActions(state: GameState): ActionView[] {
   return out;
 }
 
+/** Money set aside outside the wallet (EPF excluded: it is never spendable). */
+const stash = (s: GameState) => s.finance.savings + s.finance.emergencyFund + s.finance.unitTrust;
+
 /** Mutates the draft. Shared by performAction and autopilot (which never passes a game score). */
 function execute(draft: GameState, def: ActionDef, param?: string, gameScore?: number): string[] {
   const minutes = dyn(def.minutes, draft, param, 0);
+  const spentBefore = draft.counters.totalSpent;
+  const stashBefore = stash(draft);
   const lines = def.run(draft, param) ?? [];
+  lines.push(...trackSpend(draft, def.id, def.category, param, round2(draft.counters.totalSpent - spentBefore), round2(stashBefore - stash(draft))));
   lines.push(...applyActionGame(draft, def.id, param, gameScore));
   advanceTime(draft, minutes, { asleep: def.asleep });
   draft.counters.actions += 1;

@@ -6,6 +6,7 @@ import { DEFAULT_RESIDENCE, mapStateByName } from '../data/malaysia';
 import { isValidAppearance, randomAppearance } from './appearance';
 import { endings } from './endings';
 import type { GameState } from './types';
+import { emptyBudget } from './budget';
 
 export const SAVE_KEY = 'hidup-malaysia:save';
 export const CORRUPT_KEY = 'hidup-malaysia:save:corrupt';
@@ -79,6 +80,12 @@ export const migrations: Record<number, Migration> = {
     const location = (s.location as { state?: unknown } | undefined)?.state ? s.location : { state };
     const travel = (s.travel as { stamps?: unknown } | undefined)?.stamps ? s.travel : { stamps: {} };
     return { ...s, location, travel, version: 9 };
+  },
+  // 9 -> 10: Hari Gaji payday planner. Nothing planned yet; the next payday opens the planner.
+  9: (s) => {
+    const finance = (s.finance ?? {}) as Record<string, unknown>;
+    const budget = finance.budget && typeof finance.budget === 'object' ? finance.budget : emptyBudget();
+    return { ...s, finance: { ...finance, budget }, version: 10 };
   },
 };
 

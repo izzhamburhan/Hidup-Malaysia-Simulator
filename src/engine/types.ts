@@ -103,6 +103,62 @@ export interface Finance {
   insurance: boolean;
   /** Fictional Seri Harapan unit trust balance (game rule; not a real fund). Never spendable cash directly. */
   unitTrust: number;
+  /** Hari Gaji payday planner: needs / wants / savings split of each salary or allowance (save v10). */
+  budget: BudgetState;
+}
+
+/** Percentages of one payday; each a multiple of 5, summing to 100. */
+export interface BudgetSplit {
+  needs: number;
+  wants: number;
+  save: number;
+}
+
+export type PaydaySource = 'salary' | 'allowance';
+
+/** One pay cycle: from a planned payday until the next payday. */
+export interface BudgetCycle {
+  startDay: number;
+  source: PaydaySource;
+  income: number;
+  split: BudgetSplit;
+  /** RM moved into the emergency fund and savings when the plan was made. */
+  saved: number;
+  needsBudget: number;
+  wantsBudget: number;
+  wantsSpent: number;
+  /** counters.totalSpent when the cycle opened, so total spending in the cycle can be derived. */
+  spentAtStart: number;
+  /** RM withdrawn from savings, the emergency fund or the unit trust during the cycle. */
+  dipped: number;
+  /** Highest wants warning already shown: 0, 80 or 100 (percent of the wants budget). */
+  warned: number;
+}
+
+export interface BudgetResult {
+  month: string; // YYYY-MM of the cycle's payday
+  income: number;
+  split: BudgetSplit;
+  saved: number;
+  wantsSpent: number;
+  wantsBudget: number;
+  dipped: number;
+  grade: 'A' | 'B' | 'C';
+}
+
+export interface BudgetState {
+  /** A payday waiting for the player's plan. */
+  pending: { day: number; income: number; source: PaydaySource } | null;
+  cycle: BudgetCycle | null;
+  lastSplit: BudgetSplit | null;
+  /** Apply lastSplit automatically on every payday. */
+  autoPlan: boolean;
+  /** Paydays planned so far. */
+  planned: number;
+  /** Consecutive cycles graded A or B. */
+  streak: number;
+  /** Newest first, at most 6. */
+  history: BudgetResult[];
 }
 
 export type JobSchedule = 'fulltime' | 'parttime' | 'intern';

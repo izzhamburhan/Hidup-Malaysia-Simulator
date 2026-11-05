@@ -50,8 +50,10 @@ describe('save v9: residence and travel stamps', () => {
       delete old.location;
       delete old.travel;
       const migrated = migrate(old);
-      expect(SAVE_VERSION).toBe(9);
-      expect(migrated.version).toBe(9);
+      expect(SAVE_VERSION).toBeGreaterThanOrEqual(9);
+      expect(migrated.version).toBe(SAVE_VERSION);
+      expect(SAVE_VERSION).toBeGreaterThanOrEqual(9);
+      expect(migrated.version).toBe(SAVE_VERSION);
       expect(migrated.travel.stamps).toEqual({});
       const withFamily = migrated.housing.optionId === 'family';
       expect(migrated.location.state, backgroundId).toBe(withFamily ? 'Kelantan' : DEFAULT_RESIDENCE);

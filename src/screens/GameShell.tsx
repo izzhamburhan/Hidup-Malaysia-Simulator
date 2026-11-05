@@ -15,6 +15,7 @@ import { Modal, cx } from '../components/ui';
 import { daylight } from '../components/room/activity';
 import { ActionGame } from '../components/minigames/ActionGame';
 import { Tutorial } from '../components/Tutorial';
+import { PaydaySheet } from '../components/PaydaySheet';
 import { FeedbackSheet, feedbackAvailable } from '../components/FeedbackSheet';
 import { track } from '../lib/analytics';
 import { Dashboard } from './Dashboard';
@@ -40,7 +41,7 @@ const NAV: { id: Tab; label: StringKey; icon: typeof Home }[] = [
 const shortDate = (state: Parameters<typeof formatDate>[0]) => formatDate(state).replace(/^[A-Za-z]+,\s*/, '');
 
 export function GameShell({ onExit }: { onExit: () => void }) {
-  const { state, settings, setSettings } = useLoadedGame();
+  const { state, settings, setSettings, dayReport } = useLoadedGame();
   const navRef = useRef<HTMLElement>(null);
   const [navH, setNavH] = useState(64);
   // The bottom nav's real height (icons, labels and the safe-area inset), so screens can park
@@ -181,6 +182,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
       <ConfirmModal />
       <ActionGame />
       <DayReportModal />
+      <PaydaySheet blocked={tutorial || !!dayReport || !!state.events.pending.length} />
       <FeedbackToast />
     </div>
   );
