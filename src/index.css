@@ -210,6 +210,11 @@ body {
   animation: pop 0.2s ease-out both;
 }
 
+/* The landing welcome dock: rises into the hero a beat after the title, then stays still. */
+.anim-dock {
+  animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
+}
+
 .reduced-motion *,
 .reduced-motion *::before,
 .reduced-motion *::after {
@@ -219,7 +224,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .anim-rise,
-  .anim-pop {
+  .anim-pop,
+  .anim-dock {
     animation: none;
   }
 }

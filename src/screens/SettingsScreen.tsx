@@ -7,6 +7,7 @@ import { StateFlag } from '../components/StateFlag';
 import { IosInstallHelp, useInstall } from '../components/InstallBanner';
 import { Button, Card, Disclaimer, KeyValue, Modal, SectionTitle } from '../components/ui';
 import { PrivacyNotice } from '../components/PrivacyNotice';
+import { AccountCard } from '../components/AccountCard';
 import { analyticsConfigured } from '../lib/analytics';
 import { STATIONS, startMusic } from '../lib/music';
 
@@ -49,6 +50,8 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
         </div>
         <Disclaimer>{t('settings.local')}</Disclaimer>
       </Card>
+
+      <AccountCard />
 
       <SectionTitle>{t('settings.import.title')}</SectionTitle>
       <Card>

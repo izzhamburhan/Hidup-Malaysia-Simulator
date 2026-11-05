@@ -11,6 +11,7 @@ Each file here is the source of truth for one boundary in HIDUP MALAYSIA. The UI
 | [save-format.md](save-format.md) | LocalStorage keys, save envelope, migrations | `src/engine/save.ts` | `save-compat-guard` |
 | [data-catalogues.md](data-catalogues.md) | Every catalogue file, its type and its honesty label | `src/data/` | `content-guard` |
 | [payroll.md](payroll.md) | What the simplified payroll simulates, and its disclaimer | `src/engine/payroll.ts`, `src/data/statutory.ts` | `content-guard`, `engine-contract-guard` |
+| [cloud-save.md](cloud-save.md) | Several lives on a device, optional Google sign-in, cloud copy of every life, sync rules, Firestore rules | `src/lib/lives.ts`, `src/lib/cloud*.ts`, `src/lib/firebaseClient.ts`, `src/hooks/useCloud.tsx`, `firestore.rules` | `save-compat-guard` |
 | [mcp-hidup-sim.md](mcp-hidup-sim.md) | Tools of the local MCP server | `mcp/hidup-sim/` | `engine-contract-guard` |
 
 ## Rules

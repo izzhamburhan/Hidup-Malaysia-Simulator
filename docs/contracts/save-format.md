@@ -1,7 +1,8 @@
 # Save format contract
 
-Module: `src/engine/save.ts`. Saves live only in the player's browser (LocalStorage). There is no
-server copy and no account.
+Module: `src/engine/save.ts`. Saves live in the player's browser (LocalStorage). A guest has no
+server copy and no account. A player who chooses Google sign-in also gets a cloud copy of the main save
+(see [cloud-save.md](cloud-save.md)); LocalStorage stays the copy the game reads and writes.
 
 ## Keys
 
@@ -11,6 +12,8 @@ server copy and no account.
 | `hidup-malaysia:settings` | Player settings (JSON, the `Settings` type in `src/hooks/useGame.tsx`): reduced motion, analytics opt-out, tutorial seen, sound, vibration, language (`en` or `ms`). Independent of the save. |
 | `hidup-malaysia:collection` | Endings found across every life (JSON `EndingCollection`: `{ version: 1, endings: { [id]: { count, firstName } } }`). Read and written by `loadCollection` / `saveCollection` in `save.ts`; a bad value loads as empty, unknown ending ids are dropped. Cleared by "Reset all game data". |
 | `hidup-malaysia:daily` | Today's daily-challenge run, a save envelope like `hidup-malaysia:save` but in its own slot so it never replaces the main life. Loaded only when its `flags['daily-date']` is today. A corrupt daily save is backed up and removed without touching the main save. |
+| `hidup-malaysia:shelf` | The other lives (up to 3 lives in total with the current one) and local deletions: `{ version: 1, lives: { [lifeId]: <save envelope text> }, deleted: { [lifeId]: <ISO time> } }`. `hidup-malaysia:save` stays the current life. Read and written by `src/lib/lives.ts`, not by the engine; a broken value reads as empty. See [cloud-save.md](cloud-save.md). Cleared by "Reset all game data". |
+| `hidup-malaysia:cloud` | Cloud sync state on this device: `{ signedIn, lastSynced: { [lifeId]: iso }, lastRunAt }` (see [cloud-save.md](cloud-save.md)). Read and written by `src/lib/cloud.ts`, not by the engine. |
 | `hidup-malaysia:save:corrupt` | The raw text of the last save that could not be loaded, kept so it is never silently lost. |
 
 No other keys. Adding one updates this table in the same change.
