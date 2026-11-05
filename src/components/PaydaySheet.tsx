@@ -3,9 +3,9 @@
 // "Later" hides it until the Money tab's "Plan now" reopens it.
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import { Home, LifeBuoy, Lightbulb, Minus, Plus, Sparkles, Sprout, TriangleAlert } from 'lucide-react';
+import { Home, LifeBuoy, Lightbulb, Minus, Plus, Sparkles, Sprout, TriangleAlert, Wallet } from 'lucide-react';
 import { BUDGET_PRESETS, BUDGET_TIPS } from '../data/budget';
-import { budgetView } from '../engine/budget';
+import { budgetView, savingsNow } from '../engine/budget';
 import { formatRM } from '../engine/core';
 import type { BudgetSplit } from '../engine/types';
 import { useLoadedGame } from '../hooks/useGame';
@@ -79,7 +79,8 @@ function PaydayBody({ onLater, onPlan }: { onLater: () => void; onPlan: (param: 
   const shownIncome = useCountUp(income);
 
   const rm = (b: Bucket) => Math.round((income * split[b]) / 100);
-  const toSave = Math.min(rm('save'), Math.floor(state.finance.cash));
+  const toSave = savingsNow(state, income, split);
+  const heldBack = rm('save') - toSave;
   const billsDontFit = view.commitments > rm('needs');
   const billsOfNeeds = rm('needs') > 0 ? Math.min(1, view.commitments / rm('needs')) : 1;
   const efAfter = Math.min(view.emergencyTarget, state.finance.emergencyFund + toSave);
@@ -212,6 +213,13 @@ function PaydayBody({ onLater, onPlan }: { onLater: () => void; onPlan: (param: 
           );
         })}
       </ul>
+
+      {heldBack > 0 && (
+        <p className="mt-2 flex items-start gap-2 rounded-xl bg-gold-soft px-3 py-2 text-xs text-ink">
+          <Wallet size={16} className="mt-px shrink-0 text-[#8a6410]" aria-hidden="true" />
+          {t('pay.walletShort', { cash: formatRM(state.finance.cash), held: formatRM(heldBack) })}
+        </p>
+      )}
 
       {billsDontFit && (
         <p className="mt-2 flex items-start gap-2 rounded-xl bg-hibiscus-soft px-3 py-2 text-xs text-[#9a3412]">

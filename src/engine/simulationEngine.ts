@@ -259,6 +259,7 @@ export function surplusToSave(s: GameState): number {
   const saved = s.flags.routineSaved;
   if (typeof saved === 'number' && monthKey(s, saved) === monthKey(s)) return 0;
   if (s.finance.debts.some((d) => d.kind === 'overdue' && d.balance > 0)) return 0;
+  if (s.finance.budget.pending) return 0; // a payday waits for the player's plan
   const buffer = Math.max(ROUTINE_MIN_BUFFER, 3 * monthlyCommitmentTotal(s));
   const amount = Math.floor((s.finance.cash - buffer) / ROUTINE_SAVE_STEP) * ROUTINE_SAVE_STEP;
   return amount >= ROUTINE_SAVE_STEP && can(s, 'save', String(amount)) ? amount : 0;

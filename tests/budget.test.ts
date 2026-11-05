@@ -103,12 +103,12 @@ describe('plan-budget', () => {
     expect(f.budget.lastSplit).toEqual({ needs: 50, wants: 30, save: 20 });
   });
 
-  it('never moves more than the cash in the wallet', () => {
+  it('never moves more than the cash above the wallet floor', () => {
     const s = paid();
     s.finance.cash = 100;
     const r = performAction(s, 'plan-budget', '50-30-20');
-    expect(r.state.finance.cash).toBe(0);
-    expect(r.state.finance.budget.cycle!.saved).toBe(100);
+    expect(r.state.finance.cash).toBe(100); // the floor stays in the wallet
+    expect(r.state.finance.budget.cycle!.saved).toBe(0);
   });
 
   it('rejects a bad split with a reason, state unchanged', () => {
@@ -277,5 +277,37 @@ describe('payday stepper maths', () => {
     expect(stepSplit({ needs: 50, wants: 0, save: 50 }, 'save', 1)).toEqual({ needs: 45, wants: 0, save: 55 });
     expect(stepSplit({ needs: 0, wants: 0, save: 100 }, 'save', 1)).toEqual({ needs: 0, wants: 0, save: 100 });
     expect(stepSplit({ needs: 50, wants: 50, save: 0 }, 'save', -1)).toEqual({ needs: 50, wants: 50, save: 0 });
+  });
+});
+
+import { cashFloor, savingsNow } from '../src/engine/budget';
+import { surplusToSave } from '../src/engine/simulationEngine';
+
+describe('cash floor and sweep (fix)', () => {
+  it('a plan leaves the wallet its floor when cash is short', () => {
+    const s = paid();
+    const income = s.finance.budget.pending!.income;
+    s.finance.cash = 984;
+    const split = { needs: 50, wants: 20, save: 30 };
+    const floor = cashFloor(income, split);
+    expect(savingsNow(s, income, split)).toBe(984 - floor);
+    const r = performAction(s, 'plan-budget', '50-20-30');
+    expect(r.state.finance.cash).toBe(floor);
+    expect(r.state.finance.cash).toBeGreaterThanOrEqual(100);
+    expect(r.feedback.lines.join(' ')).toMatch(/stays in the wallet/);
+  });
+
+  it('with plenty of cash the full savings share moves', () => {
+    const s = paid();
+    const income = s.finance.budget.pending!.income;
+    expect(savingsNow(s, income, { needs: 50, wants: 30, save: 20 })).toBe(Math.round(income * 0.2));
+  });
+
+  it('the routine sweep waits while a payday is pending', () => {
+    const s = paid();
+    s.finance.cash = 50000;
+    expect(surplusToSave(s)).toBe(0);
+    s.finance.budget.pending = null;
+    expect(surplusToSave(s)).toBeGreaterThan(0);
   });
 });

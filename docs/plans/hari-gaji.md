@@ -140,3 +140,7 @@ Scope boundary: no changes to payroll maths, events, bills, the routine sweep, t
 - `tests/malaysiaMap.test.ts` no longer pins `SAVE_VERSION` to 9; it checks that the v8 save migrates to the current version.
 - Contract notes: `action-contract.md` rule 14, `engine-api.md` "Hari Gaji payday planner", `data-catalogues.md` row, `save-format.md` rows 8 to 10 (8 and 9 were missing from the table).
 - Autopilot balance (renter, SWE job, 180 days, seeds 42 and 7): wallet plus savings plus emergency fund ends at about RM21k with or without planning; 50/30/20 puts RM3.1k to RM3.6k in the emergency fund (target reached) and grades AAAAA (the routine buys no wants). Cash never negative.
+
+## Follow-up fix: wallet floor (fix/hari-gaji-cash-floor)
+
+Report: planning days after payday moved all remaining cash to savings and left the wallet at RM0, with an unspendable wants budget. Fix: (1) the plan keeps a wallet floor (`cashFloor`: a week of the wants budget, at least RM100) and says when savings are held back; (2) the sheet shows the shortfall and a wallet note (`savingsNow`); (3) `surplusToSave` (routine sweep) waits while a payday is pending. Tests in `tests/budget.test.ts` "cash floor and sweep".
