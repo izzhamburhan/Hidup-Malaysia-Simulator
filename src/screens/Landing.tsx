@@ -12,6 +12,12 @@ import { useCloud } from '../hooks/useCloud';
 import { track } from '../lib/analytics';
 import { MAX_LIVES, type LifeEntry } from '../lib/lives';
 
+/** "3 Nov": short enough that the whole line fits beside the Play button at 360px. */
+const shortDate = (iso: string): string => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+};
+
 const TEXT_SAFE_MASK = 'linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.25) 14%, rgba(0,0,0,0.25) 62%, #000 82%)';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { moodOf } from '../engine/appearance';
@@ -116,7 +122,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">{life.meta.name}</span>
-                    <span className="block truncate text-xs text-ink-soft">{t('lives.line', { n: life.meta.day + 1, when: new Date(life.meta.savedAt).toLocaleDateString() })}</span>
+                    <span className="block truncate text-xs text-ink-soft">{t('lives.line', { n: life.meta.day + 1, when: shortDate(life.meta.savedAt) })}</span>
                   </span>
                   <Button
                     className="shrink-0"
@@ -233,7 +239,7 @@ export function Landing({ onNew, onContinue, onDaily }: { onNew: () => void; onC
                   {life.meta.name}
                   {life.active && <span className="ml-2 rounded-full bg-teal-soft px-2 py-0.5 text-[10px] font-bold text-teal">{t('lives.current')}</span>}
                 </span>
-                <span className="block truncate text-xs text-ink-soft">{t('lives.line', { n: life.meta.day + 1, when: new Date(life.meta.savedAt).toLocaleDateString() })}</span>
+                <span className="block truncate text-xs text-ink-soft">{t('lives.line', { n: life.meta.day + 1, when: shortDate(life.meta.savedAt) })}</span>
               </span>
               <Button variant="danger" className="shrink-0" onClick={() => setDeleteTarget({ life, fromFull: true })}>
                 <Trash2 size={14} /> {t('lives.delete.btn')}
