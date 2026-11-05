@@ -5,7 +5,7 @@ Other agent platforms read `AGENTS.md`. This file is the Claude Code entry point
 
 ## What this is
 
-A mobile-first, choice-based Malaysian life simulator that runs entirely in the browser. The player picks a background and life stage, then lives day by day: study, work, eat, commute, pay bills, date, start side hustles, and deal with whatever Seri Harapan throws at them. There is no backend, no database, no account and no API key. Saves live in the player's LocalStorage.
+A mobile-first, choice-based Malaysian life simulator that runs entirely in the browser. The player picks a background and life stage, then lives day by day: study, work, eat, commute, pay bills, date, start side hustles, and deal with whatever Seri Harapan throws at them. There is no backend of our own, no database of ours and no secret API key. Saves live in the player's LocalStorage, and playing as a guest needs nothing else. An optional Google sign-in (Firebase, free Spark plan) adds a cloud copy of the save so a life can continue on another device.
 
 A pure TypeScript simulation engine (`src/engine/`) owns every rule. Content lives in data catalogues (`src/data/`). React screens (`src/screens/`, `src/components/`) only display state and call the engine. A local MCP server (`mcp/hidup-sim/`) exposes the same engine to agents for balancing and QA.
 
@@ -85,6 +85,13 @@ src/lib/sound.ts       synthesised sound effects and vibration (UI layer only, n
 src/lib/music.ts       synthesised lofi background music: 5 stations, pure `barEvents` plus a Web Audio player (UI layer only)
 src/lib/shareCard.ts   the share image: pure model plus a canvas renderer (browser only)
 src/lib/install.ts     Add to Home Screen prompt, iPhone steps, service worker registration
+src/lib/lives.ts       several lives: pure library rules (3 at once, new life shelves the current one) and storage; UI layer only
+src/lib/cloudSync.ts   cloud save: pure per-life sync plan (upload, download, conflict, delete, refuse); UI layer only
+src/lib/cloud.ts       cloud save client over an injected store, plus the local sync state key
+src/lib/cloudScheduler.ts  debounced push to the cloud
+src/lib/firebaseClient.ts  the real Firebase adapter (Auth with Google, Firestore), loaded lazily; never Analytics
+src/hooks/useCloud.tsx optional Google sign-in and cloud save wiring (guests never load it)
+firestore.rules        Firestore rules: a player reaches only users/{their uid}
 src/i18n.ts            UI strings in English and Bahasa Malaysia (beta: menus and buttons; content stays English)
 tests/                 Vitest tests for the engine and data (tests/*.test.ts)
 mcp/hidup-sim/         local stdio MCP server exposing the engine (run with tsx)
@@ -117,6 +124,9 @@ SKILLS.md              index of every skill
 | State flags | done: official flags of all 13 states and 3 federal territories (Wikimedia Commons, credited), flag grid in character creation, flag in the game header |
 | Festive seasons | done: 12 seasons on the simulated calendar (CNY, Ramadan (festive only: pasar Ramadan and buka puasa for everyone, no fasting mechanic), Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
+| Cloud save | built, awaiting Firebase console steps (Google provider, authorised domain, published `firestore.rules`): optional Google sign-in, guest stays the default; every life is copied to Firestore `users/{uid}/lives/{lifeId}`, debounced pushes of the current life, a per-life conflict sheet when both sides changed, delete-my-cloud-data in Settings; welcome dock (Google button and "Continue as guest") in the landing hero, then a profile pill (photo and first name) at its top-left; no engine or `SAVE_VERSION` change. Contract: `docs/contracts/cloud-save.md` |
+| Analytics | done: Umami events with a life snapshot on milestone days (choices and coarse money bands, never exact money or the name), one `session` summary per sitting instead of an event per action (`TRACK_ACTIONS` off), plus `create`, `account`, `life` and `problem` counts; contract `docs/contracts/analytics.md` |
+| Multiple lives | built: up to 3 lives per device; starting a new life shelves the current one (never replaces it), a full library asks the player to delete one; the landing page lists the other lives with Play and Delete; `hidup-malaysia:save` stays the current life and `hidup-malaysia:shelf` holds the rest (no migration, `SAVE_VERSION` stays 9). Contract: `docs/contracts/cloud-save.md` |
 | Starter quests | done: 6 quests for a new life (eat, move, career step, chat, me time, survive day one), RM20 each via claim-quest, shown as the room's goal; not in daily challenges |
 | Chat | done: partner, Geng Lepak (friends) and family threads on the Feed tab; 16 scripted conversations, pick one of 3 replies, real effects on trust, friends and family, one reply per thread a day |
 | Bahasa Malaysia | beta: EN/BM switch on the landing screen and in Settings; the UI chrome is translated (tutorial, overlays and day report, header, Act, Life tabs and bodies incl. the map, Money and payslip, Settings, Landing, offers sheet); stories, events, catalogue names and the Goals, Report, character creation, chat and mini-game screens are still English |
@@ -134,8 +144,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 48 Vitest files, 410 tests |
-| Tests | done: 50 Vitest files, 420 tests |
+| Tests | done: 56 Vitest files, 506 tests |
 
 ## Commands
 
@@ -159,7 +168,8 @@ Run one test file with `npx vitest run tests/<file>.test.ts`.
 
 Anonymous, cookie-free usage stats via Umami Cloud, off until `UMAMI_WEBSITE_ID` is set in
 `src/config.ts`. `src/lib/analytics.ts` sends only allow-listed events and fields (never the
-character name, free text or money), respects Do Not Track, skips localhost, and players can opt
+character name, free text or an exact money amount; the character's game choices and coarse money
+bands such as `rm2k-10k` are allowed, see `docs/contracts/analytics.md`), respects Do Not Track, skips localhost, and players can opt
 out in Settings → Privacy. The engine never imports analytics and the save is untouched.
 In-game quick feedback (emoji rating and improvement chips) is sent the same way; an optional
 `FEEDBACK_FORM_URL` adds a long-form link. Contract: `docs/contracts/analytics.md`.
@@ -186,17 +196,18 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 - **Real names are catalogue names only.** Real universities and companies appear as names. Their presence implies no vacancies, rankings, entry requirements, fees, salaries or practices.
 - **No real logos or brand marks.** Organisations are shown with a neutral initials badge (`OrgBadge`: game palette, plain text, one shape for all), never a logo, brand colour or lookalike. Logos are trademarks and would imply endorsement.
 - **State flags.** State and federal territory flags are the one exception to "no real marks": official files from Wikimedia Commons in `public/flags/`, unmodified, licence-checked and credited in `src/data/stateFlags.ts` and Settings → Credits (CC BY-SA files keep their author credit), shown for identification only with no implied endorsement. Never hand-draw or alter them.
+- **Google sign-in button.** The Google "G" appears only inside the official-style "Sign in with Google" button and the small corner sign-in button (`src/components/GoogleButton.tsx`), drawn to Google's published branding guidelines and shown only to identify the sign-in action, with no implied endorsement. The player's Google profile picture is loaded from Google, shown on their own device only, and never stored or uploaded by us.
 - **Numbers are fictional game estimates.** Salaries, tuition, prices, rents, deposits, vehicle and running costs are FICTIONAL GAME ESTIMATES chosen for balance, and every catalogue file says so in its header comment. UI copy never presents them as market data.
 - **Calories are rough estimates** for gameplay, not medical or nutrition advice.
 - **Payroll is a SIMPLIFIED SIMULATION** of EPF/KWSP, SOCSO/PERKESO, EIS and PCB/LHDN. Rates live in `src/data/statutory.ts` with links to the official sources. A payslip always shows `STATUTORY_DISCLAIMER` and is never presented as official. See `docs/contracts/payroll.md`.
 - **Holiday dates are a simulated calendar.** Lunar and Islamic festivals are pinned to fixed dates in `src/data/holidays.ts`; they are not the real calendar.
 - **Humour and politics.** Humour is original, friendly and recognisably Malaysian. No defamation of real people. Politics appears only through fictional parties and politicians in the fictional town of Seri Harapan. No ethnic or religious stereotypes. Being single, never marrying, never buying a house and every ending are valid outcomes, not failures.
 - **Halal-friendly.** No pig or pork, alcohol or gambling imagery anywhere (emoji included); `tests/content.test.ts` enforces the emoji list.
-- **Privacy.** Store only what the game needs, and only locally. No accounts, ads, tracking cookies, paid APIs or real social media in v1. The only analytics allowed is the cookie-free, opt-out, allow-listed kind in `docs/contracts/analytics.md`.
+- **Privacy.** Store only what the game needs, locally by default. Playing never requires an account. The one exception is the optional Google sign-in for cloud save (`docs/contracts/cloud-save.md`): it stores the save under an anonymous Google user id and nothing else (no email, no name). No ads, tracking cookies, paid APIs or real social media in v1. The only analytics allowed is the cookie-free, opt-out, allow-listed kind in `docs/contracts/analytics.md`; Firebase Analytics is never loaded.
 
 ## Save and versioning
 
-- LocalStorage key `hidup-malaysia:save` holds `{ version, savedAt, state }`. Settings live under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot, never the main life).
+- LocalStorage key `hidup-malaysia:save` holds the current life as `{ version, savedAt, state }`; the other lives (at most 3 in all) sit under `hidup-malaysia:shelf` and cloud sync state under `hidup-malaysia:cloud` (see `docs/contracts/cloud-save.md`). Settings live under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot, never the main life).
 - `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 9; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
 - Any change to the shape of `GameState` bumps `SAVE_VERSION`, adds a migration from the previous version, and adds a Vitest test that migrates a fixture of the old shape.
 - A corrupt or unreadable save never crashes the app: the raw text is backed up to `hidup-malaysia:save:corrupt` and the player gets a clear message and a fresh start.
@@ -224,4 +235,4 @@ Every catalogue id is unique and every cross-reference resolves; `tests/data.tes
 
 ## Secrets
 
-None. The game needs no API keys, tokens or environment variables. Never add one in v1; if a change seems to need one, stop and ask the developer.
+None. The game needs no secret keys, tokens or environment variables. The Firebase web config in `src/config.ts` is public by design (it only identifies the project; `firestore.rules` protects the data). Never add a private key, service-account file or token; if a change seems to need one, stop and ask the developer.

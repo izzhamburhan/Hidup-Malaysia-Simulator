@@ -1,6 +1,7 @@
 // Privacy-first analytics (UI layer only; the engine never imports this).
 // Umami is cookie-free and stores no personal data. We additionally send only
-// allow-listed event names and fields: never the character name, free text or money.
+// allow-listed event names and fields: never the character name, free text or an exact money amount
+// (coarse money bands such as "rm2k-10k" and the character's game choices are allowed).
 
 import { ANALYTICS_DOMAINS, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from '../config';
 
@@ -17,20 +18,36 @@ export type EventName =
   | 'tutorial'
   | 'feedback'
   | 'save_import'
-  | 'reset';
+  | 'reset'
+  | 'session'
+  | 'account'
+  | 'life'
+  | 'create'
+  | 'problem';
 
 type Value = string | number | boolean;
 export type EventData = Partial<Record<FieldName, Value>>;
 
 const EVENTS = new Set<EventName>([
   'game_start', 'action', 'event_choice', 'routine', 'tab_view', 'day_reached', 'chapter_end', 'share', 'tutorial', 'feedback', 'save_import', 'reset', 'install',
+  'session', 'account', 'life', 'create', 'problem',
 ]);
 
-const FIELDS = ['mode', 'stage', 'background', 'id', 'category', 'source', 'days', 'tab', 'day', 'ending', 'rating', 'topic', 'step', 'ok'] as const;
+const FIELDS = [
+  'mode', 'stage', 'background', 'id', 'category', 'source', 'days', 'tab', 'day', 'ending', 'rating', 'topic', 'step', 'ok',
+  // life snapshot at milestone days: choices and coarse bands, never exact money (see analyticsSnapshot.ts)
+  'home_state', 'residence', 'cash_band', 'savings_band', 'epf_band', 'debt_band', 'networth_band', 'employed', 'job', 'edu', 'housing',
+  'vehicle', 'partner', 'pet', 'health_band', 'happiness_band', 'stress_band', 'lang', 'installed', 'signed_in', 'lives',
+  // session summary (see sessionStats.ts)
+  'actions', 'minutes', 'events', 'games', 'top1', 'top2', 'top3', 'mix',
+] as const;
 type FieldName = (typeof FIELDS)[number];
 const FIELD_SET = new Set<string>(FIELDS);
 
 const MAX_STRING = 40;
+
+/** A money band is a short lowercase label such as rm2k-10k, never a number or free text. */
+const BAND_LABEL = /^[a-z0-9-]{1,16}$/;
 
 export interface TrackGate {
   configured: boolean;
@@ -50,6 +67,7 @@ export function sanitizeEvent(name: string, data: Record<string, unknown> = {}):
   const clean: EventData = {};
   for (const [key, value] of Object.entries(data)) {
     if (!FIELD_SET.has(key)) continue;
+    if (key.endsWith('_band') && !(typeof value === 'string' && BAND_LABEL.test(value))) continue;
     if (typeof value === 'number' && Number.isFinite(value)) clean[key as FieldName] = value;
     else if (typeof value === 'boolean') clean[key as FieldName] = value;
     else if (typeof value === 'string') clean[key as FieldName] = value.replace(/[^\w\-:. ]/g, '').slice(0, MAX_STRING);

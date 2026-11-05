@@ -3,6 +3,7 @@ import { useGame } from './hooks/useGame';
 import { Landing } from './screens/Landing';
 import { CharacterCreation } from './screens/CharacterCreation';
 import { GameShell } from './screens/GameShell';
+import { CloudConflictSheet } from './components/AccountCard';
 import { cx } from './components/ui';
 
 type View = 'landing' | 'create' | 'game';
@@ -33,6 +34,7 @@ export default function App() {
       )}
       {current === 'create' && <CharacterCreation onBack={() => setView('landing')} onDone={() => setView('game')} />}
       {current === 'landing' && <Landing onNew={() => setView('create')} onContinue={() => setView('game')} onDaily={() => setView('game')} />}
+      <CloudConflictSheet />
     </div>
   );
 }

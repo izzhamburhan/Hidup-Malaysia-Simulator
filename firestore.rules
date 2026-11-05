@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Cloud save for HIDUP MALAYSIA. Paste into Firebase console -> Firestore Database -> Rules -> Publish.
+// A signed-in player may read, write and delete only their own lives, users/{their uid}/lives/{life id}.
+// Nothing else is reachable. See docs/contracts/cloud-save.md.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/lives/{lifeId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasAll(['save', 'savedAt', 'version', 'lifeId', 'day', 'name'])
+        && request.resource.data.keys().hasOnly(['save', 'savedAt', 'version', 'lifeId', 'day', 'name', 'deleted'])
+        && request.resource.data.lifeId == lifeId
+        && request.resource.data.save is string
+        && request.resource.data.save.size() < 900000
+        && request.resource.data.savedAt is string
+        && request.resource.data.version is int
+        && request.resource.data.day is int
+        && request.resource.data.name is string
+        && (!('deleted' in request.resource.data) || request.resource.data.deleted is bool);
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

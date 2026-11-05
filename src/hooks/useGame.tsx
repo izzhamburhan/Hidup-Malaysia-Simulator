@@ -11,10 +11,15 @@ import { actionById } from '../engine/actions';
 import { actionGameFor } from '../engine/actionGames';
 import { dailyForDate, newDailyGame } from '../engine/dailyChallenge';
 import { randomAppearance } from '../engine/appearance';
-import { COLLECTION_KEY, DAILY_KEY, SAVE_KEY, clearSave, deserialize, emptyCollection, loadCollection, loadGame, recordEnding, saveCollection, saveGame, SETTINGS_KEY, type EndingCollection, type LoadResult } from '../engine/save';
+import { COLLECTION_KEY, DAILY_KEY, SAVE_KEY, clearSave, deserialize, emptyCollection, loadCollection, loadGame, recordEnding, saveCollection, saveGame, serialize, SETTINGS_KEY, type EndingCollection, type LoadResult } from '../engine/save';
+import { MAX_LIVES, SHELF_KEY, deleteLife as removeLife, listLives, liveCount, loadLibrary, saveLibrary, startNewLife, switchToLife, type Library, type LifeEntry } from '../lib/lives';
 import type { ActionFeedback, DayReport, GameState, NewGameOptions } from '../engine/types';
 import { TRACK_ACTIONS } from '../config';
-import { initAnalytics, track } from '../lib/analytics';
+import { initAnalytics, track, type EventData } from '../lib/analytics';
+import { lifeSnapshot } from '../lib/analyticsSnapshot';
+import { loadCloudState } from '../lib/cloud';
+import { isStandalone } from '../lib/install';
+import { createSessionStats } from '../lib/sessionStats';
 import type { Lang } from '../i18n';
 
 export interface Settings {
@@ -33,6 +38,8 @@ export interface Settings {
   installDismissed: boolean;
   /** Offer a quick mini-game before everyday actions (always skippable). */
   actionGames: boolean;
+  /** The player chose "Continue as guest" on the cloud save card, so the big sign-in card stays hidden. */
+  cloudPromptDismissed: boolean;
   /** Background lofi music (synthesised, starts on the first tap). */
   music: boolean;
   /** Which lofi station plays (see STATIONS in src/lib/music.ts). */
@@ -41,7 +48,7 @@ export interface Settings {
   musicVolume: number;
 }
 
-const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true, music: true, musicStation: 'warung-hujan', musicVolume: 0.5 };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true, cloudPromptDismissed: false, music: true, musicStation: 'warung-hujan', musicVolume: 0.5 };
 
 /** In-game days that count as retention milestones in analytics. */
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];
@@ -69,6 +76,12 @@ function storage(): Storage | null {
   } catch {
     return null;
   }
+}
+
+/** What a milestone day says about the life: choices and coarse money bands, never the name or exact amounts. */
+function milestoneSnapshot(state: GameState, lang: string): EventData {
+  const store = storage();
+  return lifeSnapshot(state, { lang, installed: isStandalone(), signedIn: loadCloudState(store).signedIn, lives: liveCount(loadLibrary(store)) });
 }
 
 function loadSettings(): Settings {
@@ -120,6 +133,19 @@ interface GameApi {
   resetAll: () => void;
   importSave: (text: string) => string | null;
   exportSave: () => string | null;
+  /** Every life held on this device: the current one first, then shelved lives. */
+  lives: LifeEntry[];
+  /** True when no more lives fit (at most MAX_LIVES): starting a new life needs one deleted first. */
+  livesFull: boolean;
+  /** Bumps whenever lives are started, switched, deleted or changed by the cloud. */
+  libraryVersion: number;
+  getLibrary: () => Library;
+  /** Write a whole library and, when the current life changed, load it into the game. Used by the cloud sync. */
+  applyLibrary: (lib: Library) => boolean;
+  /** Make a shelved life the current one. The current life is shelved, never lost. */
+  switchLife: (id: string) => void;
+  /** Delete a life for good (the screen confirms first). */
+  deleteLife: (id: string) => void;
   setSettings: (s: Partial<Settings>) => void;
 }
 
@@ -137,7 +163,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameFor, setGameFor] = useState<{ view: ActionView; source: ActionSource } | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(boot.status === 'ok' ? boot.savedAt : null);
   const [saveError, setSaveError] = useState(false);
+  const [libVersion, setLibVersion] = useState(0);
   const [settings, setSettingsState] = useState<Settings>(loadSettings);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const sessionRef = useRef(createSessionStats(Date.now()));
+  const saveFailTrackedRef = useRef(false);
   const [lastActivity, setLastActivity] = useState<LastActivity | null>(null);
   const [collection, setCollection] = useState<EndingCollection>(() => {
     const store = storage();
@@ -154,6 +185,31 @@ export function GameProvider({ children }: { children: ReactNode }) {
     initAnalytics(settings.analyticsOptOut);
   }, [settings.analyticsOptOut]);
 
+  // A save that could not be read at start-up (best effort: the analytics script may not have loaded yet).
+  useEffect(() => {
+    if (boot.status === 'corrupt') track('problem', { source: 'save_corrupt' });
+  }, [boot.status]);
+
+  // One summary per sitting, sent when the tab is hidden, instead of one event per action.
+  useEffect(() => {
+    const onChange = () => {
+      const now = Date.now();
+      if (document.visibilityState === 'hidden') {
+        const summary = sessionRef.current.summary(now);
+        if (summary) track('session', summary);
+        sessionRef.current.reset(now);
+      } else {
+        sessionRef.current.startClock(now);
+      }
+    };
+    document.addEventListener('visibilitychange', onChange);
+    window.addEventListener('pagehide', onChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onChange);
+      window.removeEventListener('pagehide', onChange);
+    };
+  }, []);
+
   // Autosave after every meaningful change.
   useEffect(() => {
     if (!state) return;
@@ -165,8 +221,45 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const now = new Date().toISOString();
     const ok = saveGame(store, state, now, slotRef.current === 'daily' ? DAILY_KEY : SAVE_KEY);
     setSaveError(!ok);
-    if (ok) setLastSavedAt(now);
+    if (ok) {
+      saveFailTrackedRef.current = false;
+      setLastSavedAt(now);
+    } else if (!saveFailTrackedRef.current) {
+      saveFailTrackedRef.current = true; // once per failure streak, not once per action
+      track('problem', { source: 'save_failed' });
+    }
   }, [state]);
+
+  const getLibrary = useCallback((): Library => loadLibrary(storage()), []);
+
+  // Every life change goes through here, so the screen and LocalStorage never disagree about the current life.
+  const applyLibrary = useCallback((lib: Library): boolean => {
+    const store = storage();
+    let before: string | null = null;
+    try {
+      before = store?.getItem(SAVE_KEY) ?? null;
+    } catch {
+      before = null;
+    }
+    if (!saveLibrary(store, lib)) {
+      setSaveError(true);
+      return false;
+    }
+    if (slotRef.current === 'main' && lib.active !== before) {
+      const loaded = lib.active ? deserialize(lib.active) : null;
+      stateRef.current = loaded?.status === 'ok' ? loaded.state : null;
+      setState(stateRef.current);
+      setFeedback(null);
+      setDayReport(null);
+    }
+    setLibVersion((v) => v + 1);
+    return true;
+  }, []);
+
+  const lives = useMemo(() => {
+    const store = storage();
+    return store ? listLives(loadLibrary(store)) : [];
+  }, [lastSavedAt, libVersion, state?.id]);
 
   const commit = useCallback((next: GameState, fb: ActionFeedback) => {
     const prev = stateRef.current;
@@ -175,7 +268,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setFeedback(fb);
     if (prev && next.clock.day > prev.clock.day) {
       if (next.dayReports[0]) setDayReport(next.dayReports[0]);
-      for (const m of DAY_MILESTONES) if (prev.clock.day < m && next.clock.day >= m) track('day_reached', { day: m, mode: next.mode });
+      sessionRef.current.recordDays(next.clock.day - prev.clock.day);
+      for (const m of DAY_MILESTONES) {
+        if (prev.clock.day < m && next.clock.day >= m) track('day_reached', { day: m, ...milestoneSnapshot(next, settingsRef.current.language) });
+      }
     }
   }, []);
 
@@ -187,6 +283,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (result.feedback.ok) {
         commit(result.state, result.feedback);
         played(actionId, param);
+        sessionRef.current.recordAction(actionId, actionById(actionId)?.category);
         if (TRACK_ACTIONS) track('action', { id: actionId, category: actionById(actionId)?.category, source });
       } else setFeedback(result.feedback);
       return result.feedback;
@@ -259,15 +356,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setDayReport(null);
       },
       start: (options) => {
-        slotRef.current = 'main';
-        setSlot('main');
         const seed = options.seed ?? (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
         const s = engineNewGame({ ...options, seed });
         s.createdAt = new Date().toISOString();
-        stateRef.current = s;
-        setState(s);
-        setFeedback(null);
-        setDayReport(null);
+        const store = storage();
+        if (store) {
+          // The current life is shelved, never replaced. A full library refuses: the landing page asks the player to delete one first.
+          const before = loadLibrary(store);
+          const next = startNewLife(before, serialize(s, new Date().toISOString()));
+          if (!next) return;
+          if (before.active) track('life', { source: 'new_extra', lives: liveCount(next) });
+          slotRef.current = 'main';
+          setSlot('main');
+          applyLibrary(next);
+        } else {
+          slotRef.current = 'main';
+          setSlot('main');
+          stateRef.current = s;
+          setState(s);
+          setFeedback(null);
+          setDayReport(null);
+        }
         track('game_start', { mode: s.mode, stage: s.character.lifeStage, background: s.character.backgroundId });
       },
       act,
@@ -280,6 +389,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       cancelPending: () => setConfirmFor(null),
       finishGame: (score) => {
         if (gameFor) act(gameFor.view.id, gameFor.view.param, gameFor.source, score);
+        if (gameFor && score !== undefined) sessionRef.current.recordGame();
         setGameFor(null);
       },
       cancelGame: () => setGameFor(null),
@@ -290,6 +400,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const result = resolveEvent(current, choiceId);
         if (result.feedback.ok) {
           commit(result.state, result.feedback);
+          sessionRef.current.recordEvent();
           track('event_choice', { id: eventId, source: choiceId });
         } else setFeedback(result.feedback);
       },
@@ -360,10 +471,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
             store.removeItem(SETTINGS_KEY);
             store.removeItem(COLLECTION_KEY);
             store.removeItem(DAILY_KEY);
+            store.removeItem(SHELF_KEY);
           } catch {
             /* ignore */
           }
         }
+        setLibVersion((v) => v + 1);
         stateRef.current = null;
         setState(null);
         setFeedback(null);
@@ -382,6 +495,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setFeedback(null);
         return null;
       },
+      lives,
+      livesFull: liveCount(loadLibrary(storage())) >= MAX_LIVES,
+      libraryVersion: libVersion,
+      getLibrary,
+      applyLibrary,
+      switchLife: (id) => {
+        const next = switchToLife(loadLibrary(storage()), id);
+        if (next && applyLibrary(next)) track('life', { source: 'switch', lives: liveCount(next) });
+      },
+      deleteLife: (id) => {
+        const next = removeLife(loadLibrary(storage()), id, new Date().toISOString());
+        if (applyLibrary(next)) track('life', { source: 'delete', lives: liveCount(next) });
+      },
       exportSave: () => {
         const current = stateRef.current;
         return current ? JSON.stringify({ version: current.version, savedAt: new Date().toISOString(), state: current }) : null;
@@ -398,7 +524,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
       },
     }),
-    [state, boot, feedback, dayReport, confirmFor, gameFor, lastSavedAt, saveError, settings, lastActivity, collection, slot, act, request, commit, played],
+    [state, boot, feedback, dayReport, confirmFor, gameFor, lastSavedAt, saveError, settings, lastActivity, collection, slot, lives, libVersion, getLibrary, applyLibrary, act, request, commit, played],
   );
 
   return <GameContext.Provider value={api}>{children}</GameContext.Provider>;

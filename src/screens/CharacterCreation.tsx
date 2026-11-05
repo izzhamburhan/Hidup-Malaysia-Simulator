@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Dices, Sparkles } from 'lucide-react';
 import { backgrounds, lifeStages } from '../data/backgrounds';
 import { courses } from '../data/courses';
@@ -13,6 +13,7 @@ import { PixelAvatar } from '../components/PixelAvatar';
 import { StateFlag } from '../components/StateFlag';
 import { useGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
+import { track } from '../lib/analytics';
 import { Button, Card, Disclaimer, SectionTitle, cx } from '../components/ui';
 
 const NAMES = ['Aiman', 'Mei Ling', 'Kumar', 'Nurul', 'Jason', 'Siti', 'Arif', 'Kavya', 'Hakim', 'Wei Jie'];
@@ -21,6 +22,10 @@ const selectClass = 'w-full rounded-xl border border-ink/15 bg-white px-3 py-2.5
 
 export function CharacterCreation({ onBack, onDone }: { onBack: () => void; onDone: () => void }) {
   const { start } = useGame();
+  // Opening this screen without ever starting a life shows where new players drop off.
+  useEffect(() => {
+    track('create', { source: 'open' });
+  }, []);
   const [name, setName] = useState('');
   const [mode, setMode] = useState<GameMode>('realistic');
   const [stage, setStage] = useState<LifeStage>('fresh_grad');
