@@ -113,6 +113,22 @@ interface ActionView {
     `pasar-ramadan-day`, `buka-puasa-day`) and explains itself when unavailable. There is no fasting
     mechanic, no rule about eating, and the game never assumes the player or any NPC observes.
 
+14. **Hari Gaji payday planner.** `plan-budget` (`ownershipActions.ts`, `money`, dedicated, 10 minutes)
+    takes param `N-W-S` (needs, wants, savings: integers in steps of 5 summing to 100), optionally with
+    the suffix `|auto`. Unavailable with a reason when no payday is pending ("No pay to plan yet. Your
+    next gaji or allowance opens the planner."), when the split is invalid ("Needs, wants and savings
+    must add up to 100%, in steps of 5."), or for `|auto` before 3 hand-made plans ("Plan 3 paydays by
+    hand first."). `run` calls `budget.applyPlan`: the savings share leaves the wallet at once (capped at
+    cash, never negative), filling the emergency fund up to `emergencyTarget` (3 months of commitments,
+    at least RM1,500, game rules) and then savings, and opens a pay cycle with needs and wants budgets in
+    RM. `budget-auto` (param `on` or `off`, 0 minutes, dedicated) switches auto-plan; `on` needs 3 plans.
+    Every action's wallet spending (`counters.totalSpent` delta during `run`) passes through
+    `budget.trackSpend` in `execute()`: categories `leisure`, `love` and `social` plus `WANT_ACTIONS`
+    count as wants (`wedding` never does), a meal counts only above `BASIC_MEAL_RM` and a snack or drink
+    above `BASIC_SNACK_RM`; warnings come back as feedback lines at 80% and 100% of the wants budget,
+    once each. Withdrawals from savings, the emergency fund or the unit trust add to the cycle's
+    `dipped`. Event costs and monthly bills are never wants.
+
 ## Tests
 
 Each new action has tests for: the happy path through `performAction` with a fixed seed, at least

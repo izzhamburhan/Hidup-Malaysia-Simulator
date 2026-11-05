@@ -7,6 +7,7 @@ import { randRange } from './rng';
 import { transportModeInfo } from '../data/vehicles';
 import { backgroundById } from '../data/backgrounds';
 import { dailyRate, hourlyRate, computePayslip, annualTax } from './payroll';
+import { openPayday } from './budget';
 import { statutory } from '../data/statutory';
 import { addDebt, clamp, earn, formatRM, highlight, log, round2, spend, applyStats } from './core';
 import { currentHome, vehicleMonthlyCosts } from './living';
@@ -92,6 +93,7 @@ export function processMonthStart(state: GameState): void {
   if (bg.familyAllowance > 0 && (state.education.status === 'studying' || currentHome(state).familyHome) && !state.career.job) {
     earn(state, bg.familyAllowance);
     log(state, 'money', `Family sent ${formatRM(bg.familyAllowance)} allowance. Terima kasih Mak & Abah!`);
+    openPayday(state, bg.familyAllowance, 'allowance');
   }
 
   // Interest accrues on debts before repayments.
@@ -197,6 +199,7 @@ export function runPayroll(state: GameState, day = state.clock.day): void {
   job.absencesThisMonth = 0;
   log(state, 'money', `Gaji masuk! Net pay ${formatRM(slip.net, 2)} (gross ${formatRM(slip.gross, 2)}). Payslip saved.`);
   highlight(state, `Salary credited: ${formatRM(slip.net)}`);
+  openPayday(state, slip.net, 'salary');
 }
 
 function companyLabel(state: GameState): string {

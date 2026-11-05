@@ -8,6 +8,7 @@ import type { Payslip } from '../engine/types';
 import { useLoadedGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
 import { OrgBadge } from '../components/OrgBadge';
+import { BudgetCard } from '../components/BudgetCard';
 import { ActionCard, VariantRow, variantTitle } from '../components/ActionCard';
 import { Card, Disclaimer, EmptyState, KeyValue, Pill, SectionTitle, Tabs, cx } from '../components/ui';
 
@@ -48,6 +49,9 @@ function Overview() {
 
   return (
     <div>
+      <SectionTitle>{t('budget.title')}</SectionTitle>
+      <BudgetCard />
+
       <SectionTitle>{t('money.balances')}</SectionTitle>
       <div className="grid grid-cols-2 gap-2">
         <Balance label={t('money.wallet')} value={f.cash} tone="text-teal" />

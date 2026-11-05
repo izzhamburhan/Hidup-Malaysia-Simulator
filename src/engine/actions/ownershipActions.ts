@@ -9,6 +9,7 @@ import { isWeekend } from '../calendar';
 import { REGISTRATION_FEE, hustleRequirements, startHustle, workHustle, EMPLOYEE_COST_NOTE } from '../business';
 import { debtServiceRatio, expectedMonthlyNet, monthlyCommitmentTotal } from '../economy';
 import { resign } from '../career';
+import { AUTO_PLAN_AFTER, applyPlan, parseSplit, planReason, wantsAuto } from '../budget';
 import { currentHome, familyMoveDeposit, mortgagePayment, movingStateCost, scaledCost, vehicleLoanPayment } from '../living';
 import { chance } from '../rng';
 import type { GameState, TransportMode } from '../types';
@@ -121,6 +122,44 @@ export const ownershipActions: ActionDef[] = [
       const a = amountParam(p, 500);
       s.finance.savings = round2(s.finance.savings - a);
       s.finance.cash = round2(s.finance.cash + a);
+    },
+  },
+  {
+    id: 'plan-budget',
+    category: 'money',
+    icon: '💰',
+    dedicated: true,
+    title: (_s, p) => {
+      const split = parseSplit(p);
+      return split ? `Plan gaji ${split.needs}/${split.wants}/${split.save}` : 'Plan your gaji';
+    },
+    description: 'Split this payday into needs, wants and savings. Savings move first (emergency fund, then savings); wants are tracked until the next payday.',
+    minutes: 10,
+    available: (s, p) => planReason(s, p),
+    run: (s, p) => {
+      const split = parseSplit(p)!;
+      if (wantsAuto(p)) s.finance.budget.autoPlan = true;
+      const lines = applyPlan(s, split);
+      if (wantsAuto(p)) lines.push('Auto-plan is on: future paydays use this split. Turn it off on the Money tab.');
+      return lines;
+    },
+  },
+  {
+    id: 'budget-auto',
+    category: 'money',
+    icon: '🔁',
+    dedicated: true,
+    title: (_s, p) => (p === 'on' ? 'Turn on auto-plan' : 'Turn off auto-plan'),
+    description: 'Reuse your last payday split automatically, or go back to planning each payday by hand.',
+    minutes: 0,
+    available: (s, p) => {
+      if (p !== 'on' && p !== 'off') return 'Choose on or off.';
+      if (p === 'on' && (s.finance.budget.planned < AUTO_PLAN_AFTER || !s.finance.budget.lastSplit)) return `Plan ${AUTO_PLAN_AFTER} paydays by hand first.`;
+      return null;
+    },
+    run: (s, p) => {
+      s.finance.budget.autoPlan = p === 'on';
+      return [p === 'on' ? 'Auto-plan on: each payday reuses your last split.' : 'Auto-plan off: you will plan each payday by hand.'];
     },
   },
   {

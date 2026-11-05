@@ -99,6 +99,9 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 | 5 | Widens `Outfit` and `Headwear` with wardrobe unlocks; no data change. |
 | 6 | Widens `Outfit` with festive outfits (cheongsam, kurta, Christmas sweater, Merdeka tee); no data change. |
 | 7 | Adds `character.gender` (`'male' | 'female' | null`); older lives get `null`. |
+| 8 | Adds `finance.unitTrust` (0) and `mastery` (all 0). |
+| 9 | Adds `location.state` (home state when living with family, else the Klang Valley) and `travel.stamps` (empty). |
+| 10 | Adds `finance.budget` (Hari Gaji payday planner: `pending`, `cycle`, `lastSplit`, `autoPlan`, `planned`, `streak`, `history`); older lives get `emptyBudget()` and plan from their next payday. |
 
 ## Privacy
 

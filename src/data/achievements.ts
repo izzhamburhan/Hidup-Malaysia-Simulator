@@ -22,6 +22,8 @@ export const achievements: Achievement[] = [
   { id: 'first-salary', title: 'Gaji Masuk!', description: 'Receive your first payslip.', icon: '💰', check: (s) => s.finance.payslips.length > 0 },
   { id: 'saver-1k', title: 'Tabung Pertama', description: 'Have RM1,000 in savings.', icon: '🪙', check: (s) => s.finance.savings >= 1000 },
   { id: 'saver-10k', title: 'Five Figures', description: 'Have RM10,000 in savings.', icon: '🏦', check: (s) => s.finance.savings >= 10000 },
+  { id: 'first-budget', title: 'Hari Gaji Planner', description: 'Plan a payday into needs, wants and savings.', icon: '💰', check: (s) => s.finance.budget.planned >= 1 },
+  { id: 'cekap-bajet', title: 'Cekap Bajet', description: 'Three pay cycles in a row with a budget grade of A or B.', icon: '📊', check: (s) => s.finance.budget.streak >= 3 },
   { id: 'emergency-3', title: 'Rainy Day Ready', description: 'Emergency fund of RM5,000 or more.', icon: '☂️', check: (s) => s.finance.emergencyFund >= 5000 },
   { id: 'debt-free', title: 'Bebas Hutang', description: 'Clear a loan completely.', icon: '🕊️', check: (s) => s.counters.debtsCleared > 0 },
   { id: 'zero-debt', title: 'Totally Debt-Free', description: 'Owe nothing at all after day 30.', icon: '✨', check: (s) => s.clock.day > 30 && debtTotal(s) === 0 },

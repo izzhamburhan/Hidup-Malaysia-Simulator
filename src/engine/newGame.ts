@@ -14,9 +14,10 @@ import { enroll } from './education';
 import { pick, seedFromString } from './rng';
 import { isValidAppearance, randomAppearance } from './appearance';
 import { generateFeedPosts } from './social';
+import { emptyBudget } from './budget';
 import type { GameState, NewGameOptions, Skills } from './types';
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 export const START_DATE = '2027-01-04';
 export const START_MINUTE = 7 * 60;
 
@@ -53,6 +54,7 @@ export function emptyState(): GameState {
       monthEarned: 0,
       insurance: false,
       unitTrust: 0,
+      budget: emptyBudget(),
     },
     career: { job: null, experienceDays: 0, cvQuality: 25, applications: [], listings: [], listingsRefreshedDay: 0, promotions: 0, jobsHeld: 0, workedToday: false, unemployedSinceDay: 0 },
     education: {
