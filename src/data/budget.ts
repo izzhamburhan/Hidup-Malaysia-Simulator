@@ -40,6 +40,10 @@ export const EMERGENCY_MONTHS = 3;
 /** The emergency fund target is never below this (game rule). */
 export const EMERGENCY_MIN = 1500;
 
+/** The plan never leaves the wallet below this: a week of the wants budget, at least RM100 (game rule). */
+export const CASH_FLOOR_MIN = 100;
+export const CASH_FLOOR_WEEKS = 4;
+
 /** Wants warnings, as percentages of the wants budget. */
 export const WANT_WARNINGS = [80, 100] as const;
 

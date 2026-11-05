@@ -4,7 +4,7 @@
 // and the cycle is graded on the next payday. Pure engine code: no randomness, no wall clock.
 
 import {
-  BASIC_MEAL_RM, BASIC_SNACK_RM, BUDGET_GRADES, EMERGENCY_MIN, EMERGENCY_MONTHS, NOT_WANT_ACTIONS, WANT_ACTIONS, WANT_CATEGORIES, WANT_WARNINGS,
+  BASIC_MEAL_RM, BASIC_SNACK_RM, BUDGET_GRADES, CASH_FLOOR_MIN, CASH_FLOOR_WEEKS, EMERGENCY_MIN, EMERGENCY_MONTHS, NOT_WANT_ACTIONS, WANT_ACTIONS, WANT_CATEGORIES, WANT_WARNINGS,
 } from '../data/budget';
 import { foodById } from '../data/foods';
 import { monthKey } from './calendar';
@@ -37,6 +37,17 @@ export const wantsAuto = (param: string | undefined) => !!param?.endsWith('|auto
 /** Emergency fund goal: a few months of commitments, never below the floor (game rule). */
 export function emergencyTarget(state: GameState): number {
   return Math.max(EMERGENCY_MIN, Math.round(EMERGENCY_MONTHS * monthlyCommitmentTotal(state)));
+}
+
+/** Cash the plan leaves in the wallet so wants and daily life stay spendable (game rule). */
+export function cashFloor(income: number, split: BudgetSplit): number {
+  return Math.max(CASH_FLOOR_MIN, Math.round((income * split.wants) / 100 / CASH_FLOOR_WEEKS));
+}
+
+/** RM the savings share can actually move now: the planned share, capped so the wallet keeps its floor. */
+export function savingsNow(state: GameState, income: number, split: BudgetSplit): number {
+  const planned = Math.round((income * split.save) / 100);
+  return round2(Math.max(0, Math.min(planned, state.finance.cash - cashFloor(income, split))));
 }
 
 /** Why plan-budget cannot run with this param right now, or null. */
@@ -76,7 +87,8 @@ export function applyPlan(state: GameState, split: BudgetSplit, auto = false): s
   const lines: string[] = [];
 
   // Pay yourself first: the savings share leaves the wallet now, emergency fund first.
-  const toSave = round2(Math.max(0, Math.min(Math.round((income * split.save) / 100), f.cash)));
+  const plannedSave = Math.round((income * split.save) / 100);
+  const toSave = savingsNow(state, income, split);
   const toEmergency = round2(Math.max(0, Math.min(toSave, emergencyTarget(state) - f.emergencyFund)));
   const toSavings = round2(toSave - toEmergency);
   f.cash = round2(f.cash - toSave);
@@ -108,6 +120,7 @@ export function applyPlan(state: GameState, split: BudgetSplit, auto = false): s
   } else {
     lines.push('Nothing saved this payday.');
   }
+  if (toSave < plannedSave) lines.push(`Your wallet only had ${formatRM(f.cash + toSave)}, so ${formatRM(plannedSave - toSave)} of the planned savings stays in the wallet. Plan on payday, before the cash is spent.`);
   lines.push(`Needs ${formatRM(needsBudget)} · Wants ${formatRM(wantsBudget)} until the next payday.`);
   const commitments = monthlyCommitmentTotal(state);
   if (commitments > needsBudget) lines.push(`Heads up: your monthly commitments (${formatRM(commitments)}) are more than your needs share. Cheaper rent, transport or a smaller loan would free up room.`);
