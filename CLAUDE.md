@@ -105,7 +105,7 @@ playbook.md            the process: gates, git rules, validation, Definition of 
 SKILLS.md              index of every skill
 .claude/skills/        process and guard skills (Codex twins in .codex/skills/)
 .claude/agents/        role agents: hm-scout, hm-implementer, hm-reviewer
-.github/               CI workflow and pull request template
+.github/               CI and deploy workflows (actions pinned to commit SHAs), Dependabot, pull request template
 .mcp.json              registers the hidup-sim MCP server
 ```
 
