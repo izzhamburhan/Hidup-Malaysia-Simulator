@@ -86,6 +86,9 @@ cookies or personal data. It is off until you connect it:
 2. Add a website: name `Hidup Malaysia`, domain `hidupmalaysia.com`.
 3. Copy the **Website ID** and paste it into `UMAMI_WEBSITE_ID` in `src/config.ts`, then push to `main`.
 4. Optional: create a Google Form for longer feedback and paste its link into `FEEDBACK_FORM_URL`.
+4. Optional, free and no event cap: add the site in Cloudflare → Analytics & Logs → Web Analytics (manual setup),
+   copy the token into `CLOUDFLARE_BEACON_TOKEN` in `src/config.ts`. It adds page views and speed beside Umami.
+5. Optional: create a Google Form for longer feedback and paste its link into `FEEDBACK_FORM_URL`.
 
 The Umami dashboard then shows visitors, visit duration, bounce rate, countries and devices,
 plus game events such as `game_start`, `action`, `day_reached`, `share` and `feedback`

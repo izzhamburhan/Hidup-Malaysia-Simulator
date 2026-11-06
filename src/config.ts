@@ -8,6 +8,13 @@
  */
 export const UMAMI_WEBSITE_ID = 'a1f80fe7-f382-44a5-af47-c2af2becdd59';
 
+/**
+ * Cloudflare Web Analytics beacon token (free, cookie-free, page views and speed only, no custom events).
+ * Leave empty to skip it. Get it from Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site
+ * (choose "manual", copy the token from the snippet). It runs beside Umami under the same privacy gate.
+ */
+export const CLOUDFLARE_BEACON_TOKEN = 'b5644da727144c43a9b83cba187fa627';
+
 /** Public address of the game, added to shared result cards. */
 export const GAME_URL = 'https://hidupmalaysia.com/';
 

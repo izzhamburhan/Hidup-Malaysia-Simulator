@@ -95,7 +95,7 @@ One test file: `npx vitest run tests/<file>.test.ts`.
 
 ## Analytics, feedback and privacy
 
-Anonymous, cookie-free usage stats via Umami Cloud, off until `UMAMI_WEBSITE_ID` is set in
+Anonymous, cookie-free usage stats via Umami Cloud (custom events) plus optional Cloudflare Web Analytics (page views and speed only, no event cap, off until `CLOUDFLARE_BEACON_TOKEN` is set), each off until its ID is set in
 `src/config.ts`. `src/lib/analytics.ts` sends only allow-listed events and fields (never the
 character name, free text or an exact money amount; the character's game choices and coarse money
 bands such as `rm2k-10k` are allowed, see `docs/contracts/analytics.md`), respects Do Not Track, skips localhost, and players can opt

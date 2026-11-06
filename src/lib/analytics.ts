@@ -3,7 +3,7 @@
 // allow-listed event names and fields: never the character name, free text or an exact money amount
 // (coarse money bands such as "rm2k-10k" and the character's game choices are allowed).
 
-import { ANALYTICS_DOMAINS, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from '../config';
+import { ANALYTICS_DOMAINS, CLOUDFLARE_BEACON_TOKEN, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from '../config';
 
 export type EventName =
   | 'install'
@@ -85,25 +85,48 @@ declare global {
 
 let enabled = false;
 
-function browserGate(optedOut: boolean): TrackGate {
+function browserGate(optedOut: boolean, configured: boolean): TrackGate {
   const dnt = typeof navigator !== 'undefined' && (navigator.doNotTrack === '1' || (window as unknown as { doNotTrack?: string }).doNotTrack === '1');
-  return { configured: UMAMI_WEBSITE_ID.length > 0, optedOut, doNotTrack: dnt, hostname: typeof location !== 'undefined' ? location.hostname : '' };
+  return { configured, optedOut, doNotTrack: dnt, hostname: typeof location !== 'undefined' ? location.hostname : '' };
 }
 
-export const analyticsConfigured = () => UMAMI_WEBSITE_ID.length > 0;
+/** True when custom events can be sent (Umami). Feedback needs this. */
+export const eventsConfigured = () => UMAMI_WEBSITE_ID.length > 0;
 
-/** Load the Umami script once, if allowed. Safe to call on every settings change. */
+/** True when any analytics is set up; the privacy notice and opt-out follow this. */
+export const analyticsConfigured = () => UMAMI_WEBSITE_ID.length > 0 || CLOUDFLARE_BEACON_TOKEN.length > 0;
+
+/** Cloudflare Web Analytics script attributes for a token, or null when there is no token. Pure. */
+export function cloudflareBeaconAttrs(token: string): { src: string; beacon: string } | null {
+  if (!token) return null;
+  return { src: 'https://static.cloudflareinsights.com/beacon.min.js', beacon: JSON.stringify({ token }) };
+}
+
+/**
+ * Load the analytics scripts once, if allowed. Umami carries the custom events; Cloudflare Web Analytics adds
+ * page views and speed with no event cap. Each has its own configured flag, both share the privacy gate.
+ * Safe to call on every settings change.
+ */
 export function initAnalytics(optedOut: boolean): void {
   if (typeof window === 'undefined') return;
-  enabled = shouldTrack(browserGate(optedOut));
-  if (!enabled || document.querySelector('script[data-website-id]')) return;
-  const s = document.createElement('script');
-  s.defer = true;
-  s.src = UMAMI_SCRIPT_URL;
-  s.dataset.websiteId = UMAMI_WEBSITE_ID;
-  s.dataset.domains = ANALYTICS_DOMAINS.join(',');
-  s.dataset.doNotTrack = 'true';
-  document.head.appendChild(s);
+  enabled = shouldTrack(browserGate(optedOut, UMAMI_WEBSITE_ID.length > 0));
+  if (enabled && !document.querySelector('script[data-website-id]')) {
+    const s = document.createElement('script');
+    s.defer = true;
+    s.src = UMAMI_SCRIPT_URL;
+    s.dataset.websiteId = UMAMI_WEBSITE_ID;
+    s.dataset.domains = ANALYTICS_DOMAINS.join(',');
+    s.dataset.doNotTrack = 'true';
+    document.head.appendChild(s);
+  }
+  const cf = cloudflareBeaconAttrs(CLOUDFLARE_BEACON_TOKEN);
+  if (cf && shouldTrack(browserGate(optedOut, true)) && !document.querySelector('script[data-cf-beacon]')) {
+    const s = document.createElement('script');
+    s.type = 'module'; // matches Cloudflare's current snippet
+    s.src = cf.src;
+    s.dataset.cfBeacon = cf.beacon;
+    document.head.appendChild(s);
+  }
 }
 
 export function track(name: EventName, data?: EventData): void {

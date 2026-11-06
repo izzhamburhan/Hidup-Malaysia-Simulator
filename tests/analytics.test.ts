@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sanitizeEvent, shouldTrack } from '../src/lib/analytics';
+import { cloudflareBeaconAttrs, sanitizeEvent, shouldTrack } from '../src/lib/analytics';
 
 const base = { configured: true, optedOut: false, doNotTrack: false, hostname: 'izzhamburhan.github.io' };
 
@@ -11,6 +11,19 @@ describe('analytics gate', () => {
     expect(shouldTrack({ ...base, doNotTrack: true })).toBe(false);
     expect(shouldTrack({ ...base, hostname: 'localhost' })).toBe(false);
     expect(shouldTrack({ ...base, hostname: '127.0.0.1' })).toBe(false);
+  });
+});
+
+describe('cloudflare beacon', () => {
+  it('builds the script attributes from a token', () => {
+    expect(cloudflareBeaconAttrs('abc123')).toEqual({
+      src: 'https://static.cloudflareinsights.com/beacon.min.js',
+      beacon: '{"token":"abc123"}',
+    });
+  });
+
+  it('returns null for an empty token so nothing loads', () => {
+    expect(cloudflareBeaconAttrs('')).toBeNull();
   });
 });
 
