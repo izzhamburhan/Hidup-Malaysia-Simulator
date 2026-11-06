@@ -179,7 +179,7 @@ In-game quick feedback (emoji rating and improvement chips) is sent the same way
 
 ## Deployment
 
-Live: https://hidupmalaysia.com/ (custom domain on Cloudflare Registrar; DNS: four A records to GitHub Pages plus a www CNAME, DNS only; `public/CNAME` keeps it on every deploy; the old github.io address forwards). Every push to `main` runs `.github/workflows/deploy.yml` (npm ci, typecheck, test, build) and force-pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. The Vite base is relative (`./`), so the build works under the repository sub-path. `public/manifest.webmanifest`, the PNG icons and the network-first service worker `public/sw.js` (registered in production only) make it installable and playable offline; Home offers "Get the app" after day 1 (`src/lib/install.ts`).
+Live: https://hidupmalaysia.com/ (custom domain on Cloudflare Registrar; DNS: four A records to GitHub Pages plus a www CNAME, DNS only; `public/CNAME` keeps it on every deploy; the old github.io address forwards). Every push to `main` runs `.github/workflows/deploy.yml` (npm ci, typecheck, test, build) and force-pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. The Vite base is relative (`./`), so the build works under the repository sub-path. `public/manifest.webmanifest`, the PNG icons and the network-first service worker `public/sw.js` (registered in production only) make it installable and playable offline; Home offers "Get the app" after day 1 (`src/lib/install.ts`). The production build carries a Content Security Policy as a meta tag (`csp.ts`, injected by `vite.config.ts` in builds only): a new third-party host (analytics, auth, images) must be added there or the browser blocks it.
 
 ## Engine rules
 

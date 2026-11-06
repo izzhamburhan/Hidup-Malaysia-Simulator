@@ -15,5 +15,5 @@
     "noUnusedParameters": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "mcp"]
+  "include": ["vite.config.ts", "csp.ts", "mcp"]
 }
