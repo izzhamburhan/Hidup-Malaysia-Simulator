@@ -18,7 +18,7 @@ const directives: Record<string, string[]> = {
     "'self'",
     'https://*.googleapis.com',
     'https://cloud.umami.is',
-    'https://api-gateway.umami.dev',
+    'https://gateway.umami.is',
     'https://cloudflareinsights.com',
   ],
   // The Google sign-in popup helper frame.

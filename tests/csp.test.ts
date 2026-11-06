@@ -19,6 +19,7 @@ describe('content security policy', () => {
   it('allows the hosts the game uses: analytics, Firestore and Google sign-in', () => {
     expect(directive('script-src')).toContain('https://static.cloudflareinsights.com');
     expect(directive('script-src')).toContain('https://cloud.umami.is');
+    expect(directive('connect-src')).toContain('https://gateway.umami.is');
     expect(directive('connect-src')).toContain('https://*.googleapis.com');
     expect(directive('connect-src')).toContain('https://cloudflareinsights.com');
     expect(directive('frame-src')).toContain('https://*.firebaseapp.com');
