@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { FEEDBACK_FORM_URL } from '../config';
-import { analyticsConfigured, track } from '../lib/analytics';
+import { eventsConfigured, track } from '../lib/analytics';
 import { Button, Modal, cx } from './ui';
 
 const RATINGS = [
@@ -28,13 +28,13 @@ const TOPICS = [
 ];
 
 /** Feedback is offered only when it can actually go somewhere. */
-export const feedbackAvailable = () => analyticsConfigured() || FEEDBACK_FORM_URL.length > 0;
+export const feedbackAvailable = () => eventsConfigured() || FEEDBACK_FORM_URL.length > 0;
 
 export function FeedbackSheet({ open, onClose, optedOut }: { open: boolean; onClose: () => void; optedOut: boolean }) {
   const [rating, setRating] = useState<number | null>(null);
   const [topics, setTopics] = useState<string[]>([]);
   const [sent, setSent] = useState(false);
-  const canSend = analyticsConfigured() && !optedOut;
+  const canSend = eventsConfigured() && !optedOut;
 
   const toggle = (id: string) => setTopics((t) => (t.includes(id) ? t.filter((x) => x !== id) : [...t, id]));
   const send = () => {

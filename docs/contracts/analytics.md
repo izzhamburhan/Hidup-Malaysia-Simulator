@@ -20,6 +20,12 @@ a player.
   problem), `CharacterCreation` (create), `Landing` (guest), `GameShell` (tab views), `Tutorial`, `FeedbackSheet`,
   `ReportScreen` (share).
 
+## Cloudflare Web Analytics
+
+`CLOUDFLARE_BEACON_TOKEN` in `src/config.ts` (empty = not loaded). The beacon (`cloudflareBeaconAttrs`) adds page views,
+referrers, countries, devices and Core Web Vitals with no event cap. It has no custom events, so nothing from the allow-list
+below goes to it. It loads only under the Gate below and is cookie-free. Umami stays the only sink for events.
+
 ## Gate
 
 An event is sent only when all of these hold: a website ID is configured, the player has not
