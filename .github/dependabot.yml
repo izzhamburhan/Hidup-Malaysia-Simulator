@@ -1,0 +1,16 @@
+# Weekly dependency and workflow updates, grouped so one pull request covers a week.
+# Dependabot alerts and secret scanning are switched on in the repo settings, not here.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
