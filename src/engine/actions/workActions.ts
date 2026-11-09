@@ -20,6 +20,11 @@ import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
 
 export const ANNUAL_LEAVE_DAYS = 14;
 export const COURSE_FEE = 180;
+/** Part-time shifts may start from 8AM to 7PM, so one fits after class. */
+const PARTTIME_SHIFT_FROM = 8;
+const PARTTIME_SHIFT_TO = 19;
+/** A part-time shift, with both commute legs, must be over by 2AM (minutes from today's midnight). */
+const PARTTIME_LATEST_END = 26 * 60;
 
 const hasJob = (s: GameState) => !!s.career.job;
 const studying = (s: GameState) => s.education.status === 'studying';
@@ -107,7 +112,12 @@ export const workActions: ActionDef[] = [
       const job = s.career.job!;
       if (s.career.workedToday) return 'Already worked today.';
       if (job.schedule === 'parttime') {
-        return needEnergy(s, 20) ?? (withinHours(s, 8, 17) ? null : `Shifts start ${hoursLabel(8, 17)}.`);
+        if (!withinHours(s, PARTTIME_SHIFT_FROM, PARTTIME_SHIFT_TO)) return `Shifts start ${hoursLabel(PARTTIME_SHIFT_FROM, PARTTIME_SHIFT_TO)}.`;
+        if (s.clock.minute + shiftMinutes(s) > PARTTIME_LATEST_END) return 'Too late: this shift would end after 2AM.';
+        if (s.education.status === 'studying' && isClassDay(s) && !s.education.attendedToday && withinHours(s, 0, 17)) {
+          return 'You have class today. Attend first, shift after.';
+        }
+        return needEnergy(s, 20);
       }
       if (!isWorkday(s)) return 'Not a workday. Enjoy it!';
       if (onLeave(s)) return 'You are on leave today.';
@@ -118,6 +128,9 @@ export const workActions: ActionDef[] = [
       commuteLeg(s, 2);
       const late = s.clock.minute > 9.5 * 60 && s.career.job!.schedule !== 'parttime';
       const res = workShift(s);
+      if (s.education.status === 'studying' && s.career.job!.schedule === 'parttime') {
+        s.flags.studentShifts = Number(s.flags.studentShifts ?? 0) + 1;
+      }
       if (late) {
         s.career.job!.performance = clamp(s.career.job!.performance - 1.5);
         res.lines.push('You arrived late. Your manager glanced at the clock. Twice.');

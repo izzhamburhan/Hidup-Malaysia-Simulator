@@ -1031,6 +1031,46 @@ export const events: GameEventDef[] = [
     ],
   },
   {
+    id: 'cover-shift',
+    title: 'Can you cover a shift?',
+    icon: '🗓️',
+    category: 'work',
+    trigger: 'random',
+    contexts: ['work'],
+    cooldownDays: 21,
+    when: (s) => isStudying(s) && s.career.job?.schedule === 'parttime',
+    text: 'Your supervisor at {employer} messages: "Anyone free to cover an extra shift? Please?" Your notes are waiting. The pay is nice. So is sleep.',
+    choices: [
+      {
+        id: 'take',
+        label: 'Take the extra shift',
+        hint: 'Shift pay in your pocket. Energy down, stress up.',
+        outcomes: [
+          {
+            text: 'You cover the shift, then open your notes at 11 PM. Tired, but the wallet is happier.',
+            effect: { minutes: 240, stats: { stress: 5, energy: -12 } },
+            apply: (s) => {
+              const pay = s.career.job?.shiftPay ?? 0;
+              earn(s, pay);
+              s.finance.taxYear.grossIncome = round2(s.finance.taxYear.grossIncome + pay);
+              return `Extra shift pay: ${formatRM(pay)}.`;
+            },
+          },
+        ],
+      },
+      {
+        id: 'decline',
+        label: 'Say no, I need to study',
+        outcomes: [
+          {
+            text: '"Sorry, exam week!" Your supervisor sends a thumbs up. You study properly and sleep on time.',
+            effect: { performance: -1, stats: { stress: -2 } },
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'boss-quick-call',
     title: '"Quick call?" at 5:59 PM',
     icon: '📞',
