@@ -9,7 +9,7 @@ import { universities, universityById } from '../data/universities';
 import { transportModes, vehicleById, vehicles } from '../data/vehicles';
 import { VehicleSprite } from '../components/VehicleSprite';
 import { formatDate, formatDuration } from '../engine/calendar';
-import { scheduleLabel, jobEligibility } from '../engine/career';
+import { PARTTIME_FILTER, boardListings, scheduleLabel, jobEligibility, showStudentJobHint } from '../engine/career';
 import { formatRM, SKILL_KEYS } from '../engine/core';
 import { CLASS_DAYS, computeGpa, isFinalSemester, semesterDay } from '../engine/education';
 import { commuteMinutes, currentHome, scaledCost } from '../engine/living';
@@ -112,7 +112,7 @@ function CareerTab() {
   const job = state.career.job;
   const liveApps = hasLiveApplications(state.career.applications);
   const [industry, setIndustry] = useState<string>('all');
-  const listings = state.career.listings.filter((l) => industry === 'all' || companyById(l.companyId)?.industry === industry);
+  const listings = boardListings(state, industry);
 
   return (
     <div>
@@ -153,6 +153,26 @@ function CareerTab() {
         <CategoryActions ids={['work-shift', 'overtime', 'take-leave', 'update-cv', 'networking', 'online-course', 'self-study', 'resign']} />
       </div>
 
+      {showStudentJobHint(state) && (
+        <Card className="mt-3 border-teal/30">
+          <div className="text-sm font-bold">
+            <span aria-hidden="true">🎒 </span>
+            {t('life.board.studentHint.title')}
+          </div>
+          <p className="mt-1 text-sm text-ink-soft">{t('life.board.studentHint.body')}</p>
+          <Button
+            className="mt-2 w-full"
+            variant="secondary"
+            onClick={() => {
+              setIndustry(PARTTIME_FILTER);
+              document.getElementById('job-board')?.scrollIntoView({ block: 'start' });
+            }}
+          >
+            {t('life.board.studentHint.button')}
+          </Button>
+        </Card>
+      )}
+
       <SectionTitle>{t('life.skills')}</SectionTitle>
       <Card className="grid grid-cols-2 gap-x-4 gap-y-2">
         {SKILL_KEYS.map((k) => (
@@ -166,9 +186,12 @@ function CareerTab() {
 
       {!liveApps && <CareerApplications />}
 
-      <SectionTitle action={<span className="text-[11px] text-ink-soft">{t('life.board.refresh')}</span>}>{t('life.board')}</SectionTitle>
+      <div id="job-board">
+        <SectionTitle action={<span className="text-[11px] text-ink-soft">{t('life.board.refresh')}</span>}>{t('life.board')}</SectionTitle>
+      </div>
       <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="mb-2 w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-sm" aria-label={t('life.board.filter')}>
         <option value="all">{t('life.board.all')}</option>
+        <option value={PARTTIME_FILTER}>{t('life.board.parttime')}</option>
         {Object.entries(industryLabels).map(([k, v]) => (
           <option key={k} value={k}>
             {v}

@@ -143,10 +143,11 @@ describe('save system', () => {
   });
 
   it('keeps the random stream of a seeded new game (the starter circle does not use state.rng)', () => {
-    // Values recorded on SAVE_VERSION 10, before friends existed.
+    // Recorded after the more-courses and student part-time content merged (a new job moves the first job
+    // board a new game draws). The friends circle itself draws nothing from state.rng.
     const a = makeGame();
     const b = makeGame({ seed: 99, lifeStage: 'working', jobId: 'swe' });
-    expect([a.rng, a.logSeq, b.rng, b.logSeq]).toEqual([1511861062, 11, -951541556, 12]);
+    expect([a.rng, a.logSeq, b.rng, b.logSeq]).toEqual([-951540421, 12, 1511859927, 12]);
   });
 
   it('refuses saves from a newer version', () => {

@@ -30,6 +30,21 @@ export function listingsByMatch(state: GameState): JobListing[] {
     .map((x) => x.l);
 }
 
+/** Job board filter value for "Part-time only"; any other value is an industry id, and 'all' keeps everything. */
+export const PARTTIME_FILTER = 'parttime';
+
+/** Listings the job board shows for a filter. Pure; keeps the board order. */
+export function boardListings(state: GameState, filter: string): JobListing[] {
+  if (filter === 'all') return state.career.listings;
+  if (filter === PARTTIME_FILTER) return state.career.listings.filter((l) => jobById(l.jobId)?.schedule === 'parttime');
+  return state.career.listings.filter((l) => companyById(l.companyId)?.industry === filter);
+}
+
+/** True while a student has no job: the Career tab then points at the part-time listings. */
+export function showStudentJobHint(state: GameState): boolean {
+  return state.education.status === 'studying' && !state.career.job;
+}
+
 export function jobEligibility(state: GameState, job: Job): Eligibility {
   const missing: string[] = [];
   const edu = state.education;
@@ -64,7 +79,29 @@ function salaryFor(state: GameState, job: Job, company: Company): number {
   return Math.round((base * company.payFactor * payFactor(state) * (1 + expBoost)) / 50) * 50;
 }
 
-/** Refresh the job board (weekly). Listings mix eligible and stretch roles. */
+/** A student with no job always sees at least this many part-time listings. */
+export const MIN_STUDENT_PARTTIME_LISTINGS = 2;
+
+/** Post one listing for `job` at a random fitting employer. False when it is a duplicate or no employer fits. */
+function postListing(state: GameState, job: Job, day: number): boolean {
+  const options = companies.filter((c) => job.industries.includes(c.industry));
+  if (!options.length) return false;
+  const company = pick(state, options);
+  if (state.career.listings.some((l) => l.jobId === job.id && l.companyId === company.id)) return false;
+  if (state.career.job && state.career.job.jobId === job.id && state.career.job.companyId === company.id) return false;
+  const listing: JobListing = {
+    id: nextId(state, 'lst'),
+    jobId: job.id,
+    companyId: company.id,
+    salary: job.schedule === 'parttime' ? job.shiftPay ?? 50 : salaryFor(state, job, company),
+    postedDay: day,
+    expiresDay: day + LISTING_LIFETIME + randInt(state, 0, 7),
+  };
+  state.career.listings.push(listing);
+  return true;
+}
+
+/** Refresh the job board (weekly). Listings mix eligible and stretch roles; a student with no job always sees part-time ones. */
 export function refreshListings(state: GameState): void {
   const day = state.clock.day;
   state.career.listings = state.career.listings.filter((l) => l.expiresDay > day);
@@ -75,21 +112,13 @@ export function refreshListings(state: GameState): void {
   while (state.career.listings.length < target && guard++ < 60) {
     let pool = jobs;
     if (studying) pool = jobs.filter((j) => j.studentFriendly || nextRandom(state) < 0.15);
-    const job = pick(state, pool);
-    const options = companies.filter((c) => job.industries.includes(c.industry));
-    if (!options.length) continue;
-    const company = pick(state, options);
-    if (state.career.listings.some((l) => l.jobId === job.id && l.companyId === company.id)) continue;
-    if (state.career.job && state.career.job.jobId === job.id && state.career.job.companyId === company.id) continue;
-    const listing: JobListing = {
-      id: nextId(state, 'lst'),
-      jobId: job.id,
-      companyId: company.id,
-      salary: job.schedule === 'parttime' ? job.shiftPay ?? 50 : salaryFor(state, job, company),
-      postedDay: day,
-      expiresDay: day + LISTING_LIFETIME + randInt(state, 0, 7),
-    };
-    state.career.listings.push(listing);
+    postListing(state, pick(state, pool), day);
+  }
+  if (studying && !state.career.job) {
+    const partTimePool = jobs.filter((j) => j.schedule === 'parttime' && j.studentFriendly);
+    const partTimeOnBoard = () => state.career.listings.filter((l) => jobById(l.jobId)?.schedule === 'parttime').length;
+    guard = 0;
+    while (partTimeOnBoard() < MIN_STUDENT_PARTTIME_LISTINGS && guard++ < 60) postListing(state, pick(state, partTimePool), day);
   }
   state.career.listingsRefreshedDay = day;
 }

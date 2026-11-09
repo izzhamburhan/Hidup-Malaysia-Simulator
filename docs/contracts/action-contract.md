@@ -147,6 +147,16 @@ interface ActionView {
     and "You have opened 3 gifts today. Open the rest tomorrow." The engine never sees the network: the phone calls it
     for a gift that arrived (`friends-online.md`) and deletes the gift only after the action succeeded.
 
+17. **Part-time shifts fit around classes.** `work-shift` for a part-time job is available from
+    8 AM to 7 PM (reason otherwise: "Shifts start 8AM–7PM."), so a shift fits after class, as long
+    as the shift plus both commute legs ends by 2 AM (reason otherwise: "Too late: this shift would
+    end after 2AM."). A player
+    who is studying cannot start one on a class day before 5 PM until `attendedToday` is true (reason:
+    "You have class today. Attend first, shift after."); weekends, holidays, term breaks and 5 PM
+    onwards have no class rule, and full-time and intern shifts are unchanged. Each part-time shift
+    worked while `education.status` is `studying` adds 1 to `flags.studentShifts` (the
+    `kerja-sambil-belajar` achievement unlocks at 20).
+
 ## Tests
 
 Each new action has tests for: the happy path through `performAction` with a fixed seed, at least

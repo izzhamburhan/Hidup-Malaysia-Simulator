@@ -30,6 +30,7 @@ export const achievements: Achievement[] = [
   { id: 'hired', title: 'Officially Employed', description: 'Land a full-time job.', icon: '💼', check: (s) => s.career.job?.schedule === 'fulltime' },
   { id: 'promoted', title: 'Naik Pangkat', description: 'Get promoted.', icon: '🚀', check: (s) => s.career.promotions > 0 },
   { id: 'job-hopper', title: 'Job Hopper', description: 'Hold three different jobs.', icon: '🦘', check: (s) => s.career.jobsHeld >= 3 },
+  { id: 'kerja-sambil-belajar', title: 'Kerja Sambil Belajar', description: 'Work 20 part-time shifts while studying.', icon: '📚', check: (s) => Number(s.flags.studentShifts ?? 0) >= 20 },
   { id: 'overtime-king', title: 'OT Champion', description: 'Log 40 hours of overtime.', icon: '🌙', check: (s) => s.counters.overtimeHours >= 40 },
   { id: 'deans-list', title: "Dean's List", description: 'Score a GPA of 3.67 or higher.', icon: '🏅', check: (s) => Number(s.flags.deansList ?? 0) > 0 },
   { id: 'graduate', title: 'Graduan', description: 'Graduate from university.', icon: '🎓', check: (s) => s.education.status === 'graduated' && s.education.gpaHistory.length > 0 },

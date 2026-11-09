@@ -14,6 +14,15 @@ describe('achievements and challenges', () => {
     expect(s.achievements['saver-1k']).toBe(0);
   });
 
+  it('kerja-sambil-belajar unlocks at 20 student shifts', () => {
+    const s = makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs' });
+    s.flags.studentShifts = 19;
+    expect(checkAchievements(s)).not.toContain('kerja-sambil-belajar');
+    s.flags.studentShifts = 20;
+    expect(checkAchievements(s)).toContain('kerja-sambil-belajar');
+    expect(checkAchievements(s)).not.toContain('kerja-sambil-belajar');
+  });
+
   it('limits active challenges and completes them with a reward', () => {
     let s = makeGame();
     s = interact(s, 'challenge', 'pay-off-loan').state;
