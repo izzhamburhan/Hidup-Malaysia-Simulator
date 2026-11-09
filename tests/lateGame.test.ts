@@ -255,7 +255,8 @@ describe('student stress', () => {
       if (max >= 90) spiky++;
     }
     expect(spiky).toBeLessThanOrEqual(4);
-  });
+    // 20 seeds of 98 days is about 3 seconds locally; the CI runner is slower than the 5 second default.
+  }, 60_000);
 });
 
 describe('fewer repeat events', () => {
