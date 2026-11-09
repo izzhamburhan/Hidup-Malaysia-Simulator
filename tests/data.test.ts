@@ -11,6 +11,8 @@ import { backgrounds, lifeStages } from '../src/data/backgrounds';
 import { achievements, challenges } from '../src/data/achievements';
 import { holidays } from '../src/data/holidays';
 import { actionCatalogue } from '../src/engine/actions';
+import { SKILL_KEYS } from '../src/engine/core';
+import { newGame } from '../src/engine/newGame';
 
 const unique = (ids: string[]) => new Set(ids).size === ids.length;
 
@@ -130,6 +132,77 @@ describe('data catalogues', () => {
     for (const a of actionCatalogue) {
       expect(typeof a.run).toBe('function');
       if (typeof a.minutes === 'number') expect(a.minutes).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
+
+describe('more programmes', () => {
+  const NEW_FIELDS = ['law', 'social', 'hospitality', 'science'];
+  const NEW_COURSES = ['hrm', 'islamic-fin', 'logistics-scm', 'econ', 'entrepreneurship', 'acc-dip', 'llb', 'psych', 'comm', 'pub-mgmt', 'social-work', 'intl-affairs', 'tourism', 'hospitality-mgmt', 'hotel-dip', 'biotech', 'food-sci', 'agri', 'marine-sci', 'edu-maths', 'counselling'];
+  const fieldsOf = (u: { fields: string[] }) => courses.filter((c) => u.fields.includes(c.field));
+
+  it('defines the four new fields', () => {
+    for (const f of NEW_FIELDS) expect(courses.some((c) => c.field === f), f).toBe(true);
+  });
+
+  it('adds the new courses with sane balance values', () => {
+    for (const id of NEW_COURSES) expect(courses.some((c) => c.id === id), id).toBe(true);
+    for (const c of courses) {
+      expect(c.difficulty, c.id).toBeGreaterThanOrEqual(0.85);
+      expect(c.difficulty, c.id).toBeLessThanOrEqual(1.35);
+      expect(c.semesters, c.id).toBeGreaterThanOrEqual(5);
+      expect(c.semesters, c.id).toBeLessThanOrEqual(10);
+      for (const k of Object.keys(c.skills)) expect(SKILL_KEYS, `${c.id}.${k}`).toContain(k);
+    }
+  });
+
+  it('UUM offers at least 15 courses including law, HR, communication, tourism, psychology and Islamic finance', () => {
+    const uum = universities.find((u) => u.id === 'uum')!;
+    const offered = fieldsOf(uum).map((c) => c.id);
+    expect(offered.length).toBeGreaterThanOrEqual(15);
+    for (const id of ['llb', 'hrm', 'comm', 'tourism', 'psych', 'islamic-fin']) expect(offered, id).toContain(id);
+  });
+
+  it('every course field is offered by at least one university', () => {
+    for (const c of courses) expect(universities.some((u) => u.fields.includes(c.field)), c.id).toBe(true);
+  });
+
+  it('every course field is matched by at least one full-time job', () => {
+    for (const f of new Set(courses.map((c) => c.field))) {
+      expect(jobs.some((j) => j.schedule === 'fulltime' && j.fields?.includes(f)), f).toBe(true);
+    }
+  });
+
+  it('includes the new jobs for the new fields', () => {
+    for (const id of ['legal-exec', 'counsellor', 'admin-officer', 'front-office', 'events-exec', 'lab-exec']) {
+      expect(jobs.some((j) => j.id === id), id).toBe(true);
+    }
+  });
+
+  it('law is offered only where it is widely known, and a UUM law student can start', () => {
+    const withLaw = universities.filter((u) => u.fields.includes('law')).map((u) => u.id).sort();
+    expect(withLaw).toEqual(['iium', 'mmu', 'taylors', 'uitm', 'ukm', 'um', 'unisza', 'usim', 'uum']);
+    const s = newGame({ name: 'T', startAge: 19, homeState: 'Kedah', backgroundId: 'middle', lifeStage: 'student', mode: 'realistic', universityId: 'uum', courseId: 'llb', seed: 7 });
+    expect(s.education.universityId).toBe('uum');
+    expect(s.education.field).toBe('law');
+  });
+
+  it('the new jobs are full-time, cover a new field and have an employer', () => {
+    for (const id of ['legal-exec', 'counsellor', 'admin-officer', 'front-office', 'events-exec', 'lab-exec']) {
+      const j = jobs.find((x) => x.id === id)!;
+      expect(j.schedule, id).toBe('fulltime');
+      expect(j.fields?.some((f) => NEW_FIELDS.includes(f)), id).toBe(true);
+      expect(companies.some((co) => j.industries.includes(co.industry)), id).toBe(true);
+    }
+  });
+
+  it('a new game starts for every course, as a student and as a fresh grad', () => {
+    for (const c of courses) {
+      const uni = universities.find((u) => u.fields.includes(c.field))!;
+      for (const lifeStage of ['student', 'fresh_grad'] as const) {
+        const s = newGame({ name: 'T', startAge: 21, homeState: 'Kedah', backgroundId: 'middle', lifeStage, mode: 'realistic', universityId: uni.id, courseId: c.id, seed: 7 });
+        expect(s.education.field, `${c.id} ${lifeStage}`).toBe(c.field);
+      }
     }
   });
 });

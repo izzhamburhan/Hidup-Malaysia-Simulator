@@ -18,7 +18,7 @@ the engine returns. Each file starts with a header comment stating its honesty l
 | File | Main exports | Type | Labels |
 | --- | --- | --- | --- |
 | `universities.ts` | `universities`, `universityById` | `University` | Real name; tuition is a fictional estimate; `strengths` and `industryLinks` are game flavour, not quality claims |
-| `courses.ts` | `courses`, `courseById` | `Course` | Generic fields of study; skill gains are game rules |
+| `courses.ts` | `courses`, `courseById` | `Course` | Generic programme titles in 11 fields (computing, engineering, business, data, education, health, creative, law, social, hospitality, science); skill gains are game rules |
 | `companies.ts` | `companies`, `companyById`, `industryLabels` | `Company`, `Industry` | Real name; pay factors are fictional balance values |
 | `jobs.ts` | `jobs`, `jobById` | `Job` | Salary ranges and shift pay are fictional estimates; not offers from any company |
 | `foods.ts` | `foods`, `foodById`, `portions` | `Food` | Calories are rough estimates (not nutrition advice); prices are fictional estimates |
@@ -41,7 +41,7 @@ When a file is added, renamed, or changes its main type, update this table (`doc
 ## Integrity rules (checked by `tests/data.test.ts`, `tests/events.test.ts` and `data_validate`)
 
 - Ids are unique within each catalogue (and across event ids).
-- Cross-references resolve: job `industries` exist in `companies.ts`; university `fields` match `courses.ts` fields; holiday `eventId`s and event `followUp`s point at scheduled events; background and life-stage ids used by `newGame` exist.
+- Cross-references resolve: job `industries` exist in `companies.ts`; university `fields` match `courses.ts` fields, and every course field is listed by at least one full-time job; holiday `eventId`s and event `followUp`s point at scheduled events; background and life-stage ids used by `newGame` exist.
 - Numbers are in range: prices and salaries are positive; `salaryRange[0] <= salaryRange[1]`; calories positive; stat nudges small enough to keep a single item from swinging a stat by more than the plan for that change allows.
 - Every event has at least one always-available choice.
 - Every catalogue file keeps its honesty header.
