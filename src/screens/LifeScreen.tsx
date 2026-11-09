@@ -20,6 +20,7 @@ import { hustleProfitTotal } from '../engine/business';
 import { useLoadedGame } from '../hooks/useGame';
 import { useT } from '../hooks/useT';
 import type { StringKey } from '../i18n';
+import { FriendsCircle } from '../components/FriendsCircle';
 import { OrgBadge } from '../components/OrgBadge';
 import { NpcAvatar } from '../components/PixelAvatar';
 import { ActionCard, VariantRow } from '../components/ActionCard';
@@ -469,6 +470,9 @@ function PeopleTab() {
       <div className="mt-2">
         <CategoryActions ids={['chat-partner', 'date', 'deep-talk', 'gift', 'define-relationship', 'propose', 'wedding', 'dating-app', 'meet-people', 'break-up']} />
       </div>
+
+      <SectionTitle>{t('life.people.circle')}</SectionTitle>
+      <FriendsCircle />
 
       <SectionTitle>{t('life.people.fam')}</SectionTitle>
       <Card className="space-y-2">

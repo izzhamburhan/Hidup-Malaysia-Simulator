@@ -25,7 +25,7 @@ export function meetSomeone(state: GameState, where: string): string | null {
   const r = state.relationships;
   if (r.partner && r.partner.stage !== 'talking') return null;
   if (r.prospects.length >= 3) r.prospects.pop();
-  const taken = new Set([r.partner?.name, ...r.prospects.map((p) => p.name), ...r.exes]);
+  const taken = new Set([r.partner?.name, ...r.prospects.map((p) => p.name), ...r.exes, ...r.circle.map((f) => f.name)]);
   // You meet the other gender; a life with no gender chosen (older saves) can meet anyone.
   const mine = state.character.gender;
   const names = npcNames.filter((n) => !taken.has(n) && (!mine || npcGender(n) !== mine));

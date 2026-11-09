@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, Cloud, LogOut, RefreshCw, Trash2 } from 'lucide-react';
 import { useCloud } from '../hooks/useCloud';
+import { useSocial } from '../hooks/useSocial';
 import { useT } from '../hooks/useT';
 import { firstNameOf, type SaveMeta } from '../lib/cloudSync';
 import { GoogleButton, GoogleG } from './GoogleButton';
@@ -192,9 +193,24 @@ export function WelcomeDock({ onGuest }: { onGuest: () => void }) {
 export function AccountCard() {
   const cloud = useCloud();
   const t = useT();
+  const social = useSocial();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [friendsError, setFriendsError] = useState<string | null>(null);
   if (!cloud.enabled) return null;
   const busy = cloud.status === 'signing-in' || cloud.status === 'syncing';
+
+  /** Friends data is removed first, so no friend card or message is left behind when the account is signed out. */
+  const deleteAll = async () => {
+    setFriendsError(null);
+    if (social.on) {
+      const res = await social.disable();
+      if (!res.ok) {
+        setFriendsError(t('phone.delete.friendsFail', { reason: res.error }));
+        return;
+      }
+    }
+    await cloud.deleteCloudData();
+  };
 
   return (
     <>
@@ -210,6 +226,11 @@ export function AccountCard() {
             <SyncLine />
             <KeyValue label={t('cloud.last')} value={when(cloud.lastSyncedAt)} />
             <Problem />
+            {friendsError && (
+              <div className="mt-3 rounded-xl bg-hibiscus-soft p-2.5 text-xs text-[#9a3412]" role="alert">
+                {friendsError}
+              </div>
+            )}
             <SyncButtons />
             <Button variant="danger" className="mt-2 w-full" disabled={busy} onClick={() => setConfirmDelete(true)}>
               <Trash2 size={16} /> {t('cloud.delete')}
@@ -238,7 +259,7 @@ export function AccountCard() {
               variant="danger"
               onClick={() => {
                 setConfirmDelete(false);
-                void cloud.deleteCloudData();
+                void deleteAll();
               }}
             >
               {t('cloud.delete.confirm')}
@@ -247,6 +268,7 @@ export function AccountCard() {
         }
       >
         <p className="text-sm text-ink-soft">{t('cloud.delete.body')}</p>
+        {social.on && <p className="mt-2 text-sm font-semibold text-ink-soft">{t('phone.delete.note')}</p>}
       </Modal>
     </>
   );

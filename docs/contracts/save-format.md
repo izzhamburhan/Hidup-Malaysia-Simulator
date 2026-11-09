@@ -102,6 +102,7 @@ Bump `SAVE_VERSION` in `newGame.ts` by exactly one, update `emptyState()`, add t
 | 8 | Adds `finance.unitTrust` (0) and `mastery` (all 0). |
 | 9 | Adds `location.state` (home state when living with family, else the Klang Valley) and `travel.stamps` (empty). |
 | 10 | Adds `finance.budget` (Hari Gaji payday planner: `pending`, `cycle`, `lastSplit`, `autoPlan`, `planned`, `streak`, `history`); older lives get `emptyBudget()` and plan from their next payday. |
+| 11 | Adds `relationships.circle` (the friends circle, `Friend[]`, at most 8); older lives get the same two seeded school friends a new life starts with. |
 
 ## Privacy
 
@@ -170,3 +171,18 @@ the first Jelajah trip there). `migrations[8]` puts lives that stay with family 
 `'family'`) in their home state and everyone else in Selangor, the baseline whose fictional cost and
 pay factors are 1, so no existing player's prices change; stamps start empty. Test:
 `tests/malaysiaMap.test.ts` ("migrates a v8 save").
+
+## Version 11 (friends circle)
+
+`Relationships` gains `circle: Friend[]` (`types.ts`), at most `MAX_CIRCLE` (8) named friends.
+A `Friend` is a `Person` (`id`, `name`, `trait`, `interest`) plus `closeness` (0 to 100; under 30 Kenalan,
+30 to 69 Kawan, 70 and over Kawan baik), `metDay`, `lastSeenDay` (last hangout), `lastChatDay`,
+`lastGiftDay` and `where` (`'school' | 'event' | 'mamak' | 'networking' | 'class' | 'work'`). The
+existing `relationships.friends` meter keeps its meaning and is still saved. `migrations[10]` adds the
+circle only when it is missing: `starterCircle(`${seed}|${name}`, day, taken)` (`friends.ts`), two school
+friends at closeness 35 to 50 drawn from a generator of its own, never `state.rng`, skipping names
+already used by the partner, prospects and exes. It uses no randomness from the save and no wall clock,
+so migrating the same v10 save twice gives the same friends. New games seed the same two friends from
+the same key and keep their random stream. Tests: `tests/save.test.ts` ("migrates a v10 save by adding
+a starter circle", "migrates a v10 save to the same friends every time", "keeps the random stream of a
+seeded new game").

@@ -1,6 +1,8 @@
 // UI strings in English and Bahasa Malaysia. Beta: the game's menus and buttons are translated;
 // stories, events and catalogue names (src/data/) are still English.
 
+import { phoneEn, phoneMs } from './i18n.phone';
+
 export type Lang = 'en' | 'ms';
 
 const en = {
@@ -385,6 +387,19 @@ const en = {
   'life.people.friends': 'Friends',
   'life.people.allowance': 'Monthly allowance to parents',
   'life.people.lent': 'Money lent to friends',
+  'life.people.circle': 'Your circle',
+  'life.people.circle.count': '{n} of {max} friends',
+  'life.people.circle.empty': 'Go to a social event or a mamak session to meet people.',
+  'friend.closeness': 'Closeness',
+  'friend.tier.kenalan': 'Kenalan',
+  'friend.tier.kenalan.hint': 'Acquaintance',
+  'friend.tier.kawan': 'Kawan',
+  'friend.tier.kawan.hint': 'Friend',
+  'friend.tier.baik': 'Kawan baik',
+  'friend.tier.baik.hint': 'Close friend',
+  'friend.btn.chat': 'Message',
+  'friend.btn.hangout': 'Lepak',
+  'friend.btn.gift': 'Gift',
   'life.home.where': 'Where you live',
   'life.home.rent': 'Rent',
   'life.home.utilities': 'Utilities + internet',
@@ -585,6 +600,7 @@ const en = {
   'cloud.conflict.keepDevice': 'Keep this device and replace the cloud',
   'cloud.conflict.keepCloud': 'Use the cloud and replace this device',
   'cloud.conflict.warn': 'The save you do not pick is replaced. You cannot undo this.',
+  ...phoneEn,
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -971,6 +987,19 @@ const ms: Record<StringKey, string> = {
   'life.people.friends': 'Kawan',
   'life.people.allowance': 'Elaun bulanan untuk ibu bapa',
   'life.people.lent': 'Duit dipinjamkan kepada kawan',
+  'life.people.circle': 'Bulatan kawan anda',
+  'life.people.circle.count': '{n} daripada {max} kawan',
+  'life.people.circle.empty': 'Pergi ke majlis sosial atau sesi mamak untuk berkenalan dengan orang baru.',
+  'friend.closeness': 'Keakraban',
+  'friend.tier.kenalan': 'Kenalan',
+  'friend.tier.kenalan.hint': 'Kenalan biasa',
+  'friend.tier.kawan': 'Kawan',
+  'friend.tier.kawan.hint': 'Kawan',
+  'friend.tier.baik': 'Kawan baik',
+  'friend.tier.baik.hint': 'Kawan rapat',
+  'friend.btn.chat': 'Mesej',
+  'friend.btn.hangout': 'Lepak',
+  'friend.btn.gift': 'Hadiah',
   'life.home.where': 'Tempat tinggal anda',
   'life.home.rent': 'Sewa',
   'life.home.utilities': 'Utiliti + internet',
@@ -1171,6 +1200,7 @@ const ms: Record<StringKey, string> = {
   'cloud.conflict.keepDevice': 'Kekalkan peranti ini dan ganti awan',
   'cloud.conflict.keepCloud': 'Guna awan dan ganti peranti ini',
   'cloud.conflict.warn': 'Simpanan yang tidak anda pilih akan diganti. Ini tidak boleh dibatalkan.',
+  ...phoneMs,
 };
 
 export const STRINGS: Record<Lang, Record<StringKey, string>> = { en, ms };

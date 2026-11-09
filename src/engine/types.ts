@@ -307,9 +307,26 @@ export interface Partner extends Person {
   memories: string[];
 }
 
+/** Where a friend came from. Saved, so it stays a short stable key. */
+export type FriendPlace = 'school' | 'event' | 'mamak' | 'networking' | 'class' | 'work';
+
+/** A named friend in your circle (Kenalan, Kawan or Kawan baik, by closeness). */
+export interface Friend extends Person {
+  /** 0 to 100. Under 30 is Kenalan, 30 to 69 Kawan, 70 and over Kawan baik. */
+  closeness: number;
+  metDay: number;
+  /** Last day you lepak-ed with them. A new friend starts the day before, so the first hangout is open. */
+  lastSeenDay: number;
+  lastChatDay: number;
+  lastGiftDay: number;
+  where: FriendPlace;
+}
+
 export interface Relationships {
   partner: Partner | null;
   prospects: (Person & { compatibility: number; metDay: number })[];
+  /** Named friends, at most MAX_CIRCLE. They feed the overall `friends` meter. */
+  circle: Friend[];
   exes: string[];
   family: number;
   friends: number;

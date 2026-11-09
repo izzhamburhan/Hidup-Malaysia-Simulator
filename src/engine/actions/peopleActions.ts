@@ -1,11 +1,13 @@
 // Love life and family actions.
 
 import { BUKA_PUASA, PASAR_RAMADAN } from '../../data/festive';
-import { addMemory, adjustFamily, applyStats, canAfford, formatRM, round2, spend } from '../core';
+import { GIFTS_PER_DAY, giftById } from '../../data/gifts';
+import { addMemory, adjustFamily, applyEffect, applyStats, canAfford, formatRM, round2, spend } from '../core';
 import { bukaPuasa, bukaPuasaReason, isRamadan, pasarRamadan, pasarRamadanReason } from '../festive';
 import { isWeekend } from '../calendar';
 import { tripMinutes, travelBetween } from '../geography';
 import { currentHome } from '../living';
+import { GIFT_COOLDOWN_DAYS, GIFT_COST, HANGOUT_COST, HANGOUT_FROM_HOUR, HANGOUT_TO_HOUR, chatFriend, friendById, giftFriend, hangoutFriend } from '../friends';
 import { breakUp, chatPartner, deepTalk, defineRelationship, goOnDate, marry, propose, startTalking } from '../social';
 import type { GameState } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
@@ -43,6 +45,11 @@ export function baliKampungMinutes(s: GameState): number {
   return tripMinutes(travelBetween(s.location.state, s.character.homeState), BALIK_KAMPUNG_VISIT_MINUTES);
 }
 
+const NO_FRIEND = 'That friend is no longer around.';
+
+/** Gifts opened on the current game day (the counter resets when the day differs). */
+const giftsOpenedToday = (s: GameState) => (s.flags['gift-day'] === s.clock.day ? Number(s.flags['gifts-today'] ?? 0) : 0);
+
 export const peopleActions: ActionDef[] = [
   {
     id: 'talk-prospect',
@@ -63,6 +70,81 @@ export const peopleActions: ActionDef[] = [
         s.relationships.partner = null;
       }
       return [startTalking(s, p!)];
+    },
+  },
+  // --- Friends circle (dedicated: shown per friend in Life > People; param = friend id) ---
+  {
+    id: 'friend-chat',
+    category: 'social',
+    icon: '💬',
+    dedicated: true,
+    title: (s, p) => `Message ${friendById(s, p)?.name ?? 'them'}`,
+    description: 'A quick chat. A little closer, free, once a day.',
+    minutes: 10,
+    available: (s, p) => {
+      const f = friendById(s, p);
+      if (!f) return NO_FRIEND;
+      return f.lastChatDay === s.clock.day ? `You already messaged ${f.name} today.` : null;
+    },
+    run: (s, p) => chatFriend(s, friendById(s, p)!),
+  },
+  {
+    id: 'friend-hangout',
+    category: 'social',
+    icon: '🍵',
+    dedicated: true,
+    title: (s, p) => `Lepak with ${friendById(s, p)?.name ?? 'them'}`,
+    description: `Teh tarik and good company (${formatRM(HANGOUT_COST)}, fictional estimate), ${hoursLabel(HANGOUT_FROM_HOUR, HANGOUT_TO_HOUR)}. Once a day.`,
+    minutes: 150,
+    cost: HANGOUT_COST,
+    energy: -6,
+    contexts: ['social'],
+    available: (s, p) => {
+      const f = friendById(s, p);
+      if (!f) return NO_FRIEND;
+      if (f.lastSeenDay === s.clock.day) return `You already lepak-ed with ${f.name} today.`;
+      if (!withinHours(s, HANGOUT_FROM_HOUR, HANGOUT_TO_HOUR)) return `Best ${hoursLabel(HANGOUT_FROM_HOUR, HANGOUT_TO_HOUR)}.`;
+      return canAfford(s, HANGOUT_COST) ? null : 'Not enough cash.';
+    },
+    run: (s, p) => hangoutFriend(s, friendById(s, p)!),
+  },
+  {
+    id: 'friend-gift',
+    category: 'social',
+    icon: '🎁',
+    dedicated: true,
+    title: (s, p) => `Send ${friendById(s, p)?.name ?? 'them'} a small gift`,
+    description: `Something small and thoughtful (${formatRM(GIFT_COST)}, fictional estimate). Once a week.`,
+    minutes: 15,
+    cost: GIFT_COST,
+    available: (s, p) => {
+      const f = friendById(s, p);
+      if (!f) return NO_FRIEND;
+      if (s.clock.day - f.lastGiftDay < GIFT_COOLDOWN_DAYS) return `You sent ${f.name} something recently. Give it a few days.`;
+      return canAfford(s, GIFT_COST) ? null : 'Not enough cash.';
+    },
+    run: (s, p) => giftFriend(s, friendById(s, p)!),
+  },
+  // A gift from a friend who plays online (param = gift id from src/data/gifts.ts). Small, free, never cash.
+  {
+    id: 'open-gift',
+    category: 'social',
+    icon: '🎁',
+    dedicated: true,
+    title: (_s, p) => `Open ${giftById(p)?.name ?? 'a gift'}`,
+    description: `A small gift from a friend. Up to ${GIFTS_PER_DAY} a day.`,
+    minutes: 5,
+    available: (s, p) => {
+      if (!giftById(p)) return 'That gift is not here any more.';
+      return giftsOpenedToday(s) >= GIFTS_PER_DAY ? `You have opened ${GIFTS_PER_DAY} gifts today. Open the rest tomorrow.` : null;
+    },
+    run: (s, p) => {
+      const gift = giftById(p)!;
+      s.flags['gifts-today'] = giftsOpenedToday(s) + 1;
+      s.flags['gift-day'] = s.clock.day;
+      s.flags.giftsOpened = Number(s.flags.giftsOpened ?? 0) + 1;
+      applyEffect(s, gift.effect);
+      return [`You opened ${gift.icon} ${gift.name} from a friend.`];
     },
   },
   {

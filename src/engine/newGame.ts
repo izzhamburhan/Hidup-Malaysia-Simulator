@@ -13,11 +13,12 @@ import { refreshListings, startJob } from './career';
 import { enroll } from './education';
 import { pick, seedFromString } from './rng';
 import { isValidAppearance, randomAppearance } from './appearance';
+import { starterCircle } from './friends';
 import { generateFeedPosts } from './social';
 import { emptyBudget } from './budget';
 import type { GameState, NewGameOptions, Skills } from './types';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 export const START_DATE = '2027-01-04';
 export const START_MINUTE = 7 * 60;
 
@@ -65,7 +66,7 @@ export function emptyState(): GameState {
     transport: { mode: 'public', vehicleId: null, vehicleCondition: 100, licenceExpiryDay: null, hasLicence: false, pendingFines: 0 },
     food: { today: [], caloriesIn: 0, caloriesOut: 0, water: 0, history: [] },
     fitness: { gymMember: false, gymId: null, sessions: 0, streak: 0, lastWorkoutDay: null },
-    relationships: { partner: null, prospects: [], exes: [], family: 60, friends: 50, dates: 0, lastFamilyContactDay: 0, lastFriendsDay: 0, moneyLent: 0 },
+    relationships: { partner: null, prospects: [], circle: [], exes: [], family: 60, friends: 50, dates: 0, lastFamilyContactDay: 0, lastFriendsDay: 0, moneyLent: 0 },
     hustles: [],
     inventory: { items: [] },
     feed: [],
@@ -199,6 +200,8 @@ export function newGame(options: NewGameOptions): GameState {
     }
   }
 
+  // Two school friends to start with: picked from the seed alone, so state.rng is untouched.
+  s.relationships.circle = starterCircle(`${s.seed}|${s.character.name}`, s.clock.day);
   refreshListings(s);
   // Living with family means living in your home state; otherwise the Klang Valley.
   s.location = { state: s.housing.optionId === 'family' && mapStateByName(s.character.homeState) ? s.character.homeState : DEFAULT_RESIDENCE };

@@ -46,9 +46,11 @@ export interface Settings {
   musicStation: string;
   /** Music volume, 0 to 1. */
   musicVolume: number;
+  /** Real friends can chat with me (also published as the profile's chatOpen). */
+  friendsChat: boolean;
 }
 
-const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true, cloudPromptDismissed: false, music: true, musicStation: 'warung-hujan', musicVolume: 0.5 };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true, cloudPromptDismissed: false, music: true, musicStation: 'warung-hujan', musicVolume: 0.5, friendsChat: true };
 
 /** In-game days that count as retention milestones in analytics. */
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];

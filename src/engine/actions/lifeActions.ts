@@ -9,6 +9,7 @@ import { isWorkday, onLeave } from '../career';
 import { tripMinutes, travelBetween, visitedStates } from '../geography';
 import { currentHome } from '../living';
 import { chance } from '../rng';
+import { meetFriend, maybeMeetFriend } from '../friends';
 import { meetSomeone, refreshFeed } from '../social';
 import type { GameState } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
@@ -525,6 +526,8 @@ export const lifeActions: ActionDef[] = [
         const met = meetSomeone(s, 'the mamak');
         if (met) lines.push(met);
       }
+      const friend = maybeMeetFriend(s, 0.15, 'mamak');
+      if (friend) lines.push(friend);
       return lines;
     },
   },
@@ -576,11 +579,16 @@ export const lifeActions: ActionDef[] = [
       s.today.socialised = true;
       applyStats(s, { happiness: 4, energy: -6 });
       addSkills(s, { communication: 0.5 });
+      const lines: string[] = [];
       if (chance(s, 0.6)) {
         const met = meetSomeone(s, 'a social event');
-        if (met) return [met];
+        if (met) lines.push(met);
       }
-      return ['Nice crowd, but no sparks tonight. Still, good vibes.'];
+      // Every event is a chance to make a friend, as long as the circle has room.
+      const friend = meetFriend(s, 'event');
+      if (friend) lines.push(friend);
+      if (!lines.length) lines.push('Nice crowd, but no sparks tonight. Still, good vibes.');
+      return lines;
     },
   },
   {

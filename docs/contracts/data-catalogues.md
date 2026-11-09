@@ -35,6 +35,9 @@ the engine returns. Each file starts with a header comment stating its honesty l
 | `events.ts` | `events` | `GameEventDef[]` | Fictional; see `event-contract.md` |
 | `budget.ts` | `BUDGET_PRESETS`, `WANT_CATEGORIES`, `WANT_ACTIONS`, `NOT_WANT_ACTIONS`, `BASIC_MEAL_RM`, `BASIC_SNACK_RM`, `EMERGENCY_MONTHS`, `EMERGENCY_MIN`, `WANT_WARNINGS`, `BUDGET_TIPS`, `BUDGET_GRADES` | `BudgetPreset`, `BudgetTip` | 50/30/20 is a common rule of thumb, simplified for the game, never financial advice; thresholds are fictional game rules; tips are original, name no real bank, fund or brand |
 | `achievements.ts` | `achievements`, `challenges`, `MAX_ACTIVE_CHALLENGES` | `Achievement`, `Challenge` | Fictional; conditions are pure functions of `GameState`, evaluated by `src/engine/progression.ts` |
+| `gifts.ts` | `GIFTS`, `giftById`, `GIFTS_PER_DAY` | `GiftDef` | Gifts real friends send each other (`friends-online.md`), opened with `open-gift`; small stat nudges only (at most +5), never cash; ids are repeated in `firestore.rules` (kept in step by `tests/firestoreRules.test.ts`) |
+| `stickers.ts` | `STICKERS`, `stickerById` | `{ id, emoji, en, ms }` | Preset reaction stickers for the phone chat; original friendly phrases in English and Bahasa Malaysia; emoji follow the halal list in `tests/content.test.ts` |
+| `blockedWords.ts` | `BLOCKED_EN`, `BLOCKED_MS`, `BLOCKED_WORDS` | `string[]` | Used only by `src/lib/wordFilter.ts` to mask chat text and refuse display names; never shown |
 
 When a file is added, renamed, or changes its main type, update this table (`doc-drift`).
 

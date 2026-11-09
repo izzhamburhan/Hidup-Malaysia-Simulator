@@ -87,6 +87,8 @@ one `applyLibrary` call so the screen and LocalStorage agree.
 
 - The Firebase web config is public by design; `firestore.rules` is what protects data: a signed-in player can
   read, write and delete only `users/{their uid}/lives/*`, only the allowed fields, everything else is denied.
+  Players who turn on real-player friends also get a public friend card, a friend code, friend links, an inbox and
+  chats; those documents and their rules are in `friends-online.md`. "Delete my cloud data" removes them too.
 - Only Authentication (Google) and Firestore are used. **Firebase Analytics is never imported**; analytics stays the
   opt-out Umami setup in `analytics.md`.
 - The player's Google name and profile picture address come from the sign-in session and are shown on this device

@@ -507,3 +507,21 @@ body {
     animation: none;
   }
 }
+
+/* The in-game phone: fades in (opacity only, so fixed sheets opened inside it are not trapped by a transform). */
+@keyframes phone-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.anim-phone {
+  animation: phone-fade 0.18s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-phone {
+    animation: none;
+  }
+}

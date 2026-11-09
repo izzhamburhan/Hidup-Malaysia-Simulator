@@ -29,8 +29,7 @@ describe('budget save v10', () => {
     delete finance.budget;
     old.version = 9;
     const migrated = migrate(old);
-    expect(SAVE_VERSION).toBe(10);
-    expect(migrated.version).toBe(10);
+    expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.finance.budget).toEqual({ pending: null, cycle: null, lastSplit: null, autoPlan: false, planned: 0, streak: 0, history: [] });
   });
 
