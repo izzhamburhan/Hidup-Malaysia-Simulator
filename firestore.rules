@@ -1,14 +1,50 @@
 rules_version = '2';
 
-// Cloud save for HIDUP MALAYSIA. Paste into Firebase console -> Firestore Database -> Rules -> Publish.
-// A signed-in player may read, write and delete only their own lives, users/{their uid}/lives/{life id}.
-// Nothing else is reachable. See docs/contracts/cloud-save.md.
+// HIDUP MALAYSIA: cloud save and real-player friends. Paste into Firebase console -> Firestore Database -> Rules
+// -> Publish. Contracts: docs/contracts/cloud-save.md and docs/contracts/friends-online.md.
+//
+// - users/{uid}/lives/*: a player's own saves; only they can reach them.
+// - profiles/{uid} and codes/{code}: the public friend card (chosen display name, look, coarse life snapshot) and the
+//   friend-code lookup. Any signed-in player may GET one by id (you need the code first); nobody may LIST them.
+// - users/{uid}/friends/{other}: "uid counts other as a friend". A friendship is mutual only when both docs exist,
+//   and only mutual friends can send gifts or chat. Removing or blocking deletes your own doc, which ends it at once.
+// - users/{uid}/requests, gifts, blocked: an inbox only its owner reads.
+// - chats/{a_b}: a chat between two players (ids sorted, joined with "_"); messages only between mutual friends
+//   whose profile has chat open.
+// - reports/*: create only. Nobody can read reports through the app; the owner reads them in the Firebase console.
+// Everything else is denied.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function me() {
+      return request.auth.uid;
+    }
+    function isFriend(a, b) {
+      return exists(/databases/$(database)/documents/users/$(a)/friends/$(b));
+    }
+    function mutual(a, b) {
+      return isFriend(a, b) && isFriend(b, a);
+    }
+    function shortText(v, max) {
+      return v is string && v.size() <= max;
+    }
+    // The server's day number in Malaysia time (UTC+8), minus `back` days, as a string. Gift ids use it.
+    function mytDay(back) {
+      return string(math.floor((request.time.toMillis() + 28800000) / 86400000) - back);
+    }
+    // The other member of a chat id "a_b".
+    function otherOf(chatId) {
+      return chatId.split('_')[0] == me() ? chatId.split('_')[1] : chatId.split('_')[0];
+    }
+
+    // ---- Cloud save (unchanged) ----
     match /users/{uid}/lives/{lifeId} {
-      allow read, delete: if request.auth != null && request.auth.uid == uid;
-      allow create, update: if request.auth != null
-        && request.auth.uid == uid
+      allow read, delete: if signedIn() && me() == uid;
+      allow create, update: if signedIn()
+        && me() == uid
         && request.resource.data.keys().hasAll(['save', 'savedAt', 'version', 'lifeId', 'day', 'name'])
         && request.resource.data.keys().hasOnly(['save', 'savedAt', 'version', 'lifeId', 'day', 'name', 'deleted'])
         && request.resource.data.lifeId == lifeId
@@ -20,6 +56,143 @@ service cloud.firestore {
         && request.resource.data.name is string
         && (!('deleted' in request.resource.data) || request.resource.data.deleted is bool);
     }
+
+    // ---- Friend card and code ----
+    match /profiles/{uid} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow delete: if signedIn() && me() == uid;
+      allow create, update: if signedIn()
+        && me() == uid
+        && request.resource.data.keys().hasAll(['code', 'displayName', 'chatOpen', 'snapshot', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['code', 'displayName', 'chatOpen', 'snapshot', 'updatedAt'])
+        && request.resource.data.code is string
+        && request.resource.data.code.size() == 6
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 3
+        && request.resource.data.displayName.size() <= 16
+        && request.resource.data.chatOpen is bool
+        && request.resource.data.snapshot is map
+        && request.resource.data.snapshot.keys().size() <= 20
+        && request.resource.data.updatedAt is string;
+    }
+
+    match /codes/{code} {
+      allow get: if signedIn();
+      allow list, update: if false;
+      allow create: if signedIn()
+        && code.size() == 6
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == me();
+      allow delete: if signedIn() && resource.data.uid == me();
+    }
+
+    // ---- Friends, requests, blocks, gifts ----
+    match /users/{uid}/friends/{other} {
+      // Either side may check one link (that is how "mutual" is worked out); only the owner lists or changes them.
+      allow get: if signedIn() && (me() == uid || me() == other);
+      allow list, delete: if signedIn() && me() == uid;
+      allow create: if signedIn()
+        && me() == uid
+        && other != uid
+        && request.resource.data.keys().hasOnly(['since'])
+        && shortText(request.resource.data.since, 40);
+      allow update: if false;
+    }
+
+    match /users/{uid}/requests/{from} {
+      allow read: if signedIn() && me() == uid;
+      // The receiver accepts or declines; the sender may cancel.
+      allow delete: if signedIn() && (me() == uid || me() == from);
+      allow create: if signedIn()
+        && me() == from
+        && from != uid
+        && !exists(/databases/$(database)/documents/users/$(uid)/blocked/$(from))
+        && request.resource.data.keys().hasOnly(['displayName', 'at'])
+        && shortText(request.resource.data.displayName, 16)
+        && shortText(request.resource.data.at, 40);
+      allow update: if false;
+    }
+
+    match /users/{uid}/blocked/{other} {
+      allow read, delete: if signedIn() && me() == uid;
+      allow create: if signedIn()
+        && me() == uid
+        && other != uid
+        && request.resource.data.keys().hasOnly(['at'])
+        && shortText(request.resource.data.at, 40);
+      allow update: if false;
+    }
+
+    match /users/{uid}/gifts/{giftId} {
+      allow read, delete: if signedIn() && me() == uid;
+      // One gift per friend per Malaysia day: the id is "{from}_{day number}", the day comes from the server clock
+      // (today, or yesterday for a device a little behind), and gifts are never updated.
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['from', 'fromName', 'kind', 'date', 'at'])
+        && request.resource.data.from == me()
+        && me() != uid
+        && (request.resource.data.date == mytDay(0) || request.resource.data.date == mytDay(1))
+        && giftId == me() + '_' + request.resource.data.date
+        && request.resource.data.kind in ['teh-tarik', 'kuih', 'bunga', 'buku', 'kek', 'pokok']
+        && shortText(request.resource.data.fromName, 16)
+        && shortText(request.resource.data.at, 40)
+        && mutual(uid, me());
+      allow update: if false;
+    }
+
+    // ---- Chat ----
+    match /chats/{chatId} {
+      allow read: if signedIn() && me() in resource.data.members;
+      allow create, update: if signedIn()
+        && request.resource.data.keys().hasOnly(['members', 'lastText', 'lastFrom', 'lastAt'])
+        && request.resource.data.members is list
+        && request.resource.data.members.size() == 2
+        && chatId == request.resource.data.members[0] + '_' + request.resource.data.members[1]
+        && request.resource.data.members[0] < request.resource.data.members[1]
+        && me() in request.resource.data.members
+        && request.resource.data.lastFrom == me()
+        && shortText(request.resource.data.lastText, 400)
+        && shortText(request.resource.data.lastAt, 40)
+        // Blanking my own preview on an existing chat (when I turn Friends off) is allowed after the friendship ended.
+        && (mutual(request.resource.data.members[0], request.resource.data.members[1])
+            || (resource != null && request.resource.data.lastText == ''));
+      allow delete: if false;
+
+      match /messages/{msgId} {
+        allow read: if signedIn() && me() in chatId.split('_');
+        allow delete: if signedIn() && resource.data.from == me();
+        allow update: if false;
+        allow create: if signedIn()
+          && chatId.split('_').size() == 2
+          && me() in chatId.split('_')
+          && request.resource.data.keys().hasOnly(['from', 'kind', 'text', 'sticker', 'at'])
+          && request.resource.data.from == me()
+          && request.resource.data.kind in ['text', 'sticker']
+          // 200 characters for the player; up to 400 UTF-16 units once emoji and "[hidden]" masks are counted.
+          && shortText(request.resource.data.text, 400)
+          && (request.resource.data.sticker == null || shortText(request.resource.data.sticker, 24))
+          && request.resource.data.at == request.time
+          && mutual(chatId.split('_')[0], chatId.split('_')[1])
+          && get(/databases/$(database)/documents/profiles/$(otherOf(chatId))).data.chatOpen == true;
+      }
+    }
+
+    // ---- Reports (create only) ----
+    match /reports/{reportId} {
+      allow read, update, delete: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['reporter', 'reported', 'chatId', 'reason', 'messages', 'at'])
+        && request.resource.data.reporter == me()
+        && request.resource.data.reported is string
+        && request.resource.data.reported != me()
+        && request.resource.data.chatId is string
+        && request.resource.data.reason in ['rude', 'bullying', 'personal-info', 'other']
+        && request.resource.data.messages is list
+        && request.resource.data.messages.size() <= 20
+        && shortText(request.resource.data.at, 40);
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

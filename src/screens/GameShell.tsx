@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles, Trophy, Wallet, Zap, LogOut, Compass, HelpCircle, MessageSquareHeart } from 'lucide-react';
+import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles, Trophy, Wallet, Zap, LogOut, Compass, HelpCircle, MessageSquareHeart, Smartphone } from 'lucide-react';
 import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
+import { unreadChats as npcUnreadChats } from '../engine/chat';
 import { useLoadedGame } from '../hooks/useGame';
+import { useSocial } from '../hooks/useSocial';
 import { useGameSounds } from '../hooks/useGameSounds';
 import { useT } from '../hooks/useT';
 import type { StringKey } from '../i18n';
@@ -16,6 +18,9 @@ import { daylight } from '../components/room/activity';
 import { ActionGame } from '../components/minigames/ActionGame';
 import { Tutorial } from '../components/Tutorial';
 import { PaydaySheet } from '../components/PaydaySheet';
+import { PhoneSheet } from '../components/phone/PhoneSheet';
+import { badgeCount } from '../components/phone/phoneLogic';
+import type { Route } from '../components/phone/phoneUi';
 import { FeedbackSheet, feedbackAvailable } from '../components/FeedbackSheet';
 import { track } from '../lib/analytics';
 import { Dashboard } from './Dashboard';
@@ -60,6 +65,8 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   const [menu, setMenu] = useState(false);
   const [tutorial, setTutorial] = useState(!settings.tutorialSeen);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [phone, setPhone] = useState<{ open: boolean; start?: Route }>({ open: false });
+  const social = useSocial();
   useGameSounds();
   const t = useT();
   const go = (t: Tab) => {
@@ -69,6 +76,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
     window.scrollTo({ top: 0 });
   };
   const unseenInvites = state.feed.filter((p) => p.invite && !p.invite.used).length;
+  const phoneBadge = badgeCount({ unreadChats: social.unreadIds.length, requests: social.requests.length, gifts: social.gifts.length, npcUnread: npcUnreadChats(state) });
 
   return (
     <div className="mx-auto min-h-screen max-w-lg pb-24" style={{ '--nav-h': `${navH}px` } as CSSProperties}>
@@ -96,11 +104,22 @@ export function GameShell({ onExit }: { onExit: () => void }) {
             <Menu size={20} />
           </button>
         </div>
-        <div className="mt-2 grid grid-cols-4 gap-2">
-          <MiniMeter icon="⚡" name={t('hud.energy')} value={state.stats.energy} />
-          <MiniMeter icon="😣" name={t('hud.stress')} value={state.stats.stress} invert />
-          <MiniMeter icon="🙂" name={t('hud.mood')} value={state.stats.happiness} />
-          <MiniMeter icon="🍽️" name={t('hud.full')} value={state.stats.satiety} />
+        <div className="mt-2 flex items-center gap-2">
+          <div className="grid min-w-0 flex-1 grid-cols-4 gap-2">
+            <MiniMeter icon="⚡" name={t('hud.energy')} value={state.stats.energy} />
+            <MiniMeter icon="😣" name={t('hud.stress')} value={state.stats.stress} invert />
+            <MiniMeter icon="🙂" name={t('hud.mood')} value={state.stats.happiness} />
+            <MiniMeter icon="🍽️" name={t('hud.full')} value={state.stats.satiety} />
+          </div>
+          <button
+            type="button"
+            onClick={() => setPhone({ open: true })}
+            className="hit-44 relative flex h-9 w-11 shrink-0 items-center justify-center rounded-xl border border-ink/10 bg-white text-teal"
+            aria-label={phoneBadge > 0 ? t('phone.openNew') : t('phone.open')}
+          >
+            <Smartphone size={18} aria-hidden />
+            {phoneBadge > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-hibiscus ring-2 ring-white" aria-hidden />}
+          </button>
         </div>
       </header>
 
@@ -112,7 +131,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         {tab === 'feed' && <FeedScreen />}
         {tab === 'goals' && <GoalsScreen />}
         {tab === 'report' && <ReportScreen />}
-        {tab === 'settings' && <SettingsScreen onExit={onExit} />}
+        {tab === 'settings' && <SettingsScreen onExit={onExit} onOpenPhone={(start) => setPhone({ open: true, start })} />}
       </main>
 
       <nav ref={navRef} className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 backdrop-blur safe-bottom" aria-label={t('nav.aria')}>
@@ -167,6 +186,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         </p>
       </Modal>
 
+      <PhoneSheet open={phone.open} start={phone.start} onClose={() => setPhone({ open: false })} />
       <Tutorial
         open={tutorial && !state.events.pending.length}
         appearance={state.character.appearance}
@@ -226,7 +246,7 @@ function MiniMeter({ icon, name, value, invert = false }: { icon: string; name: 
     <div>
       <div className="flex justify-between text-[11px] font-semibold text-ink-soft">
         <span className="truncate">
-          <span aria-hidden>{icon} </span>
+          <span aria-hidden className="hidden min-[380px]:inline">{icon} </span>
           {name}
         </span>
         <span className={cx('tabular-nums', bad && 'font-bold text-[#9a3412]')}>

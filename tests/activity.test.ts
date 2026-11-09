@@ -71,6 +71,7 @@ describe('activityFor (which animation and room an action plays)', () => {
     expect(activityFor('friend-chat', 'friend-s0')).toBe('phone');
     expect(activityFor('friend-hangout', 'friend-s0')).toBe('social');
     expect(activityFor('friend-gift', 'friend-s0')).toBe('social');
+    expect(activityFor('open-gift', 'kuih')).toBe('phone');
   });
 
   it('falls back to idle for an unknown id', () => {

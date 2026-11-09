@@ -73,7 +73,7 @@ src/engine/            pure simulation engine (no React, no DOM)
   save.ts              versioned LocalStorage save and migrations
   simulationEngine.ts  public API: newGame, performAction, resolveEvent, listActions, runAutopilot (and helpers)
 src/data/              catalogues: universities, courses, companies, jobs, foods, vehicles, housing,
-                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats, quests, festive, budget
+                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats, quests, festive, budget, gifts, stickers, blockedWords
 src/components/        UI components
   room/                Home room: activity.ts (action to room/animation mapping, presentation only), Room.tsx
   celebrate/           big-moment banner: celebrations.ts (pure state diff), Celebrate.tsx
@@ -95,8 +95,15 @@ src/lib/cloud.ts       cloud save client over an injected store, plus the local 
 src/lib/cloudScheduler.ts  debounced push to the cloud
 src/lib/firebaseClient.ts  the real Firebase adapter (Auth with Google, Firestore), loaded lazily; never Analytics
 src/hooks/useCloud.tsx optional Google sign-in and cloud save wiring (guests never load it)
+src/lib/social.ts      real-player friends: types, `SocialStore`, codes, display names, profile snapshot, ranking (pure)
+src/lib/socialClient.ts  every friends operation over an injected store (results as values); local read state
+src/lib/firebaseSocial.ts  the Firestore adapter and live listeners for friends, built lazily by firebaseClient.ts
+src/lib/wordFilter.ts  masks blocked words, links and phone numbers in chat and display names
+src/hooks/useSocial.tsx  friends wiring for signed-in players who turn it on (guests never load it)
+src/components/phone/  the in-game phone: PhoneSheet (frame, home), ChatApp/ChatThread, FriendsApp, ProfileCard, GiftsApp, RankApp, MeApp; phoneLogic.ts (pure)
 firestore.rules        Firestore rules: a player reaches only users/{their uid}
 src/i18n.ts            UI strings in English and Bahasa Malaysia (beta: menus and buttons; content stays English)
+src/i18n.phone.ts      the phone and friends strings (EN and BM), spread into i18n.ts
 tests/                 Vitest tests for the engine and data (tests/*.test.ts)
 mcp/hidup-sim/         local stdio MCP server exposing the engine (run with tsx)
 docs/contracts/        engine, action, event, save, data, payroll and MCP contracts
@@ -122,13 +129,14 @@ SKILLS.md              index of every skill
 | Education | done: 40 institutions, 27 courses, classes, assignments, exams/GPA/CGPA, FYP, probation, graduation, PTPTN-style loan |
 | Social and feed | done: prospects, dating stages to marriage, breakups, family/friends drift, fictional feed with likes and invites; a friends circle of up to 8 named friends (2 school friends at the start, more from social events, mamak, networking, classes and work), closeness tiers Kenalan, Kawan and Kawan baik, per-friend message, lepak and gift actions in Life > People, daily drift and a friend leaving at 0; save v11. Contract: `docs/contracts/engine-api.md` (Friends circle) |
 | Events | done: 111 events (90 random + 21 scheduled; includes 6 scam-awareness events, a festive traffic jam and banjir at home weighted by state and monsoon month), modes, contexts, cooldowns, follow-ups, safety net |
-| Actions catalogue | done: 113 actions across 15 categories with availability reasons and confirmations |
-| Achievements and endings | done: 50 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
+| Actions catalogue | done: 114 actions across 15 categories with availability reasons and confirmations |
+| Achievements and endings | done: 51 achievements, 10 challenges, 10 endings, life report, share image (1080x1350 PNG drawn on the device) and share text |
 | Malaysia map | done: stylised pixel-tile map of the 16 states (`src/data/malaysia.ts`, not to scale) on a Life "Map" tab with pins for residence, kampung and campus; Jelajah Malaysia day trips (`trip-state`, road or flight from `geography.ts`) collect stamps and 3 achievements; moving state (`move-state`) with fictional cost and pay factors relative to Selangor; balik kampung cost and time follow the map; save v9 |
 | State flags | done: official flags of all 13 states and 3 federal territories (Wikimedia Commons, credited), flag grid in character creation, flag in the game header |
 | Festive seasons | done: 12 seasons on the simulated calendar (CNY, Ramadan (festive only: pasar Ramadan and buka puasa for everyone, no fasting mechanic), Raya, Aidiladha, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Deepavali, Christmas, New Year); room garland, festive-greet once a season (duit raya / angpau: single receives, married gives), 4 festive outfits |
 | Install | done: network-first service worker, "Get the app" card after day 1 and in Settings, iPhone steps |
 | Cloud save | built, awaiting Firebase console steps (Google provider, authorised domain, published `firestore.rules`): optional Google sign-in, guest stays the default; every life is copied to Firestore `users/{uid}/lives/{lifeId}`, debounced pushes of the current life, a per-life conflict sheet when both sides changed, delete-my-cloud-data in Settings; welcome dock (Google button and "Continue as guest") in the landing hero, then a profile pill (photo and first name) at its top-left; no engine or `SAVE_VERSION` change. Contract: `docs/contracts/cloud-save.md` |
+| Real-player friends and the phone | built, needs the published `firestore.rules` (and the cloud-save console steps): an in-game phone from the header (Sembang chat, Kawan, Hadiah, Ranking, Profil); guests get the NPC chats; signed-in players opt in with a display name and get a `HM-XXXXXX` friend code, add friends by code (mutual links), visit a friend's life snapshot, send one free gift per friend a day (opened with `open-gift`, 3 a game day, non-cash), stickers, a friends leaderboard and free-text chat between mutual friends (200 characters, word filter on send and display, links and phone numbers hidden, block, report to a create-only collection, chat switch in Settings); turning it off or deleting cloud data removes your friend data; no engine shape or `SAVE_VERSION` change. Contract: `docs/contracts/friends-online.md` |
 | Analytics | done: Umami events with a life snapshot on milestone days (choices and coarse money bands, never exact money or the name), one `session` summary per sitting instead of an event per action (`TRACK_ACTIONS` off), plus `create`, `account`, `life` and `problem` counts; contract `docs/contracts/analytics.md` |
 | Multiple lives | built: up to 3 lives per device; starting a new life shelves the current one (never replaces it), a full library asks the player to delete one; the landing page lists the other lives with Play and Delete; `hidup-malaysia:save` stays the current life and `hidup-malaysia:shelf` holds the rest (no migration; `SAVE_VERSION` was 9 then). Contract: `docs/contracts/cloud-save.md` |
 | Hari Gaji payday planner | done: every salary or family allowance opens a planner sheet (needs / wants / savings, 4 presets incl. 50/30/20 and steppers in steps of 5, bills shown inside needs, emergency fund meter, one money tip); savings move at once (emergency fund first, up to 3 months of commitments); wants spending is tracked by action category until the next payday with 80% and 100% warnings; each pay cycle is graded A/B/C with a streak and small mood rewards; auto-plan after 3 hand-made plans; Money tab card; 2 achievements; save v10. Contract: `docs/contracts/engine-api.md` (Hari Gaji) |
@@ -149,7 +157,7 @@ SKILLS.md              index of every skill
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 58 Vitest files, 575 tests |
+| Tests | done: 64 Vitest files, 717 tests |
 
 ## Commands
 
@@ -208,11 +216,11 @@ Contracts for all of this are in `docs/contracts/`. Change the contract first, t
 - **Holiday dates are a simulated calendar.** Lunar and Islamic festivals are pinned to fixed dates in `src/data/holidays.ts`; they are not the real calendar.
 - **Humour and politics.** Humour is original, friendly and recognisably Malaysian. No defamation of real people. Politics appears only through fictional parties and politicians in the fictional town of Seri Harapan. No ethnic or religious stereotypes. Being single, never marrying, never buying a house and every ending are valid outcomes, not failures.
 - **Halal-friendly.** No pig or pork, alcohol or gambling imagery anywhere (emoji included); `tests/content.test.ts` enforces the emoji list.
-- **Privacy.** Store only what the game needs, locally by default. Playing never requires an account. The one exception is the optional Google sign-in for cloud save (`docs/contracts/cloud-save.md`): it stores the save under an anonymous Google user id and nothing else (no email, no name). No ads, tracking cookies, paid APIs or real social media in v1. The only analytics allowed is the cookie-free, opt-out, allow-listed kind in `docs/contracts/analytics.md`; Firebase Analytics is never loaded.
+- **Privacy.** Store only what the game needs, locally by default. Playing never requires an account. The one exception is the optional Google sign-in for cloud save (`docs/contracts/cloud-save.md`): it stores the save under an anonymous Google user id and nothing else (no email, no name). Signed-in players who turn on real-player friends (`docs/contracts/friends-online.md`) also publish a friend card that only someone with their code can open: a display name they choose (never the Google name), their look and a coarse life snapshot (money only as a band); chat is between mutual friends only, filtered, with block and report. No ads, tracking cookies, paid APIs or outside social networks. The only analytics allowed is the cookie-free, opt-out, allow-listed kind in `docs/contracts/analytics.md`; Firebase Analytics is never loaded.
 
 ## Save and versioning
 
-- LocalStorage key `hidup-malaysia:save` holds the current life as `{ version, savedAt, state }`; the other lives (at most 3 in all) sit under `hidup-malaysia:shelf` and cloud sync state under `hidup-malaysia:cloud` (see `docs/contracts/cloud-save.md`). Settings live under `hidup-malaysia:settings`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot, never the main life).
+- LocalStorage key `hidup-malaysia:save` holds the current life as `{ version, savedAt, state }`; the other lives (at most 3 in all) sit under `hidup-malaysia:shelf` and cloud sync state under `hidup-malaysia:cloud` (see `docs/contracts/cloud-save.md`). Settings live under `hidup-malaysia:settings` (including `friendsChat`); friends chat read state under `hidup-malaysia:friends`; endings found across lives under `hidup-malaysia:collection`; today's daily-challenge run under `hidup-malaysia:daily` (its own slot, never the main life).
 - `SAVE_VERSION` lives in `src/engine/newGame.ts` (currently 11; re-exported by `simulationEngine.ts`) and is the `GameState.version` of new games. Migrations live in `src/engine/save.ts`.
 - Any change to the shape of `GameState` bumps `SAVE_VERSION`, adds a migration from the previous version, and adds a Vitest test that migrates a fixture of the old shape.
 - A corrupt or unreadable save never crashes the app: the raw text is backed up to `hidup-malaysia:save:corrupt` and the player gets a clear message and a fresh start.

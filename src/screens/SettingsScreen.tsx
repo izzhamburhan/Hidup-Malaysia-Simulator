@@ -8,10 +8,12 @@ import { IosInstallHelp, useInstall } from '../components/InstallBanner';
 import { Button, Card, Disclaimer, KeyValue, Modal, SectionTitle } from '../components/ui';
 import { PrivacyNotice } from '../components/PrivacyNotice';
 import { AccountCard } from '../components/AccountCard';
+import { FriendsSettingsCard } from '../components/phone/FriendsSettingsCard';
+import type { Route } from '../components/phone/phoneUi';
 import { analyticsConfigured } from '../lib/analytics';
 import { STATIONS, startMusic } from '../lib/music';
 
-export function SettingsScreen({ onExit }: { onExit: () => void }) {
+export function SettingsScreen({ onExit, onOpenPhone }: { onExit: () => void; onOpenPhone: (start?: Route) => void }) {
   const { state, settings, setSettings, interact, exportSave, importSave, resetAll, lastSavedAt, saveError } = useLoadedGame();
   const [confirmReset, setConfirmReset] = useState(false);
   const t = useT();
@@ -52,6 +54,8 @@ export function SettingsScreen({ onExit }: { onExit: () => void }) {
       </Card>
 
       <AccountCard />
+
+      <FriendsSettingsCard onOpenPhone={onOpenPhone} />
 
       <SectionTitle>{t('settings.import.title')}</SectionTitle>
       <Card>

@@ -16,6 +16,11 @@ export function PrivacyNotice({ open, onClose }: { open: boolean; onClose: () =>
           <b>Optional Google cloud save.</b> If you sign in with Google, a copy of your save is stored in Google Firebase under an anonymous user ID so you can continue on another device. We do not
           store your email or name, and you can delete the cloud copy any time in Settings. Signing in is never required to play.
         </p>
+        <p>
+          <b>Optional Friends (needs Google sign-in).</b> If you turn on Friends, we store a display name you choose, your pixel look, life stage, job, home state, age, day, achievements, travel stamps and a rough net worth range
+          (never exact money) so friends you swap codes with can see them. Chat messages, gifts and friend requests between friends are stored too. We still do not keep your Google name or email. Messages are
+          filtered for rude words and you can block or report anyone (a report keeps a copy of the last 20 messages of that chat for the game owner). You can turn Friends off in Settings to delete your friend card, code, friends list, inbox, blocks and your messages. Reports you were part of are kept for safety, and gifts you already sent stay in the inboxes of your friends until they open them.
+        </p>
         {on ? (
           <p>
             <b>Anonymous usage stats.</b> To improve the game we count visits and which features are used (for example "a game started" or "the gym was used"), using Umami, a

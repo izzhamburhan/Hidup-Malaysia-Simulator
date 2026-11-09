@@ -140,6 +140,13 @@ interface ActionView {
     recently. Give it a few days."). Spending counts as wants for the Hari Gaji planner (`social` category).
     The Life > People tab shows them per friend.
 
+16. **Gifts from real friends are opened in-game.** `open-gift` (`peopleActions.ts`, `social`, dedicated, 5 minutes,
+    no cost) takes a gift id from `GIFTS` (`src/data/gifts.ts`) and applies that gift's small non-cash effect through
+    `applyEffect`. At most `GIFTS_PER_DAY` (3) a game day, counted in `flags['gift-day']` and `flags['gifts-today']`;
+    each one adds 1 to `flags.giftsOpened` (`hadiah-kawan` unlocks at 5). Reasons: "That gift is not here any more."
+    and "You have opened 3 gifts today. Open the rest tomorrow." The engine never sees the network: the phone calls it
+    for a gift that arrived (`friends-online.md`) and deletes the gift only after the action succeeded.
+
 ## Tests
 
 Each new action has tests for: the happy path through `performAction` with a fixed seed, at least

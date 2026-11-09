@@ -1,7 +1,8 @@
 // Love life and family actions.
 
 import { BUKA_PUASA, PASAR_RAMADAN } from '../../data/festive';
-import { addMemory, adjustFamily, applyStats, canAfford, formatRM, round2, spend } from '../core';
+import { GIFTS_PER_DAY, giftById } from '../../data/gifts';
+import { addMemory, adjustFamily, applyEffect, applyStats, canAfford, formatRM, round2, spend } from '../core';
 import { bukaPuasa, bukaPuasaReason, isRamadan, pasarRamadan, pasarRamadanReason } from '../festive';
 import { isWeekend } from '../calendar';
 import { tripMinutes, travelBetween } from '../geography';
@@ -45,6 +46,9 @@ export function baliKampungMinutes(s: GameState): number {
 }
 
 const NO_FRIEND = 'That friend is no longer around.';
+
+/** Gifts opened on the current game day (the counter resets when the day differs). */
+const giftsOpenedToday = (s: GameState) => (s.flags['gift-day'] === s.clock.day ? Number(s.flags['gifts-today'] ?? 0) : 0);
 
 export const peopleActions: ActionDef[] = [
   {
@@ -120,6 +124,28 @@ export const peopleActions: ActionDef[] = [
       return canAfford(s, GIFT_COST) ? null : 'Not enough cash.';
     },
     run: (s, p) => giftFriend(s, friendById(s, p)!),
+  },
+  // A gift from a friend who plays online (param = gift id from src/data/gifts.ts). Small, free, never cash.
+  {
+    id: 'open-gift',
+    category: 'social',
+    icon: '🎁',
+    dedicated: true,
+    title: (_s, p) => `Open ${giftById(p)?.name ?? 'a gift'}`,
+    description: `A small gift from a friend. Up to ${GIFTS_PER_DAY} a day.`,
+    minutes: 5,
+    available: (s, p) => {
+      if (!giftById(p)) return 'That gift is not here any more.';
+      return giftsOpenedToday(s) >= GIFTS_PER_DAY ? `You have opened ${GIFTS_PER_DAY} gifts today. Open the rest tomorrow.` : null;
+    },
+    run: (s, p) => {
+      const gift = giftById(p)!;
+      s.flags['gifts-today'] = giftsOpenedToday(s) + 1;
+      s.flags['gift-day'] = s.clock.day;
+      s.flags.giftsOpened = Number(s.flags.giftsOpened ?? 0) + 1;
+      applyEffect(s, gift.effect);
+      return [`You opened ${gift.icon} ${gift.name} from a friend.`];
+    },
   },
   {
     id: 'chat-partner',

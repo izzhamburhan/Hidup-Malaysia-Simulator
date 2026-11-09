@@ -1,6 +1,8 @@
 // UI strings in English and Bahasa Malaysia. Beta: the game's menus and buttons are translated;
 // stories, events and catalogue names (src/data/) are still English.
 
+import { phoneEn, phoneMs } from './i18n.phone';
+
 export type Lang = 'en' | 'ms';
 
 const en = {
@@ -598,6 +600,7 @@ const en = {
   'cloud.conflict.keepDevice': 'Keep this device and replace the cloud',
   'cloud.conflict.keepCloud': 'Use the cloud and replace this device',
   'cloud.conflict.warn': 'The save you do not pick is replaced. You cannot undo this.',
+  ...phoneEn,
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -1197,6 +1200,7 @@ const ms: Record<StringKey, string> = {
   'cloud.conflict.keepDevice': 'Kekalkan peranti ini dan ganti awan',
   'cloud.conflict.keepCloud': 'Guna awan dan ganti peranti ini',
   'cloud.conflict.warn': 'Simpanan yang tidak anda pilih akan diganti. Ini tidak boleh dibatalkan.',
+  ...phoneMs,
 };
 
 export const STRINGS: Record<Lang, Record<StringKey, string>> = { en, ms };

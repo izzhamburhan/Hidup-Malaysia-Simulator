@@ -4,6 +4,8 @@
 
 import { FIREBASE_CONFIG } from '../config';
 import type { CloudDoc, CloudStore } from './cloud';
+import { makeSocialStore, type SocialLive } from './firebaseSocial';
+import type { SocialStore } from './social';
 
 export interface CloudUser {
   uid: string;
@@ -15,6 +17,8 @@ export interface CloudUser {
 
 export interface FirebaseHandle {
   store: CloudStore;
+  /** Real-player friends (docs/contracts/friends-online.md). */
+  social: SocialStore & SocialLive;
   /** Opens the Google popup. The new user arrives through onUser. */
   signIn(): Promise<void>;
   signOut(): Promise<void>;
@@ -62,6 +66,7 @@ async function build(): Promise<FirebaseHandle> {
 
   return {
     store,
+    social: makeSocialStore(fs, db),
     async signIn() {
       await authLib.signInWithPopup(auth, new authLib.GoogleAuthProvider());
     },
