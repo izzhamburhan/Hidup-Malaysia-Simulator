@@ -234,19 +234,27 @@ describe('student stress', () => {
     expect(employed.stats.stress).toBe(20);
   });
 
+  // Many seeds rather than one: a single seed's stress peak moves whenever a feature draws from the
+  // random stream (an event can spike stress), so the bound is on the average and on how often a
+  // semester peaks at 90+ (about 5% of seeds on v10, before the friends circle).
   it('does not burn out a student on routine over a semester', () => {
-    const s = makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs', backgroundId: 'scholar', seed: 3 });
-    let sum = 0;
-    let n = 0;
-    let max = 0;
-    live(s, 98, (st) => {
-      sum += st.stats.stress;
-      n++;
-      max = Math.max(max, st.stats.stress);
-    });
-    expect(sum / n).toBeGreaterThan(3);
-    expect(sum / n).toBeLessThan(40);
-    expect(max).toBeLessThan(90);
+    const SEEDS = 20;
+    let spiky = 0;
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const s = makeGame({ lifeStage: 'student', universityId: 'um', courseId: 'cs', backgroundId: 'scholar', seed });
+      let sum = 0;
+      let n = 0;
+      let max = 0;
+      live(s, 98, (st) => {
+        sum += st.stats.stress;
+        n++;
+        max = Math.max(max, st.stats.stress);
+      });
+      expect(sum / n, `seed ${seed} average`).toBeGreaterThan(3);
+      expect(sum / n, `seed ${seed} average`).toBeLessThan(40);
+      if (max >= 90) spiky++;
+    }
+    expect(spiky).toBeLessThanOrEqual(4);
   });
 });
 

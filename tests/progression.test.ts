@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { canStartChallenge, checkAchievements, updateChallenges } from '../src/engine/progression';
 import { endChapter, interact } from '../src/engine/simulationEngine';
 import { endings, lifeReport, rankEndings, shareText } from '../src/engine/endings';
+import { makeFriend } from '../src/engine/friends';
 import { makeGame } from './helpers';
 
 describe('achievements and challenges', () => {
@@ -32,6 +33,26 @@ describe('achievements and challenges', () => {
     s.clock.day = 400;
     updateChallenges(s);
     expect(s.challenges.failed).toContain('save-10k-28');
+  });
+});
+
+describe('friends circle achievements', () => {
+  it('Geng Besar needs 6 friends in the circle', () => {
+    const s = makeGame();
+    expect(checkAchievements(s)).not.toContain('geng-besar');
+    while (s.relationships.circle.length < 5) s.relationships.circle.push(makeFriend(s, 'event')!);
+    expect(checkAchievements(s)).not.toContain('geng-besar');
+    s.relationships.circle.push(makeFriend(s, 'event')!);
+    expect(checkAchievements(s)).toContain('geng-besar');
+    expect(checkAchievements(s)).not.toContain('geng-besar');
+  });
+
+  it('Kawan Sejati needs a friend at closeness 80 or more', () => {
+    const s = makeGame();
+    s.relationships.circle[0].closeness = 79.5;
+    expect(checkAchievements(s)).not.toContain('kawan-sejati');
+    s.relationships.circle[0].closeness = 80;
+    expect(checkAchievements(s)).toContain('kawan-sejati');
   });
 });
 

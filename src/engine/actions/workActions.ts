@@ -14,6 +14,7 @@ import { queueEvent } from '../events';
 import { commuteLeg, commuteMinutes } from '../living';
 import { computePayslip } from '../payroll';
 import { chance, randInt } from '../rng';
+import { maybeMeetFriend } from '../friends';
 import { meetSomeone } from '../social';
 import type { GameState, SkillKey, TransportMode } from '../types';
 import { hoursLabel, needEnergy, withinHours, type ActionDef } from './types';
@@ -122,6 +123,8 @@ export const workActions: ActionDef[] = [
         s.career.job!.performance = clamp(s.career.job!.performance - 1.5);
         res.lines.push('You arrived late. Your manager glanced at the clock. Twice.');
       }
+      const friend = maybeMeetFriend(s, 0.05, 'work');
+      if (friend) res.lines.push(friend);
       return res.lines;
     },
   },
@@ -271,6 +274,8 @@ export const workActions: ActionDef[] = [
         const met = meetSomeone(s, 'a networking event');
         if (met) lines.push(met);
       }
+      const friend = maybeMeetFriend(s, 0.2, 'networking');
+      if (friend) lines.push(friend);
       return lines;
     },
   },
@@ -398,7 +403,10 @@ export const workActions: ActionDef[] = [
     },
     run: (s) => {
       commuteLeg(s, 2);
-      return attendClass(s);
+      const lines = attendClass(s);
+      const friend = maybeMeetFriend(s, 0.06, 'class');
+      if (friend) lines.push(friend);
+      return lines;
     },
   },
   {

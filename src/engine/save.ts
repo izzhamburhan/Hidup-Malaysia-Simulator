@@ -7,6 +7,7 @@ import { isValidAppearance, randomAppearance } from './appearance';
 import { endings } from './endings';
 import type { GameState } from './types';
 import { emptyBudget } from './budget';
+import { starterCircle } from './friends';
 
 export const SAVE_KEY = 'hidup-malaysia:save';
 export const CORRUPT_KEY = 'hidup-malaysia:save:corrupt';
@@ -86,6 +87,21 @@ export const migrations: Record<number, Migration> = {
     const finance = (s.finance ?? {}) as Record<string, unknown>;
     const budget = finance.budget && typeof finance.budget === 'object' ? finance.budget : emptyBudget();
     return { ...s, finance: { ...finance, budget }, version: 10 };
+  },
+  // 10 -> 11: the friends circle. Existing lives get the same two school friends a new life starts with
+  // (a pure function of the stored seed and name: no randomness, so migrating twice gives the same friends).
+  10: (s) => {
+    const relationships = (s.relationships ?? {}) as Record<string, unknown>;
+    if (Array.isArray(relationships.circle)) return { ...s, version: 11 };
+    const character = (s.character ?? {}) as Record<string, unknown>;
+    const clock = (s.clock ?? {}) as Record<string, unknown>;
+    const partner = relationships.partner as { name?: unknown } | null | undefined;
+    const prospects = Array.isArray(relationships.prospects) ? (relationships.prospects as { name?: unknown }[]) : [];
+    const exes = Array.isArray(relationships.exes) ? (relationships.exes as unknown[]) : [];
+    const taken = [partner?.name, ...prospects.map((p) => p.name), ...exes].filter((n): n is string => typeof n === 'string');
+    const key = `${typeof s.seed === 'number' ? s.seed : 1}|${typeof character.name === 'string' ? character.name : ''}`;
+    const day = typeof clock.day === 'number' ? clock.day : 0;
+    return { ...s, relationships: { ...relationships, circle: starterCircle(key, day, taken) }, version: 11 };
   },
 };
 

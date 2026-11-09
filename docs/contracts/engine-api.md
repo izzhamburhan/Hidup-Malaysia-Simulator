@@ -154,3 +154,16 @@ Plan: `docs/plans/hari-gaji.md`. Save v10 adds `finance.budget` (`BudgetState`, 
 - **Grading.** On the next payday: A = wants within budget and savings kept (saved > 0, nothing dipped); B = one of the two; C = neither. A or B extends `streak` (A: happiness +3, stress -3; B: +1, -1); C resets it (stress +2). `history` keeps the newest 6 results.
 - **`budgetView(state)`.** Pure read-only summary for the UI: pending, cycle, wants used (0-1+), spending in the cycle, emergency target and months covered, commitments, whether auto-plan is allowed, and the last result.
 - No randomness and no wall clock; the same state and actions give the same budget.
+
+## Friends circle (`friends.ts`)
+
+Plan: `docs/plans/friends-roster.md`. Save v11 adds `relationships.circle` (`Friend[]`, `types.ts`).
+
+- **Tiers.** `friendTier(closeness)`: under 30 `kenalan`, 30 to 69 `kawan`, 70 and over `kawan-baik`. `MAX_CIRCLE` is 8.
+- **Starting circle.** `starterCircle(seedKey, day, taken?)` is a pure function of its key (`newGame` uses `${seed}|${name}`): two school friends, closeness 35 to 50, from a generator of its own. It never advances `state.rng`, so a seeded new game keeps its random stream.
+- **Meeting.** `makeFriend(state, where)` draws a new acquaintance (closeness 12 to 25) from `state.rng`, with a name nobody in the circle, prospects, partner or exes has; it returns `null` (no draw) when the circle is full. `meetFriend` adds one; `maybeMeetFriend(state, p, where)` rolls first and costs no roll when the circle is full. Hooks: `meet-people` always (while there is room), `mamak` 15%, `networking` 20%, `attend-class` 6%, `work-shift` 5%. `meetSomeone` also skips circle names.
+- **Per-friend actions** (`peopleActions.ts`, `social`, dedicated, param = friend id): `friend-chat`, `friend-hangout`, `friend-gift`. See `action-contract.md` rule 15. They call `chatFriend`, `hangoutFriend` and `giftFriend`.
+- **Daily.** `dailyFriends(state)` runs at day end after `dailyRelationships`: a friend with no contact (hangout, message or gift, or the day you met) for more than 7 days loses 0.5 closeness a day; at 0 they leave the circle with the log line "You and {name} drifted apart."; each Kawan baik adds 0.1 happiness.
+- **Meter.** A hangout adds 3 to `relationships.friends`; the circle never overrides the meter, so the old drift and the other social actions behave as before.
+- **Achievements.** `geng-besar` (6 friends) and `kawan-sejati` (a friend at closeness 80 or more), `achievements.ts`.
+- Closeness is kept within 0 to 100; cash never goes negative (`canAfford` before `spend`). Same state and actions give the same result.

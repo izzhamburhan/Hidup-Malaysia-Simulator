@@ -90,6 +90,65 @@ describe('save system', () => {
     expect(Object.values(migrated.mastery).every((v) => v === 0)).toBe(true);
   });
 
+  it('migrates a v10 save by adding a starter circle', () => {
+    const fresh = makeGame();
+    const old = JSON.parse(JSON.stringify(fresh));
+    old.version = 10;
+    delete old.relationships.circle;
+    const rng = old.rng;
+    const migrated = migrate(old);
+    expect(SAVE_VERSION).toBe(11);
+    expect(migrated.version).toBe(11);
+    expect(migrated.relationships.circle).toHaveLength(2);
+    expect(migrated.relationships.circle).toEqual(fresh.relationships.circle);
+    expect(migrated.rng).toBe(rng);
+    expect(migrated.relationships.friends).toBe(fresh.relationships.friends);
+  });
+
+  it('loads a v10 save envelope (main slot, shelf, daily or cloud text) with a starter circle, then reloads as a no-op', () => {
+    const fresh = makeGame();
+    const old = JSON.parse(JSON.stringify(fresh));
+    old.version = 10;
+    delete old.relationships.circle;
+    const first = deserialize(JSON.stringify({ version: 10, savedAt: 'then', state: old }));
+    expect(first.status).toBe('ok');
+    if (first.status !== 'ok') return;
+    expect(first.migrated).toBe(true);
+    expect(first.state.version).toBe(SAVE_VERSION);
+    expect(first.state.relationships.circle).toEqual(fresh.relationships.circle);
+    const second = deserialize(serialize(first.state, 'now'));
+    expect(second).toMatchObject({ status: 'ok', migrated: false });
+    if (second.status === 'ok') expect(second.state.relationships.circle).toEqual(first.state.relationships.circle);
+  });
+
+  it('migrates a v10 save to the same friends every time, skipping names already in your life', () => {
+    const old = JSON.parse(JSON.stringify(makeGame()));
+    old.version = 10;
+    delete old.relationships.circle;
+    const names = (state: ReturnType<typeof migrate>) => state.relationships.circle.map((f) => f.name);
+    const first = names(migrate(JSON.parse(JSON.stringify(old))));
+    expect(names(migrate(JSON.parse(JSON.stringify(old))))).toEqual(first);
+    old.relationships.exes = [first[0]];
+    old.relationships.prospects = [{ id: 'p1', name: first[1], trait: 'funny', interest: 'hiking', compatibility: 50, metDay: 0 }];
+    const again = names(migrate(old));
+    expect(again).toHaveLength(2);
+    for (const n of again) expect(first).not.toContain(n);
+  });
+
+  it('keeps the circle a v11 save already has', () => {
+    const s = JSON.parse(JSON.stringify(makeGame()));
+    const circle = s.relationships.circle;
+    expect(deserialize(JSON.stringify({ version: SAVE_VERSION, savedAt: 'x', state: s }))).toMatchObject({ status: 'ok', migrated: false });
+    expect(migrate(s).relationships.circle).toEqual(circle);
+  });
+
+  it('keeps the random stream of a seeded new game (the starter circle does not use state.rng)', () => {
+    // Values recorded on SAVE_VERSION 10, before friends existed.
+    const a = makeGame();
+    const b = makeGame({ seed: 99, lifeStage: 'working', jobId: 'swe' });
+    expect([a.rng, a.logSeq, b.rng, b.logSeq]).toEqual([1511861062, 11, -951541556, 12]);
+  });
+
   it('refuses saves from a newer version', () => {
     const s = JSON.parse(JSON.stringify(makeGame()));
     s.version = SAVE_VERSION + 1;

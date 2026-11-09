@@ -69,9 +69,9 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
   );
 }
 
-export function StatBar({ label, value, tone = 'teal', invert = false, compact = false }: { label: string; value: number; tone?: 'teal' | 'gold' | 'hibiscus' | 'leaf' | 'sky'; invert?: boolean; compact?: boolean }) {
+export function StatBar({ label, value, tone = 'teal', invert = false, compact = false, calm = false }: { label: string; value: number; tone?: 'teal' | 'gold' | 'hibiscus' | 'leaf' | 'sky'; invert?: boolean; compact?: boolean; /** Never show the red danger colour (a low value here is normal, not a warning). */ calm?: boolean }) {
   const v = Math.round(Math.max(0, Math.min(100, value)));
-  const danger = invert ? v >= 75 : v <= 20;
+  const danger = !calm && (invert ? v >= 75 : v <= 20);
   const colors: Record<string, string> = { teal: 'bg-teal-2', gold: 'bg-gold', hibiscus: 'bg-hibiscus', leaf: 'bg-leaf', sky: 'bg-sky' };
   return (
     <div className={compact ? '' : 'space-y-1'}>

@@ -90,7 +90,7 @@ const BY_ID: Record<string, Activity> = {
   'mobile-gaming': 'play', 'pc-gaming': 'play', 'scroll-feed': 'phone', read: 'read',
   movie: 'outing', shopping: 'outing', concert: 'outing', 'buy-item': 'outing', photography: 'travel', 'road-trip': 'travel',
   mamak: 'social', karaoke: 'social', 'meet-people': 'social', networking: 'social', 'call-friend': 'phone', 'dating-app': 'phone',
-  'talk-prospect': 'phone', 'chat-partner': 'phone', 'call-parents': 'phone', 'break-up': 'sad',
+  'talk-prospect': 'phone', 'friend-chat': 'phone', 'chat-partner': 'phone', 'call-parents': 'phone', 'break-up': 'sad',
   'work-shift': 'work', overtime: 'work', 'attend-interview': 'work', 'take-leave': 'chill',
   'attend-class': 'study', study: 'study', assignment: 'study', fyp: 'study', 'online-course': 'study', 'self-study': 'read',
   'balik-kampung': 'travel', 'family-time': 'family', 'give-parents': 'money', 'parent-allowance': 'money',

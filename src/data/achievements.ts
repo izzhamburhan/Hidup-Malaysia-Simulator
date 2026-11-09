@@ -44,6 +44,8 @@ export const achievements: Achievement[] = [
   { id: 'single-happy', title: 'Single & Thriving', description: 'Single, happiness 75+, after 60 days.', icon: '🌻', check: (s) => !s.relationships.partner && s.stats.happiness >= 75 && s.clock.day >= 60 },
   { id: 'anak-soleh', title: 'Anak Kesayangan', description: 'Family relationship 90+.', icon: '🏡', check: (s) => s.relationships.family >= 90 },
   { id: 'social-butterfly', title: 'Social Butterfly', description: 'Friendship 90+.', icon: '🎉', check: (s) => s.relationships.friends >= 90 },
+  { id: 'geng-besar', title: 'Geng Besar', description: 'Have 6 friends in your circle.', icon: '👯', check: (s) => s.relationships.circle.length >= 6 },
+  { id: 'kawan-sejati', title: 'Kawan Sejati', description: 'Grow a friendship to closeness 80 or more.', icon: '🤝', check: (s) => s.relationships.circle.some((f) => f.closeness >= 80) },
   { id: 'wheels', title: 'Got Wheels', description: 'Own a vehicle.', icon: '🚗', check: (s) => s.transport.vehicleId !== null },
   { id: 'homeowner', title: 'Tuan Rumah', description: 'Own a property.', icon: '🔑', check: (s) => s.housing.ownedPropertyId !== null },
   { id: 'own-place', title: 'Moved Out', description: 'Live somewhere other than the family home.', icon: '📦', check: (s) => s.housing.optionId !== 'family' && s.clock.day > 0 && s.flags.movedOut === true },

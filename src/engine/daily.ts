@@ -8,6 +8,7 @@ import { isWorkday, onLeave, performanceReview, processApplications, refreshList
 import { isClassDay, processEducationDay } from './education';
 import { processMonthStart, processNewYear, runPayroll } from './economy';
 import { processScheduledEvents, queueEvent } from './events';
+import { dailyFriends } from './friends';
 import { dailyRelationships, generateFeedPosts } from './social';
 import { staffDay } from './business';
 import { petDayEnd } from './pet';
@@ -100,6 +101,7 @@ export function processDayEnd(state: GameState): void {
   if (!state.today.socialised && state.relationships.friends > 20) state.relationships.friends = round2(clamp(state.relationships.friends - 0.3));
 
   dailyRelationships(state);
+  dailyFriends(state);
   staffDay(state);
 
   // Burnout check: sustained stress plus poor health.
