@@ -9,7 +9,7 @@ import { CLOUD_SAVE_ENABLED } from '../config';
 import { SAVE_VERSION } from '../engine/newGame';
 import type { StringKey } from '../i18n';
 import { track } from '../lib/analytics';
-import { listCloudLives, loadCloudState, pullLife, pushLife, pushTombstone, removeAllCloudLives, saveCloudState } from '../lib/cloud';
+import { listCloudLives, loadCloudState, pullLife, pushLife, pushTombstone, recordVisit, removeAllCloudLives, saveCloudState } from '../lib/cloud';
 import { createPushScheduler } from '../lib/cloudScheduler';
 import { metaFromEnvelope, planSync, type SaveMeta } from '../lib/cloudSync';
 import { loadFirebase, type CloudUser, type FirebaseHandle } from '../lib/firebaseClient';
@@ -294,6 +294,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
               track('account', { source: 'signin' });
             }
             persist();
+            void recordVisit(handle.store, next.uid, new Date().toISOString());
             void runSyncRef.current();
           } else {
             readyRef.current = false;
@@ -347,6 +348,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const flush = () => {
       if (document.visibilityState === 'hidden') void scheduler.flush();
+      // Coming back to the tab after a while counts as a new sitting (recordVisit applies the 30 minute rule).
+      else if (userRef.current && handleRef.current) void recordVisit(handleRef.current.store, userRef.current.uid, new Date().toISOString());
     };
     const onHide = () => void scheduler.flush();
     document.addEventListener('visibilitychange', flush);

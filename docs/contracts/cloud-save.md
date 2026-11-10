@@ -38,6 +38,16 @@ Firestore documents `users/{uid}/lives/{lifeId}` (the Google user id; no email o
 | `savedAt`, `version`, `lifeId`, `day`, `name` | A summary of the save, used to decide a sync without parsing it. `lifeId` equals the document id. |
 | `deleted` (optional) | `true` for a deletion marker: `save` is empty and `savedAt` is the deletion time. |
 
+### Visit record
+
+One small document per signed-in player, `users/{uid}/activity/visits`: `firstSeen`, `lastSeen` (ISO strings),
+`opens` (number of sittings) and `days` (Malaysia dates, `YYYY-MM-DD`, at most the last 90). It holds no name and
+no save content. `recordVisit` (`src/lib/cloud.ts`) writes it when a signed-in session starts and when the tab
+becomes visible again; a return more than 30 minutes after `lastSeen` is a new sitting (`nextActivity`, pure).
+Best effort: a failure skips the visit and never blocks sync. Guests write nothing. Only the player can read or
+write it (`firestore.rules`); the local owner dashboard reads it to label players One-time, Returning, Active or
+Lapsed. No `SAVE_VERSION` change.
+
 Measured size: about 47 KB per life after three in-game years (about 10 KB gzipped), far below Firestore's
 1 MiB document limit; the rules refuse a `save` of 900,000 characters or more. Only lives are synced:
 never the daily-challenge slot, settings or the endings collection.
