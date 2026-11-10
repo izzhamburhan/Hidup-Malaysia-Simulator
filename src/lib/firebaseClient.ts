@@ -3,7 +3,7 @@
 // Firebase Analytics is never imported. UI layer only; the simulation engine never imports this file.
 
 import { FIREBASE_CONFIG } from '../config';
-import type { CloudDoc, CloudStore } from './cloud';
+import type { CloudActivity, CloudDoc, CloudStore } from './cloud';
 
 export interface CloudUser {
   uid: string;
@@ -43,7 +43,19 @@ async function build(): Promise<FirebaseHandle> {
   const lives = (uid: string) => fs.collection(db, 'users', uid, 'lives');
   const ref = (uid: string, lifeId: string) => fs.doc(db, 'users', uid, 'lives', lifeId);
 
+  const activityRef = (uid: string) => fs.doc(db, 'users', uid, 'activity', 'visits');
+
   const store: CloudStore = {
+    async getActivity(uid) {
+      const snap = await fs.getDoc(activityRef(uid));
+      if (!snap.exists()) return null;
+      const d = snap.data() as Partial<CloudActivity>;
+      if (typeof d.firstSeen !== 'string' || typeof d.lastSeen !== 'string' || typeof d.opens !== 'number' || !Array.isArray(d.days)) return null;
+      return { firstSeen: d.firstSeen, lastSeen: d.lastSeen, opens: d.opens, days: d.days.filter((x): x is string => typeof x === 'string') };
+    },
+    async setActivity(uid, activity) {
+      await fs.setDoc(activityRef(uid), activity);
+    },
     async list(uid) {
       const snap = await fs.getDocs(lives(uid));
       return snap.docs.map((d) => ({ ...(d.data() as CloudDoc), lifeId: d.id }));

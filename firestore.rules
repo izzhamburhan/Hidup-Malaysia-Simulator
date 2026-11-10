@@ -20,6 +20,19 @@ service cloud.firestore {
         && request.resource.data.name is string
         && (!('deleted' in request.resource.data) || request.resource.data.deleted is bool);
     }
+    // Visit record: when and how often the player opens the game (no name, no save). Only the player reaches it.
+    match /users/{uid}/activity/{doc} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && doc == 'visits'
+        && request.resource.data.keys().hasOnly(['firstSeen', 'lastSeen', 'opens', 'days'])
+        && request.resource.data.firstSeen is string
+        && request.resource.data.lastSeen is string
+        && request.resource.data.opens is int
+        && request.resource.data.days is list
+        && request.resource.data.days.size() <= 90;
+    }
     match /{document=**} {
       allow read, write: if false;
     }

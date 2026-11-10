@@ -22,7 +22,38 @@ export interface CloudDoc {
   deleted?: boolean;
 }
 
+/**
+ * How often a signed-in player opens the game, one small document per player at users/{uid}/activity/visits.
+ * No name, no save content. `opens` counts sittings (a return after 30 quiet minutes starts a new one);
+ * `days` lists the Malaysia dates (UTC+8) they played on, newest last, kept to the last 90.
+ */
+export interface CloudActivity {
+  firstSeen: string;
+  lastSeen: string;
+  opens: number;
+  days: string[];
+}
+
+export const SITTING_GAP_MS = 30 * 60 * 1000;
+export const ACTIVITY_DAYS_MAX = 90;
+
+const mytDate = (ms: number): string => new Date(ms + 8 * 3600 * 1000).toISOString().slice(0, 10);
+
+/** Pure: the activity record after a visit at `nowIso`. */
+export function nextActivity(prev: CloudActivity | null, nowIso: string): CloudActivity {
+  const now = Date.parse(nowIso);
+  const day = mytDate(Number.isFinite(now) ? now : 0);
+  if (!prev) return { firstSeen: nowIso, lastSeen: nowIso, opens: 1, days: [day] };
+  const last = Date.parse(prev.lastSeen);
+  const newSitting = !Number.isFinite(last) || now - last > SITTING_GAP_MS;
+  const days = prev.days.includes(day) ? prev.days : [...prev.days, day].slice(-ACTIVITY_DAYS_MAX);
+  return { firstSeen: prev.firstSeen, lastSeen: nowIso, opens: prev.opens + (newSitting ? 1 : 0), days };
+}
+
 export interface CloudStore {
+  /** Optional so older fakes still work; the Firebase adapter provides both. */
+  getActivity?(uid: string): Promise<CloudActivity | null>;
+  setActivity?(uid: string, activity: CloudActivity): Promise<void>;
   list(uid: string): Promise<CloudDoc[]>;
   get(uid: string, lifeId: string): Promise<CloudDoc | null>;
   /** The document id is `doc.lifeId`. */
@@ -82,6 +113,17 @@ export async function pushLife(store: CloudStore, uid: string, text: string): Pr
     return { ok: true, meta };
   } catch (err) {
     return { ok: false, error: errorText(err) };
+  }
+}
+
+/** Note that the player is here now. Never throws; a failure just skips this visit. */
+export async function recordVisit(store: CloudStore, uid: string, nowIso: string): Promise<void> {
+  if (!store.getActivity || !store.setActivity) return;
+  try {
+    const prev = await store.getActivity(uid);
+    await store.setActivity(uid, nextActivity(prev, nowIso));
+  } catch {
+    /* activity is best effort */
   }
 }
 

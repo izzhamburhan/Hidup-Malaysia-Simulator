@@ -14,7 +14,8 @@ export function PrivacyNotice({ open, onClose }: { open: boolean; onClose: () =>
         </p>
         <p>
           <b>Optional Google cloud save.</b> If you sign in with Google, a copy of your save is stored in Google Firebase under an anonymous user ID so you can continue on another device. We do not
-          store your email or name, and you can delete the cloud copy any time in Settings. Signing in is never required to play.
+          store your email or name, and you can delete the cloud copy any time in Settings. While you are signed in we also note when you open the game and on which days you played (dates only),
+          so we can see how often people come back. Signing in is never required to play.
         </p>
         {on ? (
           <p>

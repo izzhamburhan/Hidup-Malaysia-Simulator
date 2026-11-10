@@ -8,3 +8,13 @@ coverage/
 .DS_Store
 .worktrees/
 *.log
+
+# Owner-only player dashboard: local only, never pushed (run: npx vite --open /admin.html)
+admin.html
+src/admin/
+tests/adminStats.test.ts
+firestore.admin.rules
+docs/plans/admin-dashboard.md
+vite.admin.config.ts
+scripts/deploy-admin.mjs
+dist-admin/
