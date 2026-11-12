@@ -115,6 +115,7 @@ export function SettingsScreen({ onExit, onOpenPhone }: { onExit: () => void; on
           onChange={(v) => interact('setting', 'comparisonAnxiety', v)}
         />
         <Toggle label={t('settings.actionGames')} hint={t('settings.actionGames.hint')} checked={settings.actionGames} onChange={(v) => setSettings({ actionGames: v })} />
+        <Toggle label={t('settings.viral')} hint={t('settings.viral.hint')} checked={settings.viralCard} onChange={(v) => setSettings({ viralCard: v })} />
         <Toggle label={t('settings.sound')} hint={t('settings.sound.hint')} checked={settings.sound} onChange={(v) => setSettings({ sound: v })} />
         <Toggle label={t('settings.music')} hint={t('settings.music.hint')} checked={settings.music} onChange={(v) => setSettings({ music: v })} />
         {settings.music && (

@@ -73,7 +73,7 @@ src/engine/            pure simulation engine (no React, no DOM)
   save.ts              versioned LocalStorage save and migrations
   simulationEngine.ts  public API: newGame, performAction, resolveEvent, listActions, runAutopilot (and helpers)
 src/data/              catalogues: universities, courses, companies, jobs, foods, vehicles, housing,
-                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats, quests, festive, budget, gifts, stickers, blockedWords
+                       lifestyle, statutory, backgrounds, holidays, feed, events, achievements, challenges, appearance, pets, decor, dailyChallenges, minigames, chats, quests, festive, budget, gifts, stickers, blockedWords, viral
 src/components/        UI components
   room/                Home room: activity.ts (action to room/animation mapping, presentation only), Room.tsx
   celebrate/           big-moment banner: celebrations.ts (pure state diff), Celebrate.tsx
@@ -88,6 +88,9 @@ src/lib/analytics.ts   privacy-first analytics (UI layer only)
 src/lib/sound.ts       synthesised sound effects and vibration (UI layer only, no audio files)
 src/lib/music.ts       synthesised lofi background music: 5 stations, pure `barEvents` plus a Web Audio player (UI layer only)
 src/lib/shareCard.ts   the share image: pure model plus a canvas renderer (browser only)
+src/lib/viral.ts       Viral Hari Ini rules: pick a card by date, once a day, store (UI layer only)
+src/lib/viralCard.ts   Viral pixel scene (pure) and the Save PNG renderer (browser only)
+src/components/viral/  ViralSheet (Save, Put in room, Skip) and ViralPicture; src/hooks/useViral.ts shares the store with the Room wall poster
 src/lib/install.ts     Add to Home Screen prompt, iPhone steps, service worker registration
 src/lib/lives.ts       several lives: pure library rules (3 at once, new life shelves the current one) and storage; UI layer only
 src/lib/cloudSync.ts   cloud save: pure per-life sync plan (upload, download, conflict, delete, refuse); UI layer only
@@ -152,12 +155,13 @@ SKILLS.md              index of every skill
 | Wardrobe | done: change outfit, colour, headwear and glasses from the room; 5 outfits and 3 headwear unlocked by achievements |
 | Home decor | done: 16 decor items in four slots, bought from the room's Decorate button, shown in the living room and bedroom, small daily comfort bonus |
 | Pets | done: Oyen the cat (adopt from Act or a stray event), feed and play, daily hunger and mood, shown in the Home room |
+| Viral card | done: "Viral Hari Ini", a once-a-day dismissible sheet on the Home dashboard (never the landing page) when a life is continued: a pixel picture (scenes drawn in code, or the owner's cat picture shrunk to 192x108) and a short original joke in English and Bahasa Malaysia, 10 cards in `src/data/viral.ts`; Save as a 1080x1350 PNG, Put in room (wall poster) or Skip; menu entry reopens it, Settings switch turns the pop-up off; LocalStorage key `hidup-malaysia:viral`, no engine, `GameState` or `SAVE_VERSION` change. Plan: `docs/plans/viral-card.md`. Later: a reviewed feed and a weekly drafting agent |
 | Save and migrations | done: SAVE_VERSION 11 (v2 adds the pixel character appearance, v3 the pet, v4 home decor, v5 wardrobe unlocks, v6 festive outfits, v7 gender, v8 unit trust and skill mastery, v9 residence state and travel stamps, v10 the Hari Gaji budget, v11 the friends circle), migration chain, corrupt-save quarantine, export/import |
 | Public engine API (`simulationEngine.ts`) | done: performAction, resolveEvent, listActions, runAutopilot, interact, endChapter |
 | Data catalogues | done (balance values are fictional estimates; tune freely) |
 | UI (screens, components) | done: Pou-style Home room (big centred character, room follows the activity, an animation after every action, round one-tap buttons, a Decor / Style / Games toolbar under the room, synthesised sound effects and vibration with toggles, confetti and a fanfare for big moments), pixel-art characters (player editor, mood faces, name-seeded NPC faces), neutral organisation badges, Act/Money/Life/Feed tabs, Goals, Report, Settings; checked at 360px |
 | MCP server `hidup-sim` | done: 8 tools, stdio smoke-tested |
-| Tests | done: 64 Vitest files, 748 tests |
+| Tests | done: 68 Vitest files, 783 tests |
 
 ## Commands
 
