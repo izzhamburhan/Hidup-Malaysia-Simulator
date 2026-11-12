@@ -2,6 +2,7 @@
 
 import { GAME_URL } from '../config';
 import type { ViralItem, ViralScene } from '../data/viral';
+import { drawSprite, type ViralSpriteId } from './viralSprites';
 
 export const PIC_W = 96;
 export const PIC_H = 54;
@@ -12,23 +13,6 @@ const HORIZON = 40;
 const RAIN = '#b8c8e0';
 const STAR = '#ffffff';
 
-// Oyen, 14 x 12 pixels. w white, o orange, k dark, p pink, . empty.
-const CAT = [
-  '..o........o..',
-  '.oow......woo.',
-  '.owwwwwwwwwwo.',
-  '.owkwwwwwwkwo.',
-  '.owwwwppwwwwo.',
-  '..owwwwwwwwo..',
-  '..owwwwwwwwo..',
-  '.owwwwwwwwwwo.',
-  '.owwowwwwowwo.',
-  '.owwwwwwwwwwo.',
-  '.oowwwwwwwwoo.',
-  '..oooooooooo..',
-];
-const CAT_COLOURS: Record<string, string> = { w: '#f6efe3', o: '#e8913a', k: '#2a2320', p: '#e88a96' };
-
 /** A repeatable pseudo-random number from two coordinates (no Math.random: the same picture every time). */
 const noise = (x: number, y: number) => {
   let h = (x * 374761393 + y * 668265263) >>> 0;
@@ -37,7 +21,7 @@ const noise = (x: number, y: number) => {
 };
 
 /** One hex colour per pixel, row by row, PIC_W x PIC_H. */
-export function sceneGrid(scene: ViralScene): string[] {
+export function sceneGrid(scene: ViralScene, sprite: ViralSpriteId = 'cat'): string[] {
   const grid: string[] = new Array(PIC_W * PIC_H);
   const set = (x: number, y: number, c: string) => {
     if (x >= 0 && x < PIC_W && y >= 0 && y < PIC_H) grid[y * PIC_W + x] = c;
@@ -55,8 +39,8 @@ export function sceneGrid(scene: ViralScene): string[] {
   }
 
   if (scene.sun) {
-    const cx = scene.sun === 'sun' ? 70 : 22;
-    const cy = scene.sun === 'sun' ? 30 : 12;
+    const cx = scene.sun === 'sun' ? 84 : 12;
+    const cy = 10;
     for (let y = -5; y <= 5; y++) for (let x = -5; x <= 5; x++) if (x * x + y * y <= 22) set(cx + x, cy + y, scene.sunColor);
   }
 
@@ -70,13 +54,14 @@ export function sceneGrid(scene: ViralScene): string[] {
     }
   }
 
-  const ox = 41;
-  const oy = HORIZON - 4;
-  CAT.forEach((row, dy) => {
-    [...row].forEach((ch, dx) => {
-      const c = CAT_COLOURS[ch];
-      if (c) set(ox + dx, oy + dy, c);
-    });
+  drawSprite(sprite, {
+    px: set,
+    rect: (x, y, w, h, col) => {
+      for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) set(x + i, y + j, col);
+    },
+    disc: (cx, cy, r, col) => {
+      for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) if (i * i + j * j <= r * r + r / 2) set(cx + i, cy + j, col);
+    },
   });
 
   return grid;
@@ -88,37 +73,38 @@ const hexToRgb = (hex: string): [number, number, number] => {
 };
 
 /** Browser only. Paints the card's picture into a canvas, sharp-edged. */
-export function paintPicture(canvas: HTMLCanvasElement, item: ViralItem, scene: ViralScene, image: HTMLImageElement | null): void {
+export function paintPicture(canvas: HTMLCanvasElement, item: ViralItem, scene: ViralScene, image: HTMLImageElement | null, smooth = false): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = smooth;
   if (image) {
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
     return;
   }
+  ctx.imageSmoothingEnabled = false;
   const small = document.createElement('canvas');
   small.width = PIC_W;
   small.height = PIC_H;
   const sctx = small.getContext('2d');
   if (!sctx) return;
   const data = sctx.createImageData(PIC_W, PIC_H);
-  sceneGrid(scene).forEach((hex, i) => {
+  sceneGrid(scene, item.sprite).forEach((hex, i) => {
     const [r, g, b] = hexToRgb(hex);
     data.data.set([r, g, b, 255], i * 4);
   });
   sctx.putImageData(data, 0, 0);
   ctx.drawImage(small, 0, 0, canvas.width, canvas.height);
-  void item;
 }
 
 /** Browser only. Loads the ready-made pixel picture of a card, or null when it has none or it fails. */
-export function loadViralImage(item: ViralItem): Promise<HTMLImageElement | null> {
-  if (!item.image) return Promise.resolve(null);
+export function loadViralImage(item: ViralItem, original = false): Promise<HTMLImageElement | null> {
+  const file = original ? (item.original ?? item.image) : item.image;
+  if (!file) return Promise.resolve(null);
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = `./viral/${item.image}`;
+    img.src = `./viral/${file}`;
   });
 }
 
@@ -151,7 +137,8 @@ export async function renderViralCard(item: ViralItem, scene: ViralScene, lang: 
   const pic = document.createElement('canvas');
   pic.width = CARD_W - 120;
   pic.height = Math.round(((CARD_W - 120) * PIC_H) / PIC_W);
-  paintPicture(pic, item, scene, await loadViralImage(item));
+  const full = await loadViralImage(item, true);
+  paintPicture(pic, item, scene, full ?? (await loadViralImage(item)), !!full);
   const py = 150;
   ctx.fillStyle = '#e7b432';
   ctx.fillRect(54, py - 6, pic.width + 12, pic.height + 12);

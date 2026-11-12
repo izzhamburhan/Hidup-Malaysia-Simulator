@@ -1,8 +1,12 @@
 // Viral Hari Ini cards. ORIGINAL, FICTIONAL and just for fun: every line is written for this game,
 // copies no post, headline, meme or image, and names no real person, party, brand or platform.
 // A card is a light "everyone knows this feeling" joke, never a claim about the news.
-// The pictures are pixel art: drawn in code from the scene palettes below, or (item 1) the owner's
-// own cat picture, shrunk to 192x108 pixels in public/viral/.
+// One picture, one card. The cat card uses the owner's own picture, pixelated to 270x152 for the game
+// and kept at full quality (1080x608) for Save; the other cards are pixel illustrations drawn in code
+// (src/lib/viralSprites.ts), each with its own scene and sprite. Educational lines are light game tips,
+// not financial or medical advice.
+
+import type { ViralSpriteId } from '../lib/viralSprites';
 
 export type ViralSceneId = 'sunset' | 'rain' | 'night' | 'noon' | 'dawn' | 'dusk';
 
@@ -30,75 +34,69 @@ export const VIRAL_SCENES: Record<ViralSceneId, ViralScene> = {
 export interface ViralItem {
   id: string;
   scene: ViralSceneId;
+  /** What is drawn on the scene when the card has no ready-made picture. */
+  sprite?: ViralSpriteId;
   /** Optional ready-made pixel picture in public/viral/ (used instead of the drawn scene). */
   image?: string;
+  /** The full-quality original of the picture, used by Save (public/viral/). */
+  original?: string;
   /** The topic tag shown above the line. */
   topic: { en: string; ms: string };
   /** The joke. At most 140 characters each. */
   line: { en: string; ms: string };
 }
 
+/** One picture, one card: a ready-made picture in public/viral/ (pixelated + original), or its own drawn scene and sprite. */
 export const VIRAL_ITEMS: ViralItem[] = [
   {
     id: 'oyen-golden-hour',
     scene: 'sunset',
     image: 'oyen-sunset.png',
+    original: 'oyen-sunset-original.jpg',
     topic: { en: 'Golden hour', ms: 'Waktu emas' },
     line: { en: 'Oyen: "Monday can wait. I am busy with golden hour."', ms: 'Oyen: "Isnin tunggu dulu. Aku sibuk dengan matahari terbenam."' },
   },
   {
-    id: 'hujan-lebat',
-    scene: 'rain',
-    topic: { en: 'Heavy rain', ms: 'Hujan lebat' },
-    line: { en: 'Heavy rain again. The plan to go out has become a plan to sleep.', ms: 'Hujan lebat lagi. Rancangan nak keluar dah jadi rancangan nak tidur.' },
-  },
-  {
     id: 'gaji-masuk',
     scene: 'noon',
+    sprite: 'tabung',
     topic: { en: 'Payday', ms: 'Hari gaji' },
-    line: { en: 'Salary in at 12:00. Gone by 12:05. Not magic, just auto-debit.', ms: 'Gaji masuk pukul 12. Hilang pukul 12:05. Bukan sihir, itu auto-debit.' },
+    line: { en: 'Payday tip: pay yourself first. Move savings out before the shopping app opens.', ms: 'Tip gaji: bayar diri sendiri dulu. Asingkan simpanan sebelum buka app membeli-belah.' },
+  },
+  {
+    id: 'dana-kecemasan',
+    scene: 'rain',
+    sprite: 'umbrella',
+    topic: { en: 'Emergency fund', ms: 'Dana kecemasan' },
+    line: { en: 'An emergency fund is an umbrella for your wallet. Save it before it rains.', ms: 'Dana kecemasan ialah payung untuk dompet. Simpan sebelum hujan turun.' },
   },
   {
     id: 'teh-tarik',
     scene: 'dusk',
-    topic: { en: 'Mamak time', ms: 'Waktu mamak' },
-    line: { en: 'One teh tarik, three hours of life advice. Fair trade.', ms: 'Satu teh tarik, tiga jam nasihat hidup. Adil.' },
+    sprite: 'teh',
+    topic: { en: 'Small treats', ms: 'Belanja kecil' },
+    line: { en: 'A RM2 teh tarik a day is RM60 a month. Small treats add up, so enjoy them on purpose.', ms: 'Teh tarik RM2 sehari jadi RM60 sebulan. Belanja kecil pun berkumpul, jadi nikmati dengan sedar.' },
   },
   {
-    id: 'jalan-sesak',
-    scene: 'noon',
-    topic: { en: 'Traffic', ms: 'Jalan sesak' },
-    line: { en: 'The map app says 20 minutes. The first 20 minutes is leaving the car park.', ms: 'App peta kata 20 minit. 20 minit pertama untuk keluar dari parking.' },
-  },
-  {
-    id: 'musim-durian',
-    scene: 'dawn',
-    topic: { en: 'Durian season', ms: 'Musim durian' },
-    line: { en: 'Durian season: thinner wallet, happier nose.', ms: 'Musim durian: dompet makin nipis, hidung makin gembira.' },
-  },
-  {
-    id: 'cuti-panjang',
-    scene: 'sunset',
-    topic: { en: 'Long weekend', ms: 'Cuti panjang' },
-    line: { en: 'Long weekend! Everyone escapes the city, on the very same highway.', ms: 'Cuti panjang! Semua orang lari dari bandar, di lebuh raya yang sama.' },
-  },
-  {
-    id: 'tidur-awal',
+    id: 'tidur-cukup',
     scene: 'night',
+    sprite: 'bed',
     topic: { en: 'Sleep', ms: 'Tidur' },
-    line: { en: '"Sleeping early tonight." 2 a.m.: still scrolling.', ms: '"Malam ni tidur awal." Pukul 2 pagi: masih scroll.' },
+    line: { en: 'Sleep is a free charger. Your phone is at 100%. You are at 12%.', ms: 'Tidur ialah pengecas percuma. Telefon kau 100%. Kau 12%.' },
   },
   {
-    id: 'hari-isnin',
-    scene: 'dawn',
-    topic: { en: 'Monday', ms: 'Hari Isnin' },
-    line: { en: 'Monday is not a day. It is a patience test with a coffee queue.', ms: 'Isnin bukan hari. Ia ujian sabar lengkap dengan barisan kopi.' },
-  },
-  {
-    id: 'cuaca-panas',
+    id: 'air-kosong',
     scene: 'noon',
+    sprite: 'water',
     topic: { en: 'Hot weather', ms: 'Cuaca panas' },
-    line: { en: 'Not "feels like 35". It feels like being slow-cooked. Pass the fan.', ms: 'Bukan "rasa 35 darjah". Rasa macam dimasak perlahan. Tolong bagi kipas.' },
+    line: { en: 'Hot day? Water first, then the third iced tea.', ms: 'Cuaca panas? Air kosong dulu, baru teh ais yang ketiga.' },
+  },
+  {
+    id: 'keluar-awal',
+    scene: 'dawn',
+    sprite: 'traffic',
+    topic: { en: 'Traffic', ms: 'Jalan sesak' },
+    line: { en: 'Leave 15 minutes early: the cheapest way to cut stress.', ms: 'Bertolak 15 minit awal: cara paling murah kurangkan stres.' },
   },
 ];
 

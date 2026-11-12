@@ -50,3 +50,10 @@ Evidence at the end: `npm run check`, 360px look in `npm run dev`.
 - "Earlier cards" is a row of topic chips inside the sheet (not a separate shelf screen).
 - English sheet title is "Viral Today" (Bahasa Malaysia "Viral Hari Ini"): the i18n test requires Malay and English to differ.
 - 360px check: not done in a browser in this session (see handoff).
+
+## Update: pictures
+
+- The owner's cat picture is the first card only (pixelated 270x152 for the game, original kept for Save).
+- Six more cards each have their own pixel illustration drawn in code (`src/lib/viralSprites.ts`): tabung (payday), umbrella (emergency fund), teh tarik (small treats), bed (sleep), water (hot weather), traffic (leave early). Lines are light game tips, not financial or medical advice.
+- One picture, one card: a test keeps two cards from sharing a picture.
+- Cards after these: either a new ready-made picture, or a new sprite plus scene.

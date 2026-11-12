@@ -14,12 +14,16 @@ export function ViralPicture({ item, className, label }: { item: ViralItem; clas
     paintPicture(canvas, item, VIRAL_SCENES[item.scene], null);
     if (item.image) {
       void loadViralImage(item).then((img) => {
-        if (live && img && ref.current) paintPicture(ref.current, item, VIRAL_SCENES[item.scene], img);
+        if (live && img && ref.current) {
+          ref.current.width = img.naturalWidth;
+          ref.current.height = img.naturalHeight;
+          paintPicture(ref.current, item, VIRAL_SCENES[item.scene], img);
+        }
       });
     }
     return () => {
       live = false;
     };
   }, [item]);
-  return <canvas ref={ref} width={item.image ? 192 : PIC_W} height={item.image ? 108 : PIC_H} className={className} style={{ imageRendering: 'pixelated' }} role="img" aria-label={label ?? item.topic.en} />;
+  return <canvas ref={ref} width={item.image ? 270 : PIC_W} height={item.image ? 152 : PIC_H} className={className} style={{ imageRendering: 'pixelated' }} role="img" aria-label={label ?? item.topic.en} />;
 }
