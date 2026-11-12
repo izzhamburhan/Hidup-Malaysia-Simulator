@@ -3,7 +3,11 @@ import { BookOpen, Home, Menu, MessageCircle, Settings as SettingsIcon, Sparkles
 import { formatDate, formatTime, ageOf } from '../engine/calendar';
 import { formatRM } from '../engine/core';
 import { unreadChats as npcUnreadChats } from '../engine/chat';
-import { useLoadedGame } from '../hooks/useGame';
+import { useLoadedGame, todayKey } from '../hooks/useGame';
+import { useViral } from '../hooks/useViral';
+import { ViralSheet } from '../components/viral/ViralSheet';
+import { VIRAL_ITEMS } from '../data/viral';
+import { pickViral, shouldShowViral } from '../lib/viral';
 import { useSocial } from '../hooks/useSocial';
 import { useGameSounds } from '../hooks/useGameSounds';
 import { useT } from '../hooks/useT';
@@ -67,6 +71,19 @@ export function GameShell({ onExit }: { onExit: () => void }) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [phone, setPhone] = useState<{ open: boolean; start?: Route }>({ open: false });
   const social = useSocial();
+  const viral = useViral();
+  const [viralCard, setViralCard] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+  // Viral Hari Ini opens by itself once a day on the dashboard, once nothing else is asking for attention.
+  const calm = !tutorial && !dayReport && !state.events.pending.length && !state.finance.budget.pending && !state.ending;
+  useEffect(() => {
+    if (tab !== 'home' || !calm || viralCard.open) return;
+    const today = todayKey();
+    if (!shouldShowViral(viral.store, today, settings.viralCard, VIRAL_ITEMS)) return;
+    const pick = pickViral(VIRAL_ITEMS, today, viral.store.seen);
+    if (!pick) return;
+    viral.shown(pick.id, today);
+    setViralCard({ open: true, id: pick.id });
+  }, [tab, calm, viralCard.open, viral, settings.viralCard]);
   useGameSounds();
   const t = useT();
   const go = (t: Tab) => {
@@ -179,6 +196,14 @@ export function GameShell({ onExit }: { onExit: () => void }) {
               }}
             />
           )}
+          <MenuItem
+            icon={<Sparkles size={20} />}
+            label={t('menu.viral')}
+            onClick={() => {
+              setMenu(false);
+              setViralCard({ open: true, id: viral.store.poster ?? viral.store.seen[viral.store.seen.length - 1] ?? pickViral(VIRAL_ITEMS, todayKey(), viral.store.seen)?.id ?? null });
+            }}
+          />
           <MenuItem icon={<LogOut size={20} />} label={t('menu.main')} onClick={onExit} />
         </div>
         <p className="mt-4 flex items-center gap-1 text-xs text-ink-soft">
@@ -197,6 +222,7 @@ export function GameShell({ onExit }: { onExit: () => void }) {
         }}
       />
       <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} optedOut={settings.analyticsOptOut} />
+      <ViralSheet open={viralCard.open} itemId={viralCard.id} onClose={() => setViralCard({ open: false, id: viralCard.id })} />
       <Celebrate />
       <EventModal />
       <ConfirmModal />

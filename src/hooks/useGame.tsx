@@ -48,9 +48,11 @@ export interface Settings {
   musicVolume: number;
   /** Real friends can chat with me (also published as the profile's chatOpen). */
   friendsChat: boolean;
+  /** Show the Viral Hari Ini card once a day when a life is continued. */
+  viralCard: boolean;
 }
 
-const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true, cloudPromptDismissed: false, music: true, musicStation: 'warung-hujan', musicVolume: 0.5, friendsChat: true };
+const defaultSettings: Settings = { reducedMotion: false, analyticsOptOut: false, tutorialSeen: false, sound: true, vibration: true, language: 'en', installDismissed: false, actionGames: true, cloudPromptDismissed: false, music: true, musicStation: 'warung-hujan', musicVolume: 0.5, friendsChat: true, viralCard: true };
 
 /** In-game days that count as retention milestones in analytics. */
 const DAY_MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365];

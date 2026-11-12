@@ -11,6 +11,9 @@ import { festiveSeason } from '../../engine/festive';
 import { viewAction } from '../../engine/simulationEngine';
 import { useLoadedGame } from '../../hooks/useGame';
 import { useT } from '../../hooks/useT';
+import { useViral } from '../../hooks/useViral';
+import { viralById } from '../../data/viral';
+import { ViralPicture } from '../viral/ViralPicture';
 import { PixelAvatar } from '../PixelAvatar';
 import { cx } from '../ui';
 import { ACTIVITIES, LIGHTING, ROOMS, activityFor, daylight, idleRoom, lampOn, skyIcon, wallItemFor, type Activity } from './activity';
@@ -36,6 +39,7 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
   const [playing, setPlaying] = useState<Playing | null>(null);
   const [shop, setShop] = useState(false);
   const t = useT();
+  const poster = viralById(useViral().store.poster);
   const [wardrobe, setWardrobe] = useState(false);
   const [games, setGames] = useState(false);
 
@@ -75,9 +79,15 @@ export function Room({ greeting, title, detail, onGoal }: { greeting: string; ti
     <>
       <section className={cx('relative h-[290px] overflow-hidden rounded-3xl bg-gradient-to-b shadow-md transition-colors duration-500', room.wall)} aria-label={`${state.character.name} in the ${room.label.toLowerCase()}`}>
         {/* Wall */}
-        <div className="absolute right-4 top-14 text-4xl opacity-90" aria-hidden>
-          {mine('wall', wallItemFor(room, state.clock.minute))}
-        </div>
+        {poster && home ? (
+          <div className="absolute right-3 top-14 rounded-sm border-2 border-gold bg-white p-0.5 shadow-md" aria-hidden>
+            <ViralPicture item={poster} className="block h-[42px] w-[75px]" />
+          </div>
+        ) : (
+          <div className="absolute right-4 top-14 text-4xl opacity-90" aria-hidden>
+            {mine('wall', wallItemFor(room, state.clock.minute))}
+          </div>
+        )}
         <div className="absolute right-3 top-3 z-20 rounded-full bg-white/70 px-2 py-0.5 text-lg leading-none shadow-sm" aria-hidden>
           {skyIcon(state.clock.minute)}
         </div>
