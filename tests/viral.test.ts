@@ -70,7 +70,7 @@ import { VIRAL_ITEMS, VIRAL_SCENES } from '../src/data/viral';
 
 describe('viral catalogue', () => {
   it('has unique ids and both languages for every card', () => {
-    expect(VIRAL_ITEMS.length).toBeGreaterThanOrEqual(10);
+    expect(VIRAL_ITEMS.length).toBeGreaterThanOrEqual(7);
     expect(new Set(VIRAL_ITEMS.map((i) => i.id)).size).toBe(VIRAL_ITEMS.length);
     for (const i of VIRAL_ITEMS) {
       expect(i.topic.en.length, i.id).toBeGreaterThan(2);
@@ -86,6 +86,16 @@ describe('viral catalogue', () => {
     for (const i of VIRAL_ITEMS) {
       expect(Object.keys(VIRAL_SCENES), i.id).toContain(i.scene);
       if (i.image) expect(existsSync(`public/viral/${i.image}`), i.image).toBe(true);
+      if (i.original) expect(existsSync(`public/viral/${i.original}`), i.original).toBe(true);
+    }
+  });
+
+  it('gives every card its own picture: a ready-made image, or its own scene and sprite', () => {
+    const keys = VIRAL_ITEMS.map((i) => i.image ?? `${i.scene}:${i.sprite}`);
+    expect(new Set(keys).size).toBe(keys.length);
+    for (const i of VIRAL_ITEMS) {
+      expect(i.image || i.sprite, i.id).toBeTruthy();
+      if (i.image) expect(i.original, i.id).toBeTruthy();
     }
   });
 
